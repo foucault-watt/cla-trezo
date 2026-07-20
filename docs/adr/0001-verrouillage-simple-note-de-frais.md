@@ -1,0 +1,3 @@
+# Verrouillage simple structure/admin sur une Note de frais
+
+Une Note de frais peut être modifiée par la Structure tant que l'administrateur ne l'a pas prise en charge. Dès que l'admin commence à la modifier (pas seulement la consulter), la Structure perd définitivement la main sur cette note, même si l'admin ne valide pas encore — pas de retour en arrière, pas de renégociation du verrou. On a choisi ce verrouillage simple à sens unique plutôt qu'un système d'édition collaborative ou de résolution de conflits, car le volume et la fréquence de modifications concurrentes ne justifient pas cette complexité pour la V1.

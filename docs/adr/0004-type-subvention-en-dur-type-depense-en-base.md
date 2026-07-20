@@ -1,0 +1,3 @@
+# Type de subvention en dur dans le code, Type de dépense en base
+
+Le Type de subvention (CA Budget, CA Event, CA Exceptionnel) est un enum fixe dans le code, car ces trois catégories sont stables et ne relèvent pas d'une personnalisation par CLA. Le Type de dépense (nourriture, transport, matériel...) est en revanche stocké en base de données et pré-rempli avec quelques valeurs par défaut, car il doit pouvoir être étendu ou personnalisé sans déploiement. Les deux concepts se ressemblent (deux enums de classification) mais suivent des mécanismes opposés — ne pas les uniformiser en une seule table ou un seul enum.
