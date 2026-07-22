@@ -3,9 +3,6 @@ import { prisma } from "@/lib/prisma";
 import type { SessionStructure, SessionUser } from "@/lib/session";
 import type { AssoModel } from "@/app/generated/prisma/models/Asso";
 
-const claAuthHost = process.env.CLA_AUTH_HOST;
-const claAuthIdentifier = process.env.CLA_AUTH_IDENTIFIER;
-
 export class ClaAuthError extends Error {}
 
 const claAssociationRoleSchema = z.object({
@@ -31,6 +28,8 @@ const claResponseSchema = z.object({
 export type ClaAuthPayload = z.infer<typeof claPayloadSchema>;
 
 function requireClaConfig() {
+  const claAuthHost = process.env.CLA_AUTH_HOST;
+  const claAuthIdentifier = process.env.CLA_AUTH_IDENTIFIER;
   if (!claAuthHost || !claAuthIdentifier) {
     throw new ClaAuthError("CLA_AUTH_HOST ou CLA_AUTH_IDENTIFIER manquant.");
   }
