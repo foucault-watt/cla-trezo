@@ -85,7 +85,10 @@ model Asso {
   slug      String     @unique
   name      String
   status    AssoStatus
-  type      AssoType
+  // Null tant qu'un Admin n'a pas classifié la Structure (Club / Commission /
+  // Association loi 1901) : les Structures créées à la volée depuis la sync
+  // CLA SSO n'ont pas cette information, cf. lib/auth/cla.ts.
+  type      AssoType?
   createdAt DateTime   @default(now()) @map("created_at")
 
   memberships        RefAssoUser[]

@@ -2,47 +2,56 @@
 // Status is a fixed-width dot at the start (never variable-width text there,
 // since that would shift every column after it) and the full text badge
 // moves to the end of the row, where its width can vary safely.
-import { mockAssociations, statutBadgeClass, statutDotClass, statutLabel } from "./data";
+import Link from "next/link";
+import {
+  assoStatusBadgeClass,
+  assoStatusDotClass,
+  assoStatusLabel,
+} from "@/lib/admin/asso-labels";
+import type { AssoOverview } from "@/lib/admin/associations";
+import { AssoSoldeCell } from "./asso-solde-cell";
+import { AssoTypeAlert } from "./asso-type-alert";
 
-const currency = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
-
-export function ListView() {
+export function ListView({ associations }: { associations: AssoOverview[] }) {
   return (
     <div className="overflow-hidden rounded-box border border-base-300">
-      {mockAssociations.map((asso, i) => (
-        <div
-          key={asso.slug}
-          className={`flex items-center gap-3 px-4 py-2.5 ${
+      {associations.map((asso, i) => (
+        <Link
+          key={asso.id}
+          href={`/app/admin/associations/${asso.slug}`}
+          className={`flex items-center gap-3 px-4 py-2.5 hover:bg-base-300/40 ${
             i % 2 === 1 ? "bg-base-200/60" : "bg-base-100"
           }`}
         >
           <span
-            className={`size-2.5 shrink-0 rounded-full ${statutDotClass[asso.statut]}`}
+            className={`size-2.5 shrink-0 rounded-full ${assoStatusDotClass[asso.status]}`}
             aria-hidden
           />
           <div className="min-w-0 flex-1">
-            <div className="truncate font-medium">{asso.name}</div>
+            <div className="flex items-center gap-2">
+              <span className="truncate font-medium">{asso.name}</span>
+              <AssoTypeAlert type={asso.type} />
+            </div>
             <div className="truncate text-xs text-base-content/60 sm:hidden">
-              {asso.subventionsEnCours} subvention(s) · {asso.facturesEnAttente} facture(s)
+              {asso.subventionsPubliees} subvention(s) ·{" "}
+              {asso.facturesEnAttente} facture(s)
             </div>
           </div>
           <div className="hidden w-28 shrink-0 text-right text-sm text-base-content/70 sm:block">
-            {asso.subventionsEnCours} subv.
+            {asso.subventionsPubliees} subv.
           </div>
           <div className="hidden w-32 shrink-0 text-right text-sm text-base-content/70 sm:block">
             {asso.facturesEnAttente} facture(s)
           </div>
-          <div
-            className={`w-24 shrink-0 text-right font-semibold ${
-              asso.solde < 0 ? "text-error" : ""
-            }`}
-          >
-            {currency.format(asso.solde)}
+          <div className="w-28 shrink-0 text-right">
+            <AssoSoldeCell solde={asso.solde} />
           </div>
-          <span className={`badge shrink-0 ${statutBadgeClass[asso.statut]}`}>
-            {statutLabel[asso.statut]}
+          <span
+            className={`badge shrink-0 ${assoStatusBadgeClass[asso.status]}`}
+          >
+            {assoStatusLabel[asso.status]}
           </span>
-        </div>
+        </Link>
       ))}
     </div>
   );

@@ -97,7 +97,8 @@ export async function syncUserFromCla(
     });
 
     const slugs = payload.associationRoles.map((r) => r.associationSlug);
-    console.log(`[CLA] Synchronisation des rôles pour l'utilisateur ${user.username} : ${slugs.join(", ")}`,
+    console.log(
+      `[CLA] Synchronisation des rôles pour l'utilisateur ${user.username} : ${slugs.join(", ")}`,
     );
 
     const currentRoles: { role: string; asso: AssoModel }[] = [];
@@ -108,7 +109,9 @@ export async function syncUserFromCla(
         create: {
           slug: entry.associationSlug,
           name: entry.associationName,
-          type: "CLUB",
+          // type volontairement absent : CLA SSO ne dit pas si c'est un
+          // Club, une Commission ou une Association loi 1901, un Admin doit
+          // le classifier (cf. lib/admin/asso-type.ts).
           status: "ACTIVE",
           createdAt: new Date(),
         },

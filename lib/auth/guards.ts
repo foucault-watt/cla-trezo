@@ -1,10 +1,16 @@
 import { notFound, redirect } from "next/navigation";
-import { resolveStructureAccess, type StructureAccess } from "@/lib/auth/access";
+import {
+  resolveStructureAccess,
+  type StructureAccess,
+} from "@/lib/auth/access";
 import { prisma } from "@/lib/prisma";
 import { getSession, type SessionUser } from "@/lib/session";
 
 async function lookupAssoBySlug(slug: string) {
-  return prisma.asso.findUnique({ where: { slug }, select: { id: true, name: true } });
+  return prisma.asso.findUnique({
+    where: { slug },
+    select: { id: true, name: true },
+  });
 }
 
 /**
@@ -17,7 +23,11 @@ export async function requireStructureAccess(
   assoSlug: string,
 ): Promise<{ structure: StructureAccess; user: SessionUser }> {
   const session = await getSession();
-  const result = await resolveStructureAccess(session.user, assoSlug, lookupAssoBySlug);
+  const result = await resolveStructureAccess(
+    session.user,
+    assoSlug,
+    lookupAssoBySlug,
+  );
 
   if (!result.ok) {
     if (result.reason === "unauthenticated") {
@@ -40,4 +50,17 @@ export async function requireUser(): Promise<SessionUser> {
     redirect("/login");
   }
   return session.user;
+}
+
+/**
+ * Garde-fou pour l'espace admin : redirige vers /login si non connecté,
+ * 404 si connecté mais pas Admin (pas de redirection vers l'espace membre
+ * ici, ce choix est fait une fois au login/à la racine de /app).
+ */
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!user.isAdmin) {
+    notFound();
+  }
+  return user;
 }

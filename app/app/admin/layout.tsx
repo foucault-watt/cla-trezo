@@ -2,13 +2,29 @@ import { Building2, Receipt, HandCoins, FileText } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
-import { getSession } from "@/lib/session";
+import { requireAdmin } from "@/lib/auth/guards";
 
 const navItems = [
-  { href: "/app/admin/associations", label: "Associations", icon: <Building2 size={18} /> },
-  { href: "/app/admin/factures", label: "Factures", icon: <Receipt size={18} /> },
-  { href: "/app/admin/subventions", label: "Subventions", icon: <HandCoins size={18} /> },
-  { href: "/app/admin/rapports", label: "Rapports", icon: <FileText size={18} /> },
+  {
+    href: "/app/admin/associations",
+    label: "Associations",
+    icon: <Building2 size={18} />,
+  },
+  {
+    href: "/app/admin/factures",
+    label: "Factures",
+    icon: <Receipt size={18} />,
+  },
+  {
+    href: "/app/admin/subventions",
+    label: "Subventions",
+    icon: <HandCoins size={18} />,
+  },
+  {
+    href: "/app/admin/rapports",
+    label: "Rapports",
+    icon: <FileText size={18} />,
+  },
 ];
 
 export default async function AdminLayout({
@@ -16,21 +32,23 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getSession();
+  const user = await requireAdmin();
 
   const footerSlot = (
     <div>
-      {session.user && (
-        <p className="px-2 pb-2 text-sm font-medium">
-          {session.user.firstname} {session.user.lastname}
-        </p>
-      )}
+      <p className="px-2 pb-2 text-sm font-medium">
+        {user.firstname} {user.lastname}
+      </p>
       <LogoutButton />
     </div>
   );
 
   return (
-    <SidebarDrawer navItems={navItems} rootLabel="Administration" footerSlot={footerSlot}>
+    <SidebarDrawer
+      navItems={navItems}
+      rootLabel="Administration"
+      footerSlot={footerSlot}
+    >
       <SectionBreadcrumbs root="Administration" items={navItems} />
       {children}
     </SidebarDrawer>

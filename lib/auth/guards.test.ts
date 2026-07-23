@@ -1,22 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SessionUser } from "@/lib/session";
 
-const { getSessionMock, findUniqueMock, redirectMock, notFoundMock } = vi.hoisted(() => ({
-  getSessionMock: vi.fn(),
-  findUniqueMock: vi.fn(),
-  redirectMock: vi.fn(() => {
-    throw new Error("REDIRECT");
-  }),
-  notFoundMock: vi.fn(() => {
-    throw new Error("NOT_FOUND");
-  }),
-}));
+const { getSessionMock, findUniqueMock, redirectMock, notFoundMock } =
+  vi.hoisted(() => ({
+    getSessionMock: vi.fn(),
+    findUniqueMock: vi.fn(),
+    redirectMock: vi.fn(() => {
+      throw new Error("REDIRECT");
+    }),
+    notFoundMock: vi.fn(() => {
+      throw new Error("NOT_FOUND");
+    }),
+  }));
 
 vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
-vi.mock("@/lib/prisma", () => ({ prisma: { asso: { findUnique: findUniqueMock } } }));
-vi.mock("next/navigation", () => ({ redirect: redirectMock, notFound: notFoundMock }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: { asso: { findUnique: findUniqueMock } },
+}));
+vi.mock("next/navigation", () => ({
+  redirect: redirectMock,
+  notFound: notFoundMock,
+}));
 
-const { requireStructureAccess, requireUser } = await import("./guards");
+const { requireStructureAccess, requireUser, requireAdmin } =
+  await import("./guards");
 
 const member: SessionUser = {
   id: "user-1",
@@ -24,7 +31,9 @@ const member: SessionUser = {
   firstname: "Jean",
   lastname: "Dupont",
   isAdmin: false,
-  structures: [{ assoId: "asso-cla", slug: "cla", name: "CLA", role: "membre" }],
+  structures: [
+    { assoId: "asso-cla", slug: "cla", name: "CLA", role: "membre" },
+  ],
 };
 
 const admin: SessionUser = {
@@ -56,7 +65,9 @@ describe("requireStructureAccess", () => {
   it("renvoie 404 si la Structure ne fait pas partie des memberships de l'utilisateur", async () => {
     getSessionMock.mockResolvedValue({ user: member });
 
-    await expect(requireStructureAccess("une-autre-structure")).rejects.toThrow("NOT_FOUND");
+    await expect(requireStructureAccess("une-autre-structure")).rejects.toThrow(
+      "NOT_FOUND",
+    );
 
     expect(notFoundMock).toHaveBeenCalled();
     expect(redirectMock).not.toHaveBeenCalled();
@@ -69,7 +80,12 @@ describe("requireStructureAccess", () => {
     const result = await requireStructureAccess("cla");
 
     expect(result).toEqual({
-      structure: { assoId: "asso-cla", slug: "cla", name: "CLA", role: "membre" },
+      structure: {
+        assoId: "asso-cla",
+        slug: "cla",
+        name: "CLA",
+        role: "membre",
+      },
       user: member,
     });
     expect(findUniqueMock).not.toHaveBeenCalled();
@@ -77,7 +93,10 @@ describe("requireStructureAccess", () => {
 
   it("laisse passer un Admin sur n'importe quelle Structure existante", async () => {
     getSessionMock.mockResolvedValue({ user: admin });
-    findUniqueMock.mockResolvedValue({ id: "asso-other", name: "Autre Structure" });
+    findUniqueMock.mockResolvedValue({
+      id: "asso-other",
+      name: "Autre Structure",
+    });
 
     const result = await requireStructureAccess("une-autre-structure");
 
@@ -86,7 +105,12 @@ describe("requireStructureAccess", () => {
       select: { id: true, name: true },
     });
     expect(result).toEqual({
-      structure: { assoId: "asso-other", slug: "une-autre-structure", name: "Autre Structure", role: null },
+      structure: {
+        assoId: "asso-other",
+        slug: "une-autre-structure",
+        name: "Autre Structure",
+        role: null,
+      },
       user: admin,
     });
   });
@@ -95,7 +119,9 @@ describe("requireStructureAccess", () => {
     getSessionMock.mockResolvedValue({ user: admin });
     findUniqueMock.mockResolvedValue(null);
 
-    await expect(requireStructureAccess("inexistante")).rejects.toThrow("NOT_FOUND");
+    await expect(requireStructureAccess("inexistante")).rejects.toThrow(
+      "NOT_FOUND",
+    );
 
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -114,5 +140,30 @@ describe("requireUser", () => {
     getSessionMock.mockResolvedValue({ user: member });
 
     await expect(requireUser()).resolves.toEqual(member);
+  });
+});
+
+describe("requireAdmin", () => {
+  it("redirige vers /login si non connecté", async () => {
+    getSessionMock.mockResolvedValue({ user: undefined });
+
+    await expect(requireAdmin()).rejects.toThrow("REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/login");
+    expect(notFoundMock).not.toHaveBeenCalled();
+  });
+
+  it("renvoie 404 si connecté mais pas Admin", async () => {
+    getSessionMock.mockResolvedValue({ user: member });
+
+    await expect(requireAdmin()).rejects.toThrow("NOT_FOUND");
+
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("renvoie l'utilisateur si Admin", async () => {
+    getSessionMock.mockResolvedValue({ user: admin });
+
+    await expect(requireAdmin()).resolves.toEqual(admin);
   });
 });

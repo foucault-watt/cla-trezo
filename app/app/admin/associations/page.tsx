@@ -1,3 +1,4 @@
+import { listAssociations } from "@/lib/admin/associations";
 import { StatsBar } from "./_components/stats-bar";
 import { ViewToggle } from "./_components/view-toggle";
 import { ListView } from "./_components/list-view";
@@ -10,6 +11,7 @@ export default async function AssociationsPage({
 }) {
   const { view } = await searchParams;
   const current = view === "grid" ? "grid" : "list";
+  const associations = await listAssociations();
 
   return (
     <div>
@@ -22,13 +24,16 @@ export default async function AssociationsPage({
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle current={current} />
-          <button className="btn">Nouvelle association</button>
         </div>
       </div>
 
-      <StatsBar />
+      <StatsBar associations={associations} />
 
-      {current === "list" ? <ListView /> : <GridView />}
+      {current === "list" ? (
+        <ListView associations={associations} />
+      ) : (
+        <GridView associations={associations} />
+      )}
     </div>
   );
 }
