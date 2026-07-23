@@ -1,4 +1,7 @@
-// Row-based (not a literal <table>), dense, zebra-striped.
+// Row-based (not a literal <table>), dense, zebra-striped. The container is
+// its own elevated surface (bg-base-100 + shadow-md + border-base-300) so it
+// reads as a distinct object sitting on the page canvas, matching the stats
+// bar and the grid view.
 // Status is a fixed-width dot at the start (never variable-width text there,
 // since that would shift every column after it) and the full text badge
 // moves to the end of the row, where its width can vary safely.
@@ -14,13 +17,13 @@ import { AssoTypeAlert } from "./asso-type-alert";
 
 export function ListView({ associations }: { associations: AssoOverview[] }) {
   return (
-    <div className="overflow-hidden rounded-box border border-base-300">
+    <div className="overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-md">
       {associations.map((asso, i) => (
         <Link
           key={asso.id}
           href={`/app/admin/associations/${asso.slug}`}
           className={`flex items-center gap-3 px-4 py-2.5 hover:bg-base-300/40 ${
-            i % 2 === 1 ? "bg-base-200/60" : "bg-base-100"
+            i % 2 === 1 ? "bg-base-200/60" : ""
           }`}
         >
           <span

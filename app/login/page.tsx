@@ -12,8 +12,8 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center">
-      <div className="card w-full max-w-sm bg-base-100 shadow">
+    <div className="flex flex-1 items-center justify-center bg-base-200">
+      <div className="card w-full max-w-sm border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">
           <h1 className="card-title">Connexion</h1>
           <p className="alert alert-error text-sm">{error}</p>

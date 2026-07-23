@@ -44,12 +44,49 @@ Two ways to respect this:
 The list view on the associations page does both: a dot at the start, the
 descriptive badge at the end.
 
-## Card contrast
+## Elevation: base-100 / base-200 / base-300
 
-A `card` sitting directly on the page background with only `card-border`
-reads as flat. Give the grid a tinted backing (`bg-base-200/60` wrapper) and
-put a real `shadow-md` + `border-base-300` on each card so cards read as
-distinct surfaces, not just outlined boxes.
+Neither daisyUI's `card` nor `stats` sets its own background — both are
+transparent by default. Without an explicit `bg-*`, they just show whatever
+is behind them, which is why a page can look flat even with borders and
+shadows on everything: border + shadow with no background contrast reads as
+barely-there.
+
+The fix is a three-step ladder, applied consistently:
+- **Canvas** (`bg-base-200`) — set once, at the layout level
+  (`components/nav/sidebar-drawer.tsx`'s `<main>`), not per-page. This is the
+  "floor" everything else sits on.
+- **Surface** (`bg-base-100` + `border border-base-300` + `shadow-md`) — every
+  card, stats bar, and list container gets all three. The background makes it
+  visually solid, the border gives it a crisp edge, the shadow lifts it off
+  the canvas. Missing any one of the three and it looks flat again.
+- **Divider / zebra** (`base-300` for borders and dividers, `base-200` for
+  zebra-striping *inside* an already-elevated surface) — reserve `base-300`
+  for lines that need to be visible against either base-100 or base-200.
+
+Don't stack tinted wrappers (e.g. a `bg-base-200/60` div around a grid of
+`bg-base-100` cards) once the canvas itself is already `base-200` — that was
+the earlier approach in the grid view and became redundant/muddy once the
+canvas got its own tone. One layer of "floor" is enough; let the cards' own
+`shadow-md` do the lifting.
+
+The sidebar/nav chrome is the one exception: it stays `bg-base-100` (not
+canvas-toned) with a `border-base-300` edge, so it always reads as distinct
+chrome rather than another content surface.
+
+This ladder is applied everywhere there's a canvas + surface relationship,
+not just the associations pages: the admin section (via `SidebarDrawer`),
+the member `[assoSlug]` section (same shared component), the structure
+picker at `/app`, and the `/login` card.
+
+**Don't rely on daisyUI's `card-border` modifier** — it hardcodes
+`border-color: var(--color-base-200)`, which is invisible once the page
+canvas is `base-200` (the border and the background it sits on become the
+same color). Use `border border-base-300` instead, same as everywhere else
+in this ladder. This bit us once already (`grid-view.tsx`, `solde-card.tsx`,
+`manual-movement-form.tsx`, `asso-type-picker.tsx` all used bare
+`card-border` and went invisible) — grep for `card-border` before adding a
+new card and swap it for the explicit border.
 
 ## Page structure (list-style admin pages)
 

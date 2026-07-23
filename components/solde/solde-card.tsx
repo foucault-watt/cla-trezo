@@ -13,7 +13,7 @@ export function SoldeCard({
 }) {
   if (solde.status === "not_initialized") {
     return (
-      <div className="card card-border mt-4 bg-base-100">
+      <div className="card mt-2 border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">
           <h2 className="card-title">Solde</h2>
           <div role="alert" className="alert alert-info alert-soft">
@@ -28,7 +28,7 @@ export function SoldeCard({
   }
 
   return (
-    <div className="card card-border mt-4 bg-base-100">
+    <div className="card border border-base-300 bg-base-100 shadow-md">
       <div className="card-body">
         <h2 className="card-title">Solde</h2>
 

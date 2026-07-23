@@ -41,7 +41,7 @@ function AssoTypeCard({
 
   return (
     <div
-      className={`card card-border bg-base-100 ${isCurrent ? "border-primary" : ""}`}
+      className={`card border bg-base-100 shadow-md ${isCurrent ? "border-primary" : "border-base-300"}`}
     >
       <div className="card-body">
         <div className="flex items-center gap-2">

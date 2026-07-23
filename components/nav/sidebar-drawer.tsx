@@ -25,8 +25,8 @@ export function SidebarDrawer({
   return (
     <div className="drawer lg:drawer-open flex-1">
       <input id="app-nav-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-1 flex-col">
-        <div className="flex items-center gap-2 border-b border-base-200 p-3 lg:hidden">
+      <div className="drawer-content flex flex-1 flex-col bg-base-200">
+        <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3 lg:hidden">
           <label htmlFor="app-nav-drawer" className="btn btn-square btn-ghost btn-sm drawer-button">
             <Menu size={18} />
           </label>
@@ -36,7 +36,7 @@ export function SidebarDrawer({
       </div>
       <div className="drawer-side z-40">
         <label htmlFor="app-nav-drawer" aria-label="Fermer le menu" className="drawer-overlay" />
-        <aside className="flex h-full w-64 flex-col border-r border-base-200 bg-base-100 p-4">
+        <aside className="flex h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
           <p className="mb-4 truncate px-2 text-sm font-semibold text-base-content/70">
             {rootLabel}
           </p>

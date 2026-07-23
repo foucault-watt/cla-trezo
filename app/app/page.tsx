@@ -7,7 +7,7 @@ export default async function AppHomePage() {
   const user = session.user!;
 
   return (
-    <div className="flex flex-1 flex-col items-center gap-8 p-6">
+    <div className="flex flex-1 flex-col items-center gap-8 bg-base-200 p-6">
       <div className="text-center">
         <h1 className="text-3xl font-semibold">Bonjour {user.firstname}</h1>
         <p className="mt-2 text-base-content/70">
@@ -31,7 +31,7 @@ export default async function AppHomePage() {
             <Link
               key={structure.assoId}
               href={`/app/${structure.slug}`}
-              className="card min-h-40 items-center justify-center bg-base-100 text-center shadow transition hover:shadow-lg"
+              className="card min-h-40 items-center justify-center border border-base-300 bg-base-100 text-center shadow-md transition hover:shadow-lg"
             >
               <div className="card-body items-center justify-center">
                 <Building2 className="text-base-content/60" size={28} />

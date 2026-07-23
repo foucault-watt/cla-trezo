@@ -51,7 +51,7 @@ export default async function AdminAssociationDetailPage({
         </div>
       ) : (
         <>
-          <div className="stats stats-vertical mt-6 w-full border border-base-300 shadow-md sm:stats-horizontal">
+          <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
             <div className="stat">
               <div className="stat-title">Subventions publiées</div>
               <div className="stat-value text-2xl">

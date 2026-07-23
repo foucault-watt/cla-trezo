@@ -20,7 +20,7 @@ export function StatsBar({ associations }: { associations: AssoOverview[] }) {
   );
 
   return (
-    <div className="stats stats-vertical mb-6 w-full border border-base-300 shadow-md sm:stats-horizontal">
+    <div className="stats stats-vertical mb-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
       <div className="stat">
         <div className="stat-title">Solde total des Clubs</div>
         <div className="stat-value text-2xl">

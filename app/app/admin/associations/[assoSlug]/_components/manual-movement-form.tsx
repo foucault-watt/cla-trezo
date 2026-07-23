@@ -22,7 +22,7 @@ export function ManualMovementForm({
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="card card-border bg-base-100">
+    <div className="card border border-base-300 bg-base-100 shadow-md">
       <div className="card-body">
         <h2 className="card-title">Entrée / sortie manuelle</h2>
         <p className="text-sm text-base-content/70">
