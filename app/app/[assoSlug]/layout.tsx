@@ -1,10 +1,9 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftRight, LayoutDashboard, Receipt, HandCoins } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
-import { getSession } from "@/lib/session";
+import { requireStructureAccess } from "@/lib/auth/guards";
 
 export default async function MemberLayout({
   children,
@@ -14,12 +13,7 @@ export default async function MemberLayout({
   params: Promise<{ assoSlug: string }>;
 }>) {
   const { assoSlug } = await params;
-  const session = await getSession();
-  const structure = session.user?.structures.find((s) => s.slug === assoSlug);
-
-  if (!structure) {
-    notFound();
-  }
+  const { structure, user } = await requireStructureAccess(assoSlug);
 
   const navItems = [
     {
@@ -41,17 +35,15 @@ export default async function MemberLayout({
 
   const footerSlot = (
     <div>
-      {session.user && session.user.structures.length > 1 && (
+      {user.structures.length > 1 && (
         <Link href="/app" className="btn btn-ghost btn-sm w-full justify-start gap-2">
           <ArrowLeftRight size={18} />
           Changer de structure
         </Link>
       )}
-      {session.user && (
-        <p className="px-2 pb-2 text-sm font-medium">
-          {session.user.firstname} {session.user.lastname}
-        </p>
-      )}
+      <p className="px-2 pb-2 text-sm font-medium">
+        {user.firstname} {user.lastname}
+      </p>
       <LogoutButton />
     </div>
   );
