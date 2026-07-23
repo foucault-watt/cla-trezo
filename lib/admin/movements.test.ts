@@ -130,6 +130,49 @@ describe("addManualMovementAction", () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it("crée un FinancialMovement MANUAL/DEBIT (sortie) pour un Club", async () => {
+    findUniqueMock.mockResolvedValue({ type: "CLUB" });
+
+    const result = await addManualMovementAction(
+      { ok: false },
+      formData({ ...valid, movementType: "DEBIT" }),
+    );
+
+    expect(createMock).toHaveBeenCalledWith({
+      data: {
+        assoId: valid.assoId,
+        movementType: "DEBIT",
+        accountType: "CLUB_BALANCE",
+        origin: "MANUAL",
+        amountCents: 15050,
+        description: valid.description,
+        createdBy: admin.id,
+        createdAt: new Date(valid.date),
+      },
+    });
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("ignore tout subventionId injecté dans le formulaire : une sortie/entrée manuelle ne finance jamais une Subvention", async () => {
+    findUniqueMock.mockResolvedValue({ type: "CLUB" });
+
+    const result = await addManualMovementAction(
+      { ok: false },
+      formData({
+        ...valid,
+        movementType: "DEBIT",
+        subventionId: "22222222-2222-2222-8222-222222222222",
+      }),
+    );
+
+    expect(createMock).toHaveBeenCalledWith({
+      data: expect.not.objectContaining({
+        subventionId: expect.anything(),
+      }),
+    });
+    expect(result).toEqual({ ok: true });
+  });
+
   it("enregistre le mouvement à la date choisie par l'admin, pas à la date de saisie", async () => {
     findUniqueMock.mockResolvedValue({ type: "CLUB" });
 
