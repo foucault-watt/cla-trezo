@@ -26,6 +26,7 @@ enum ExpenseReportStatus {
   SUBMITTED
   TAKEN_OVER
   FINALIZED
+  REJECTED
 }
 
 enum FundingSourceType {
@@ -38,6 +39,21 @@ enum SupportingDocumentType {
   HONOR_STATEMENT
 }
 
+enum FinancialMovementType {
+  CREDIT
+  DEBIT
+}
+
+enum FinancialAccountType {
+  CLUB_BALANCE
+  SUBVENTION
+}
+
+enum FinancialMovementOrigin {
+  MANUAL
+  EXPENSE_REPORT
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -47,12 +63,13 @@ model User {
   lastname  String
   isAdmin   Boolean  @default(false)
   group     String?
-  createdAt DateTime @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  memberships          RefAssoUser[]
-  logs                 UserLog[]
-  createdExpenseReports ExpenseReport[] @relation("CreatedBy")
-  takenExpenseReports   ExpenseReport[] @relation("TakenByAdmin")
+  memberships               RefAssoUser[]
+  logs                      UserLog[]
+  createdExpenseReports     ExpenseReport[]     @relation("CreatedBy")
+  takenExpenseReports       ExpenseReport[]     @relation("TakenByAdmin")
+  createdFinancialMovements FinancialMovement[]
 
   @@map("user")
 }
@@ -63,73 +80,68 @@ model Asso {
   name      String
   status    AssoStatus
   type      AssoType
-  createdAt DateTime   @map("created_at")
+  createdAt DateTime   @default(now()) @map("created_at")
 
-  memberships    RefAssoUser[]
-  expenseReports ExpenseReport[]
-  subventions    SubventionAsso[]
+  memberships        RefAssoUser[]
+  expenseReports     ExpenseReport[]
+  subventions        Subvention[]
+  financialMovements FinancialMovement[]
 
   @@map("asso")
 }
 
 model RefAssoUser {
-  id       String  @id @default(uuid()) @db.Uuid
-  userId   String  @map("user_id") @db.Uuid
-  assoId   String  @map("asso_id") @db.Uuid
-  role     String
-  isActive Boolean @default(true) @map("is_active")
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  assoId    String    @map("asso_id") @db.Uuid
+  role      String
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  endedAt   DateTime? @map("ended_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   asso Asso @relation(fields: [assoId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, assoId])
   @@map("ref_asso_user")
 }
 
 model UserLog {
   id          String   @id @default(uuid()) @db.Uuid
   userId      String   @map("user_id") @db.Uuid
-  connectedAt DateTime @map("connected_at")
+  connectedAt DateTime @default(now()) @map("connected_at")
 
   user User @relation(fields: [userId], references: [id])
 
   @@map("user_log")
 }
 
-model Subvention {
-  id   String   @id @default(uuid()) @db.Uuid
-  type String
-  name String
-  date DateTime @db.Date
+model SubventionCampaign {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String
+  date            DateTime  @db.Date
+  publicationDate DateTime? @map("publication_date")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
-  assos SubventionAsso[]
+  subventions Subvention[]
+
+  @@map("subvention_campaign")
+}
+
+model Subvention {
+  id          String   @id @default(uuid()) @db.Uuid
+  campaignId  String   @map("campaign_id") @db.Uuid
+  assoId      String   @map("asso_id") @db.Uuid
+  reason      String
+  amountCents Int      @map("amount_cents")
+  commentary  String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  campaign           SubventionCampaign  @relation(fields: [campaignId], references: [id])
+  asso               Asso                @relation(fields: [assoId], references: [id])
+  expenseReportLines ExpenseReportLine[]
+  financialMovements FinancialMovement[]
 
   @@map("subvention")
-}
-
-model SubventionAsso {
-  id           String  @id @default(uuid()) @db.Uuid
-  subventionId String  @map("subvention_id") @db.Uuid
-  assoId       String  @map("asso_id") @db.Uuid
-  commentary   String?
-
-  subvention         Subvention          @relation(fields: [subventionId], references: [id])
-  asso               Asso                @relation(fields: [assoId], references: [id])
-  lines              SubventionAssoLine[]
-  expenseReportLines ExpenseReportLine[]
-
-  @@map("subvention_asso")
-}
-
-model SubventionAssoLine {
-  id               String @id @default(uuid()) @db.Uuid
-  subventionAssoId String @map("subvention_asso_id") @db.Uuid
-  amount           Int
-  reason           String
-
-  subventionAsso SubventionAsso @relation(fields: [subventionAssoId], references: [id])
-
-  @@map("subvention_asso_line")
 }
 
 model ExpenseReport {
@@ -138,19 +150,19 @@ model ExpenseReport {
   createdBy      String              @map("created_by") @db.Uuid
   title          String
   description    String?
-  status         ExpenseReportStatus
+  status         ExpenseReportStatus @default(DRAFT)
   takenByAdminId String?             @map("taken_by_admin_id") @db.Uuid
   takenAt        DateTime?           @map("taken_at")
   submittedAt    DateTime?           @map("submitted_at")
   finalizedAt    DateTime?           @map("finalized_at")
   finalPdfPath   String?             @map("final_pdf_path")
-  createdAt      DateTime            @map("created_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @updatedAt @map("updated_at")
 
-  asso               Asso               @relation(fields: [assoId], references: [id])
-  creator            User               @relation("CreatedBy", fields: [createdBy], references: [id])
-  takenByAdmin       User?              @relation("TakenByAdmin", fields: [takenByAdminId], references: [id])
-  lines              ExpenseReportLine[]
+  asso                Asso                 @relation(fields: [assoId], references: [id])
+  creator             User                 @relation("CreatedBy", fields: [createdBy], references: [id])
+  takenByAdmin        User?                @relation("TakenByAdmin", fields: [takenByAdminId], references: [id])
+  lines               ExpenseReportLine[]
   supportingDocuments SupportingDocument[]
 
   @@map("expense_report")
@@ -162,15 +174,16 @@ model ExpenseReportLine {
   beneficiaryFirstname String            @map("beneficiary_firstname")
   beneficiaryLastname  String            @map("beneficiary_lastname")
   iban                 String?
-  amount               Int
+  amountCents          Int               @map("amount_cents")
   category             String
   fundingSource        FundingSourceType @map("funding_source")
-  subventionAssoId     String?           @map("subvention_asso_id") @db.Uuid
-  createdAt            DateTime          @map("created_at")
+  subventionId         String?           @map("subvention_id") @db.Uuid
+  createdAt            DateTime          @default(now()) @map("created_at")
   updatedAt            DateTime          @updatedAt @map("updated_at")
 
-  expenseReport  ExpenseReport   @relation(fields: [expenseReportId], references: [id])
-  subventionAsso SubventionAsso? @relation(fields: [subventionAssoId], references: [id])
+  expenseReport     ExpenseReport      @relation(fields: [expenseReportId], references: [id])
+  subvention        Subvention?        @relation(fields: [subventionId], references: [id])
+  financialMovement FinancialMovement?
 
   @@map("expense_report_line")
 }
@@ -182,9 +195,262 @@ model SupportingDocument {
   filePath         String                 @map("file_path")
   originalFilename String                 @map("original_filename")
   mimeType         String                 @map("mime_type")
-  createdAt        DateTime               @map("created_at")
+  createdAt        DateTime               @default(now()) @map("created_at")
 
   expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id])
 
   @@map("supporting_document")
 }
+
+model FinancialMovement {
+  id           String                  @id @default(uuid()) @db.Uuid
+  assoId       String                  @map("asso_id") @db.Uuid
+  movementType FinancialMovementType   @map("movement_type")
+  accountType  FinancialAccountType    @map("account_type")
+  origin       FinancialMovementOrigin
+  amountCents  Int                     @map("amount_cents")
+
+  subventionId        String? @map("subvention_id") @db.Uuid
+  expenseReportLineId String? @unique @map("expense_report_line_id") @db.Uuid
+  createdBy           String  @map("created_by") @db.Uuid
+
+  category    String?
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  asso              Asso               @relation(fields: [assoId], references: [id])
+  subvention        Subvention?        @relation(fields: [subventionId], references: [id])
+  expenseReportLine ExpenseReportLine? @relation(fields: [expenseReportLineId], references: [id])
+  creator           User               @relation(fields: [createdBy], references: [id])
+
+  @@map("financial_movement")
+}
+
+// ─────────────────────────────────────────────
+// Mise à jour du schéma :
+
+// Enum asso_type {
+//   CLUB
+//   COMMISSION
+//   ASSOCIATION_1901
+// }
+
+// Enum asso_status {
+//   ACTIVE
+//   INACTIVE
+//   ARCHIVED
+// }
+
+// Enum expense_report_status {
+//   DRAFT
+//   SUBMITTED
+//   TAKEN_OVER
+//   FINALIZED
+//   REJECTED
+// }
+
+// Enum funding_source_type {
+//   CLUB_BALANCE
+//   SUBVENTION
+// }
+
+// Enum supporting_document_type {
+//   RECEIPT
+//   HONOR_STATEMENT
+// }
+
+// Enum financial_movement_type {
+//   CREDIT
+//   DEBIT
+// }
+
+// Enum financial_account_type {
+//   CLUB_BALANCE
+//   SUBVENTION
+// }
+
+// Enum financial_movement_origin {
+//   MANUAL
+//   EXPENSE_REPORT
+// }
+
+// // ─────────────────────────────────────────────
+// // UTILISATEURS ET ASSOCIATIONS
+// // ─────────────────────────────────────────────
+
+// Table user {
+//   id uuid [primary key]
+//   username varchar [not null, unique]
+//   firstname varchar [not null]
+//   lastname varchar [not null]
+//   is_admin boolean [not null, default: false]
+//   group varchar
+//   created_at timestamp [not null, default: `now()`]
+// }
+
+// Table asso {
+//   id uuid [primary key]
+//   slug varchar [not null, unique]
+//   name varchar [not null]
+//   status asso_status [not null]
+//   type asso_type [not null]
+//   created_at timestamp [not null, default: `now()`]
+// }
+
+// Table ref_asso_user {
+//   id uuid [primary key]
+//   user_id uuid [not null]
+//   asso_id uuid [not null]
+//   role varchar [not null]
+//   is_active boolean [not null, default: true]
+//   created_at timestamp [not null, default: `now()`]
+//   ended_at timestamp
+//   // pas de contrainte unique (user_id, asso_id) : historique multi-lignes possible
+//   // (changement de rôle, ancienne appartenance)
+// }
+
+// Table user_log {
+//   id uuid [primary key]
+//   user_id uuid [not null]
+//   connected_at timestamp [not null, default: `now()`]
+// }
+
+// // ─────────────────────────────────────────────
+// // CAMPAGNES ET SUBVENTIONS
+// // ─────────────────────────────────────────────
+
+// Table subvention_campaign {
+//   id uuid [primary key]
+//   name varchar [not null]
+//   date date [not null]
+//   publication_date timestamp
+//   created_at timestamp [not null, default: `now()`]
+// }
+
+// Table subvention {
+//   id uuid [primary key]
+//   campaign_id uuid [not null]
+//   asso_id uuid [not null]
+//   reason varchar [not null]
+//   amount_cents int [not null]
+//   commentary varchar
+//   created_at timestamp [not null, default: `now()`]
+// }
+
+// // ─────────────────────────────────────────────
+// // NOTES DE FRAIS
+// // ─────────────────────────────────────────────
+
+// Table expense_report {
+//   id uuid [primary key]
+//   asso_id uuid [not null]
+//   created_by uuid [not null]
+
+//   title varchar [not null]
+//   description varchar
+//   status expense_report_status [not null, default: 'DRAFT']
+//   // DRAFT | SUBMITTED | TAKEN_OVER | REJECTED : aucun mouvement financier
+//   // FINALIZED : chaque expense_report_line produit exactement un financial_movement
+
+//   taken_by_admin_id uuid
+//   taken_at timestamp
+//   submitted_at timestamp
+//   finalized_at timestamp
+
+//   final_pdf_path varchar
+
+//   created_at timestamp [not null, default: `now()`]
+//   updated_at timestamp [not null, default: `now()`]
+// }
+
+// Table expense_report_line {
+//   id uuid [primary key]
+//   expense_report_id uuid [not null]
+
+//   beneficiary_firstname varchar [not null]
+//   beneficiary_lastname varchar [not null]
+//   iban varchar
+
+//   amount_cents int [not null]
+//   category varchar [not null]
+
+//   funding_source funding_source_type [not null]
+//   subvention_id uuid
+
+//   created_at timestamp [not null, default: `now()`]
+//   updated_at timestamp [not null, default: `now()`]
+// }
+
+// Table supporting_document {
+//   id uuid [primary key]
+//   expense_report_id uuid [not null]
+
+//   type supporting_document_type [not null]
+//   file_path varchar [not null]
+//   original_filename varchar [not null]
+//   mime_type varchar [not null]
+
+//   created_at timestamp [not null, default: `now()`]
+// }
+
+// // ─────────────────────────────────────────────
+// // JOURNAL FINANCIER
+// // ─────────────────────────────────────────────
+
+// Table financial_movement {
+//   id uuid [primary key]
+//   asso_id uuid [not null]
+//   created_by uuid [not null]
+
+//   movement_type financial_movement_type [not null]
+//   account_type financial_account_type [not null]
+//   origin financial_movement_origin [not null]
+//   amount_cents int [not null]
+
+//   subvention_id uuid
+//   expense_report_line_id uuid [unique]
+
+//   category varchar
+//   description varchar
+
+//   created_at timestamp [not null, default: `now()`]
+
+//   // account_type = CLUB_BALANCE  => subvention_id doit être null, asso doit être un Club
+//   // account_type = SUBVENTION    => subvention_id est obligatoire
+//   // origin = MANUAL              => expense_report_line_id doit être null
+//   // origin = EXPENSE_REPORT      => expense_report_line_id est obligatoire, created_by = admin qui finalise
+//   // amount_cents >= 0, le sens est donné uniquement par movement_type
+//   // généré uniquement au passage d'une note de frais en FINALIZED, un mouvement par ligne, immuable
+//   //
+//   // Cohérence avec la expense_report_line d'origine (contrôlée en service métier,
+//   // à terme en contrainte SQL) :
+//   //   financial_movement.amount_cents  = expense_report_line.amount_cents
+//   //   financial_movement.account_type  = expense_report_line.funding_source
+//   //   financial_movement.subvention_id = expense_report_line.subvention_id
+// }
+
+// // ─────────────────────────────────────────────
+// // RELATIONS
+// // ─────────────────────────────────────────────
+
+// Ref: ref_asso_user.user_id > user.id [delete: cascade]
+// Ref: ref_asso_user.asso_id > asso.id [delete: cascade]
+
+// Ref: user_log.user_id > user.id
+
+// Ref: subvention.campaign_id > subvention_campaign.id
+// Ref: subvention.asso_id > asso.id
+
+// Ref: expense_report.asso_id > asso.id
+// Ref: expense_report.created_by > user.id
+// Ref: expense_report.taken_by_admin_id > user.id
+
+// Ref: expense_report_line.expense_report_id > expense_report.id
+// Ref: expense_report_line.subvention_id > subvention.id
+
+// Ref: supporting_document.expense_report_id > expense_report.id
+
+// Ref: financial_movement.asso_id > asso.id
+// Ref: financial_movement.created_by > user.id
+// Ref: financial_movement.subvention_id > subvention.id
+// Ref: financial_movement.expense_report_line_id - expense_report_line.id
