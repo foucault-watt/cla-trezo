@@ -1,0 +1,92 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth/guards";
+import { prisma } from "@/lib/prisma";
+import { toAmountCents } from "@/lib/money";
+import {
+  parseSubventionForm,
+  parseSubventionUpdateForm,
+} from "./subvention-input";
+
+export type AddSubventionState = { ok: boolean; error?: string };
+
+/**
+ * Ajoute une Subvention accordée à une Structure dans le cadre d'une
+ * Campagne existante. Une même Campagne peut porter plusieurs Subventions
+ * pour la même Structure (ex : deux demandes distinctes dans la même
+ * campagne CA Event) — pas de contrainte d'unicité.
+ */
+export async function addSubventionAction(
+  _prevState: AddSubventionState,
+  formData: FormData,
+): Promise<AddSubventionState> {
+  await requireAdmin();
+
+  const parsed = parseSubventionForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const campaign = await prisma.subventionCampaign.findUnique({
+    where: { id: parsed.data.campaignId },
+    select: { id: true },
+  });
+  if (!campaign) {
+    return { ok: false, error: "Campagne introuvable." };
+  }
+
+  await prisma.subvention.create({
+    data: {
+      campaignId: parsed.data.campaignId,
+      assoId: parsed.data.assoId,
+      reason: parsed.data.reason,
+      amountCents: toAmountCents(parsed.data.amount),
+      commentary: parsed.data.commentary,
+    },
+  });
+
+  revalidatePath(`/app/admin/subventions/${parsed.data.campaignId}`);
+  revalidatePath("/app/admin/subventions");
+
+  return { ok: true };
+}
+
+export type UpdateSubventionState = { ok: boolean; error?: string };
+
+/**
+ * Modifie une Subvention déjà accordée (raison, montant, commentaire). La
+ * Structure et la Campagne d'origine ne changent pas : seule la ligne
+ * accordée est corrigée, ex. en cas d'erreur de saisie.
+ */
+export async function updateSubventionAction(
+  _prevState: UpdateSubventionState,
+  formData: FormData,
+): Promise<UpdateSubventionState> {
+  await requireAdmin();
+
+  const parsed = parseSubventionUpdateForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  await prisma.subvention.update({
+    where: { id: parsed.data.id },
+    data: {
+      reason: parsed.data.reason,
+      amountCents: toAmountCents(parsed.data.amount),
+      commentary: parsed.data.commentary,
+    },
+  });
+
+  revalidatePath(`/app/admin/subventions/${parsed.data.campaignId}`);
+  revalidatePath("/app/admin/subventions");
+
+  return { ok: true };
+}

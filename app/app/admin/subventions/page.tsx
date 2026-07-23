@@ -1,10 +1,47 @@
-export default function AdminSubventionsPage() {
+import Link from "next/link";
+import { ViewToggle } from "@/components/nav/view-toggle";
+import { listSubventionCampaigns } from "@/lib/admin/subvention-campaigns";
+import { CampaignsListView } from "./_components/campaigns-list-view";
+import { CampaignsGridView } from "./_components/campaigns-grid-view";
+
+export default async function AdminSubventionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view } = await searchParams;
+  const current = view === "grid" ? "grid" : "list";
+  const campaigns = await listSubventionCampaigns();
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Subventions</h1>
-      <p className="mt-2 text-base-content/70">
-        Validation des demandes de subvention.
-      </p>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Subventions</h1>
+          <p className="mt-1 text-sm text-base-content/70">
+            Campagnes de subvention et Subventions accordées aux Structures.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ViewToggle current={current} />
+          <Link
+            href="/app/admin/subventions/nouvelle"
+            className="btn btn-primary"
+          >
+            Nouvelle campagne
+          </Link>
+        </div>
+      </div>
+
+      {campaigns.length === 0 ? (
+        <p className="text-base-content/70">
+          Aucune campagne pour l&apos;instant.
+        </p>
+      ) : current === "list" ? (
+        <CampaignsListView campaigns={campaigns} />
+      ) : (
+        <CampaignsGridView campaigns={campaigns} />
+      )}
     </div>
   );
 }

@@ -23,16 +23,15 @@ _Avoid_: association (seule, sans qualificatif — pour éviter la confusion ave
 Argent d'un Club géré par CLA, suivi dans l'application. Alimenté par des entrées manuelles et diminué par des sorties manuelles ou des Notes de frais financées dessus. Concerne uniquement les Clubs.
 _Avoid_: budget, trésorerie (trop génériques, mélangent Solde et Subvention)
 
+**Campagne de subvention**:
+Regroupement administratif de Subventions portant un même Type de subvention et une même période (ex: "CA Budget 2026"). Porte le Type de subvention et la date de publication communs à toutes ses Subventions. Créée par l'Admin, qui y ajoute ensuite une ou plusieurs Subventions, éventuellement plusieurs pour la même Structure.
+
 **Subvention**:
-Enveloppe financière accordée à une Structure (Club, Commission ou Association), toujours séparée du Solde — elle ne l'augmente jamais, même pour un Club. Composée d'une ou plusieurs Affectations, chacune avec son propre montant.
+Enveloppe financière accordée à une Structure (Club, Commission ou Association) au sein d'une Campagne de subvention, toujours séparée du Solde — elle ne l'augmente jamais, même pour un Club. Portée par une raison et un montant unique (pas de ventilation interne).
 _Avoid_: budget, aide, financement (trop génériques)
 
-**Affectation**:
-Ligne interne d'une Subvention associant une description (ex: matériel, transport) à un montant. La somme des Affectations d'une Subvention égale son montant total.
-_Avoid_: raison (terme du document source, trop ambigu — sonne comme une justification plutôt qu'une ligne budgétaire)
-
 **Type de subvention**:
-Classification fixe d'une Subvention : `CA Budget`, `CA Event`, `CA Exceptionnel`. Enum fixe dans le code, non personnalisable.
+Classification fixe d'une Campagne de subvention (et donc, par transitivité, de toutes ses Subventions) : `CA Budget`, `CA Event`, `CA Exceptionnel`. Enum fixe dans le code, non personnalisable. Porté par la Campagne, pas par la Subvention elle-même.
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de dépense)
 
 **Type de dépense**:
@@ -53,13 +52,15 @@ L'Admin a commencé à traiter la note. La Structure perd définitivement la mai
 **Validée**:
 Le PDF final a été généré. La note est immuable (cf. ADR-0003), le Solde et les Subventions concernées sont mis à jour, l'IBAN est supprimé (cf. ADR-0002).
 
-## Statuts d'une Subvention
+## Statuts d'une Campagne de subvention
+
+Statut dérivé de la date de publication de la Campagne (pas une colonne dédiée), partagé par toutes les Subventions qu'elle contient.
 
 **Programmée**:
-Date de publication future. Visible uniquement par l'Admin, pas encore utilisable par la Structure bénéficiaire.
+Date de publication absente ou future. Visible uniquement par l'Admin, pas encore utilisable par les Structures bénéficiaires de ses Subventions.
 
 **Publiée**:
-Visible et utilisable par la Structure bénéficiaire. Le montant restant (montant total moins montant utilisé) est une valeur calculée, pas un statut distinct — il n'y a pas de statut "Épuisée" séparé.
+Date de publication atteinte. Les Subventions de la Campagne sont visibles et utilisables par leurs Structures bénéficiaires respectives. Le montant restant d'une Subvention (montant total moins montant utilisé) est une valeur calculée, pas un statut distinct — il n'y a pas de statut "Épuisée" séparé.
 
 ## Mouvements de solde
 

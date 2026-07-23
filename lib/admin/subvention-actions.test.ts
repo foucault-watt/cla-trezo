@@ -1,0 +1,168 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const {
+  requireAdminMock,
+  campaignFindUniqueMock,
+  subventionCreateMock,
+  subventionUpdateMock,
+  revalidatePathMock,
+} = vi.hoisted(() => ({
+  requireAdminMock: vi.fn(),
+  campaignFindUniqueMock: vi.fn(),
+  subventionCreateMock: vi.fn(),
+  subventionUpdateMock: vi.fn(),
+  revalidatePathMock: vi.fn(),
+}));
+
+vi.mock("@/lib/auth/guards", () => ({ requireAdmin: requireAdminMock }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    subventionCampaign: { findUnique: campaignFindUniqueMock },
+    subvention: { create: subventionCreateMock, update: subventionUpdateMock },
+  },
+}));
+vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
+
+const { addSubventionAction, updateSubventionAction } = await import(
+  "./subvention-actions"
+);
+
+function formData(entries: Record<string, string>): FormData {
+  const fd = new FormData();
+  for (const [key, value] of Object.entries(entries)) {
+    fd.set(key, value);
+  }
+  return fd;
+}
+
+const admin = {
+  id: "admin-1",
+  username: "admin",
+  firstname: "Admin",
+  lastname: "Trezo",
+  isAdmin: true,
+  structures: [],
+};
+
+const valid = {
+  campaignId: "11111111-1111-1111-8111-111111111111",
+  assoId: "22222222-2222-2222-8222-222222222222",
+  reason: "Achat de matériel sportif",
+  amount: "350.50",
+  commentary: "Sur présentation de facture",
+};
+
+beforeEach(() => {
+  requireAdminMock.mockReset();
+  campaignFindUniqueMock.mockReset();
+  subventionCreateMock.mockReset();
+  subventionUpdateMock.mockReset();
+  revalidatePathMock.mockReset();
+  requireAdminMock.mockResolvedValue(admin);
+  campaignFindUniqueMock.mockResolvedValue({ id: valid.campaignId });
+});
+
+describe("addSubventionAction", () => {
+  it("exige un Admin", async () => {
+    await addSubventionAction({ ok: false }, formData(valid));
+
+    expect(requireAdminMock).toHaveBeenCalled();
+  });
+
+  it("refuse une saisie invalide sans toucher à la base", async () => {
+    const result = await addSubventionAction(
+      { ok: false },
+      formData({ ...valid, amount: "-5" }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(campaignFindUniqueMock).not.toHaveBeenCalled();
+    expect(subventionCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Campagne n'existe pas", async () => {
+    campaignFindUniqueMock.mockResolvedValue(null);
+
+    const result = await addSubventionAction({ ok: false }, formData(valid));
+
+    expect(result).toEqual({ ok: false, error: "Campagne introuvable." });
+    expect(subventionCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("crée la Subvention avec le montant converti en centimes et revalide les pages", async () => {
+    const result = await addSubventionAction({ ok: false }, formData(valid));
+
+    expect(subventionCreateMock).toHaveBeenCalledWith({
+      data: {
+        campaignId: valid.campaignId,
+        assoId: valid.assoId,
+        reason: valid.reason,
+        amountCents: 35050,
+        commentary: valid.commentary,
+      },
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      `/app/admin/subventions/${valid.campaignId}`,
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("permet plusieurs Subventions pour la même Structure dans la même Campagne", async () => {
+    subventionCreateMock.mockResolvedValueOnce({ id: "sub-1" });
+    subventionCreateMock.mockResolvedValueOnce({ id: "sub-2" });
+
+    await addSubventionAction({ ok: false }, formData(valid));
+    const result = await addSubventionAction({ ok: false }, formData(valid));
+
+    expect(subventionCreateMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("updateSubventionAction", () => {
+  const validUpdate = {
+    id: "33333333-3333-3333-8333-333333333333",
+    campaignId: valid.campaignId,
+    reason: "Achat de matériel sportif corrigé",
+    amount: "400",
+    commentary: "",
+  };
+
+  it("exige un Admin", async () => {
+    await updateSubventionAction({ ok: false }, formData(validUpdate));
+
+    expect(requireAdminMock).toHaveBeenCalled();
+  });
+
+  it("refuse une saisie invalide sans toucher à la base", async () => {
+    const result = await updateSubventionAction(
+      { ok: false },
+      formData({ ...validUpdate, amount: "-5" }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(subventionUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("met à jour la raison, le montant et le commentaire, et revalide les pages", async () => {
+    const result = await updateSubventionAction(
+      { ok: false },
+      formData(validUpdate),
+    );
+
+    expect(subventionUpdateMock).toHaveBeenCalledWith({
+      where: { id: validUpdate.id },
+      data: {
+        reason: validUpdate.reason,
+        amountCents: 40000,
+        commentary: null,
+      },
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      `/app/admin/subventions/${valid.campaignId}`,
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
+    expect(result).toEqual({ ok: true });
+  });
+});
