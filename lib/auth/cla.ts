@@ -119,17 +119,30 @@ export async function syncUserFromCla(
     await tx.refAssoUser.updateMany({
       where: {
         userId: user.id,
+        isActive: true,
         assoId: { notIn: currentRoles.map(({ asso }) => asso.id) },
       },
-      data: { isActive: false },
+      data: { isActive: false, endedAt: new Date() },
     });
 
     for (const { role, asso } of currentRoles) {
-      await tx.refAssoUser.upsert({
-        where: { userId_assoId: { userId: user.id, assoId: asso.id } },
-        update: { role, isActive: true },
-        create: { userId: user.id, assoId: asso.id, role },
+      const active = await tx.refAssoUser.findFirst({
+        where: { userId: user.id, assoId: asso.id, isActive: true },
       });
+
+      if (!active) {
+        await tx.refAssoUser.create({
+          data: { userId: user.id, assoId: asso.id, role },
+        });
+      } else if (active.role !== role) {
+        await tx.refAssoUser.update({
+          where: { id: active.id },
+          data: { isActive: false, endedAt: new Date() },
+        });
+        await tx.refAssoUser.create({
+          data: { userId: user.id, assoId: asso.id, role },
+        });
+      }
     }
 
     const structures: SessionStructure[] = currentRoles.map(

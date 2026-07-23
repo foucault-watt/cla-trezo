@@ -54,6 +54,12 @@ enum FinancialMovementOrigin {
   EXPENSE_REPORT
 }
 
+enum SubventionType {
+  CA_BUDGET
+  CA_EVENT
+  CA_EXCEPTIONNEL
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -116,11 +122,12 @@ model UserLog {
 }
 
 model SubventionCampaign {
-  id              String    @id @default(uuid()) @db.Uuid
+  id              String         @id @default(uuid()) @db.Uuid
+  type            SubventionType
   name            String
-  date            DateTime  @db.Date
-  publicationDate DateTime? @map("publication_date")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  date            DateTime       @db.Date
+  publicationDate DateTime?      @map("publication_date")
+  createdAt       DateTime       @default(now()) @map("created_at")
 
   subventions Subvention[]
 
@@ -168,6 +175,16 @@ model ExpenseReport {
   @@map("expense_report")
 }
 
+model TypeDepense {
+  id        String   @id @default(uuid()) @db.Uuid
+  label     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  expenseReportLines ExpenseReportLine[]
+
+  @@map("type_depense")
+}
+
 model ExpenseReportLine {
   id                   String            @id @default(uuid()) @db.Uuid
   expenseReportId      String            @map("expense_report_id") @db.Uuid
@@ -175,13 +192,15 @@ model ExpenseReportLine {
   beneficiaryLastname  String            @map("beneficiary_lastname")
   iban                 String?
   amountCents          Int               @map("amount_cents")
-  category             String
+  typeDepenseId        String?           @map("type_depense_id") @db.Uuid
+  customLabel          String?           @map("custom_label")
   fundingSource        FundingSourceType @map("funding_source")
   subventionId         String?           @map("subvention_id") @db.Uuid
   createdAt            DateTime          @default(now()) @map("created_at")
   updatedAt            DateTime          @updatedAt @map("updated_at")
 
   expenseReport     ExpenseReport      @relation(fields: [expenseReportId], references: [id])
+  typeDepense       TypeDepense?       @relation(fields: [typeDepenseId], references: [id])
   subvention        Subvention?        @relation(fields: [subventionId], references: [id])
   financialMovement FinancialMovement?
 
@@ -274,6 +293,12 @@ model FinancialMovement {
 //   EXPENSE_REPORT
 // }
 
+// Enum subvention_type {
+//   CA_BUDGET
+//   CA_EVENT
+//   CA_EXCEPTIONNEL
+// }
+
 // // ─────────────────────────────────────────────
 // // UTILISATEURS ET ASSOCIATIONS
 // // ─────────────────────────────────────────────
@@ -321,6 +346,7 @@ model FinancialMovement {
 
 // Table subvention_campaign {
 //   id uuid [primary key]
+//   type subvention_type [not null]
 //   name varchar [not null]
 //   date date [not null]
 //   publication_date timestamp
@@ -363,6 +389,14 @@ model FinancialMovement {
 //   updated_at timestamp [not null, default: `now()`]
 // }
 
+// Table type_depense {
+//   id uuid [primary key]
+//   label varchar [not null, unique]
+//   created_at timestamp [not null, default: `now()`]
+//   // pré-remplie (seed) : nourriture, transport, matériel, événement, communication, autre
+//   // extensible par l'admin
+// }
+
 // Table expense_report_line {
 //   id uuid [primary key]
 //   expense_report_id uuid [not null]
@@ -372,7 +406,10 @@ model FinancialMovement {
 //   iban varchar
 
 //   amount_cents int [not null]
-//   category varchar [not null]
+//   type_depense_id uuid
+//   custom_label varchar
+//   // exactement un des deux (type_depense_id, custom_label) rempli — contrôlé en service métier
+//   // custom_label : nom personnalisé si aucun type_depense ne correspond
 
 //   funding_source funding_source_type [not null]
 //   subvention_id uuid
@@ -446,6 +483,7 @@ model FinancialMovement {
 // Ref: expense_report.taken_by_admin_id > user.id
 
 // Ref: expense_report_line.expense_report_id > expense_report.id
+// Ref: expense_report_line.type_depense_id > type_depense.id
 // Ref: expense_report_line.subvention_id > subvention.id
 
 // Ref: supporting_document.expense_report_id > expense_report.id
