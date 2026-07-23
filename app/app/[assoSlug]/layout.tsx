@@ -23,17 +23,17 @@ export default async function MemberLayout({
 
   const navItems = [
     {
-      href: `/${assoSlug}/dashboard`,
+      href: `/app/${assoSlug}`,
       label: "Tableau de bord",
       icon: <LayoutDashboard size={18} />,
     },
     {
-      href: `/${assoSlug}/factures`,
+      href: `/app/${assoSlug}/factures`,
       label: "Factures",
       icon: <Receipt size={18} />,
     },
     {
-      href: `/${assoSlug}/subventions`,
+      href: `/app/${assoSlug}/subventions`,
       label: "Subventions",
       icon: <HandCoins size={18} />,
     },
@@ -42,7 +42,7 @@ export default async function MemberLayout({
   const footerSlot = (
     <div>
       {session.user && session.user.structures.length > 1 && (
-        <Link href="/" className="btn btn-ghost btn-sm w-full justify-start gap-2">
+        <Link href="/app" className="btn btn-ghost btn-sm w-full justify-start gap-2">
           <ArrowLeftRight size={18} />
           Changer de structure
         </Link>

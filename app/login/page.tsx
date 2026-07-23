@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -5,19 +7,18 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
 
+  if (!error) {
+    redirect("/api/auth/login");
+  }
+
   return (
     <div className="flex flex-1 items-center justify-center">
       <div className="card w-full max-w-sm bg-base-100 shadow">
         <div className="card-body">
           <h1 className="card-title">Connexion</h1>
-          <p className="text-sm text-base-content/70">
-            Connectez-vous avec votre compte CLA.
-          </p>
-          {error && (
-            <p className="alert alert-error text-sm">{error}</p>
-          )}
+          <p className="alert alert-error text-sm">{error}</p>
           <a href="/api/auth/login" className="btn btn-primary mt-2">
-            Se connecter avec CLA
+            Réessayer avec CLA
           </a>
         </div>
       </div>

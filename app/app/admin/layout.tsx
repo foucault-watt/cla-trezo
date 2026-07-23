@@ -5,10 +5,10 @@ import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { getSession } from "@/lib/session";
 
 const navItems = [
-  { href: "/associations", label: "Associations", icon: <Building2 size={18} /> },
-  { href: "/factures", label: "Factures", icon: <Receipt size={18} /> },
-  { href: "/subventions", label: "Subventions", icon: <HandCoins size={18} /> },
-  { href: "/rapports", label: "Rapports", icon: <FileText size={18} /> },
+  { href: "/app/admin/associations", label: "Associations", icon: <Building2 size={18} /> },
+  { href: "/app/admin/factures", label: "Factures", icon: <Receipt size={18} /> },
+  { href: "/app/admin/subventions", label: "Subventions", icon: <HandCoins size={18} /> },
+  { href: "/app/admin/rapports", label: "Rapports", icon: <FileText size={18} /> },
 ];
 
 export default async function AdminLayout({

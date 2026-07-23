@@ -22,12 +22,12 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/login") {
     return NextResponse.redirect(
-      new URL(session.user.isAdmin ? "/admin" : "/", request.url),
+      new URL(session.user.isAdmin ? "/app/admin" : "/app", request.url),
     );
   }
 
-  if (pathname.startsWith("/admin") && !session.user.isAdmin) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (pathname.startsWith("/app/admin") && !session.user.isAdmin) {
+    return NextResponse.redirect(new URL("/app", request.url));
   }
 
   return NextResponse.next();
