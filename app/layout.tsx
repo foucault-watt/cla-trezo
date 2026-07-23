@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   description: "Suivi des soldes, subventions et factures des associations pour les assos de Centrale Lille Associations",
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    // daisyUI "light" / "dark" theme --color-base-100 values
+    { media: "(prefers-color-scheme: light)", color: "oklch(100% 0 0)" },
+    { media: "(prefers-color-scheme: dark)", color: "oklch(25.33% 0.016 252.42)" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
