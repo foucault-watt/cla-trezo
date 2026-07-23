@@ -36,6 +36,6 @@ export async function GET(request: NextRequest) {
   await session.save();
 
   return NextResponse.redirect(
-    new URL(user.isAdmin ? "/admin" : "/dashboard", request.url),
+    new URL(user.isAdmin ? "/admin" : "/", request.url),
   );
 }

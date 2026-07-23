@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trésorerie des associations",
-  description: "Suivi des soldes, subventions et factures des associations",
+  title: "CLA - Trézo",
+  description: "Suivi des soldes, subventions et factures des associations pour les assos de Centrale Lille Associations",
 };
 
 export default function RootLayout({

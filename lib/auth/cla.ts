@@ -60,14 +60,19 @@ export async function validateClaTicket(
       "La réponse du serveur d'authentification CLA est invalide.",
     );
   }
+  //log du payload pour debug, à supprimer en prod
+  console.log("[CLA] Payload reçu :", parsed.data.payload);
 
   return parsed.data.payload;
 }
 
 /**
- * Crée ou met à jour l'utilisateur et remplace intégralement ses rôles de
- * Structure par ceux renvoyés par CLA : un rôle qui n'est plus renvoyé
- * (départ, changement) est supprimé plutôt que laissé en base.
+ * Crée ou met à jour l'utilisateur et synchronise ses rôles de Structure
+ * avec ceux renvoyés par CLA. Une Structure inconnue en base est créée à la
+ * volée (Type et Status par défaut, à corriger ensuite par un Admin). Un
+ * rôle qui n'est plus renvoyé (départ, changement) n'est pas supprimé : la
+ * ligne ref_asso_user est conservée pour l'historique, avec isActive à
+ * false.
  */
 export async function syncUserFromCla(
   payload: ClaAuthPayload,
@@ -92,36 +97,37 @@ export async function syncUserFromCla(
     });
 
     const slugs = payload.associationRoles.map((r) => r.associationSlug);
-    const knownAssos = slugs.length
-      ? await tx.asso.findMany({ where: { slug: { in: slugs } } })
-      : [];
-    const assoBySlug = new Map(knownAssos.map((asso) => [asso.slug, asso]));
+    console.log(`[CLA] Synchronisation des rôles pour l'utilisateur ${user.username} : ${slugs.join(", ")}`,
+    );
 
-    const currentRoles = payload.associationRoles.reduce<
-      { role: string; asso: AssoModel }[]
-    >((acc, entry) => {
-      const asso = assoBySlug.get(entry.associationSlug);
-      if (!asso) {
-        console.warn(
-          `[CLA] Structure inconnue ignorée lors de la synchro des rôles : ${entry.associationSlug}`,
-        );
-        return acc;
-      }
-      acc.push({ role: entry.role, asso });
-      return acc;
-    }, []);
+    const currentRoles: { role: string; asso: AssoModel }[] = [];
+    for (const entry of payload.associationRoles) {
+      const asso = await tx.asso.upsert({
+        where: { slug: entry.associationSlug },
+        update: { name: entry.associationName },
+        create: {
+          slug: entry.associationSlug,
+          name: entry.associationName,
+          type: "CLUB",
+          status: "ACTIVE",
+          createdAt: new Date(),
+        },
+      });
+      currentRoles.push({ role: entry.role, asso });
+    }
 
-    await tx.refAssoUser.deleteMany({
+    await tx.refAssoUser.updateMany({
       where: {
         userId: user.id,
         assoId: { notIn: currentRoles.map(({ asso }) => asso.id) },
       },
+      data: { isActive: false },
     });
 
     for (const { role, asso } of currentRoles) {
       await tx.refAssoUser.upsert({
         where: { userId_assoId: { userId: user.id, assoId: asso.id } },
-        update: { role },
+        update: { role, isActive: true },
         create: { userId: user.id, assoId: asso.id, role },
       });
     }

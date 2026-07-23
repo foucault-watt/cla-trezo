@@ -73,10 +73,11 @@ model Asso {
 }
 
 model RefAssoUser {
-  id     String @id @default(uuid()) @db.Uuid
-  userId String @map("user_id") @db.Uuid
-  assoId String @map("asso_id") @db.Uuid
-  role   String
+  id       String  @id @default(uuid()) @db.Uuid
+  userId   String  @map("user_id") @db.Uuid
+  assoId   String  @map("asso_id") @db.Uuid
+  role     String
+  isActive Boolean @default(true) @map("is_active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   asso Asso @relation(fields: [assoId], references: [id], onDelete: Cascade)
