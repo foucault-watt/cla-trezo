@@ -10,13 +10,13 @@ export type AssoOverview = {
   status: AssoStatus;
   solde: SoldeView;
   subventionsPubliees: number;
-  facturesEnAttente: number;
+  notesDeFraisEnAttente: number;
 };
 
 /**
  * Vue d'ensemble Admin de toutes les Structures. "Subventions publiées"
  * compte les Subventions dont la campagne est déjà publiée (cf. domaine :
- * une campagne Programmée n'est pas encore utilisable). "Factures en
+ * une campagne Programmée n'est pas encore utilisable). "Notes de frais en
  * attente" compte les Notes de frais que l'Admin doit encore traiter
  * (Soumise ou Prise en charge).
  */
@@ -68,7 +68,7 @@ function toOverview(asso: {
     status: asso.status,
     solde: computeSolde(asso.type, asso.financialMovements),
     subventionsPubliees: asso._count.subventions,
-    facturesEnAttente: asso._count.expenseReports,
+    notesDeFraisEnAttente: asso._count.expenseReports,
   };
 }
 

@@ -29,7 +29,7 @@ export function GridView({ associations }: { associations: AssoOverview[] }) {
             </p>
             <p className="text-sm text-base-content/70">
               {asso.subventionsPubliees} subvention(s) publiée(s) ·{" "}
-              {asso.facturesEnAttente} facture(s) en attente
+              {asso.notesDeFraisEnAttente} note(s) de frais en attente
             </p>
             <div className="card-actions justify-end">
               <Link

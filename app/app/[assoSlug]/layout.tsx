@@ -22,8 +22,8 @@ export default async function MemberLayout({
       icon: <LayoutDashboard size={18} />,
     },
     {
-      href: `/app/${assoSlug}/factures`,
-      label: "Factures",
+      href: `/app/${assoSlug}/notes-de-frais`,
+      label: "Notes de frais",
       icon: <Receipt size={18} />,
     },
     {

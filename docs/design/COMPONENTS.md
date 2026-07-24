@@ -96,5 +96,5 @@ stats bar (always)
 content: list view OR grid view, switched via ?view=list|grid
 ```
 
-This shape is meant to be reused for the other admin sections (factures,
-subventions, rapports) rather than reinvented per page.
+This shape is meant to be reused for the other admin sections (notes de
+frais, subventions, rapports) rather than reinvented per page.

@@ -62,7 +62,7 @@ describe("listAssociations", () => {
       movements: expect.any(Array),
     });
     expect(result[0].subventionsPubliees).toBe(2);
-    expect(result[0].facturesEnAttente).toBe(1);
+    expect(result[0].notesDeFraisEnAttente).toBe(1);
     expect(result[1].solde).toEqual({ status: "not_applicable" });
   });
 

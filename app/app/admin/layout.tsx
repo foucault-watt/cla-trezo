@@ -11,8 +11,8 @@ const navItems = [
     icon: <Building2 size={18} />,
   },
   {
-    href: "/app/admin/factures",
-    label: "Factures",
+    href: "/app/admin/notes-de-frais",
+    label: "Notes de frais",
     icon: <Receipt size={18} />,
   },
   {

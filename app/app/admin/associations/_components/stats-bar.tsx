@@ -14,8 +14,8 @@ export function StatsBar({ associations }: { associations: AssoOverview[] }) {
     (a) => a.solde.status === "not_initialized",
   ).length;
   const typesNonDefinis = associations.filter((a) => a.type === null).length;
-  const facturesEnAttente = associations.reduce(
-    (sum, a) => sum + a.facturesEnAttente,
+  const notesDeFraisEnAttente = associations.reduce(
+    (sum, a) => sum + a.notesDeFraisEnAttente,
     0,
   );
 
@@ -40,8 +40,8 @@ export function StatsBar({ associations }: { associations: AssoOverview[] }) {
         <div className="stat-value text-2xl">{clubsNonInitialises}</div>
       </div>
       <div className="stat">
-        <div className="stat-title">Factures en attente</div>
-        <div className="stat-value text-2xl">{facturesEnAttente}</div>
+        <div className="stat-title">Notes de frais en attente</div>
+        <div className="stat-value text-2xl">{notesDeFraisEnAttente}</div>
       </div>
     </div>
   );

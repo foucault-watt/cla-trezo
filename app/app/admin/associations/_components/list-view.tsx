@@ -37,14 +37,14 @@ export function ListView({ associations }: { associations: AssoOverview[] }) {
             </div>
             <div className="truncate text-xs text-base-content/60 sm:hidden">
               {asso.subventionsPubliees} subvention(s) ·{" "}
-              {asso.facturesEnAttente} facture(s)
+              {asso.notesDeFraisEnAttente} note(s) de frais
             </div>
           </div>
           <div className="hidden w-28 shrink-0 text-right text-sm text-base-content/70 sm:block">
             {asso.subventionsPubliees} subv.
           </div>
-          <div className="hidden w-32 shrink-0 text-right text-sm text-base-content/70 sm:block">
-            {asso.facturesEnAttente} facture(s)
+          <div className="hidden w-36 shrink-0 text-right text-sm text-base-content/70 sm:block">
+            {asso.notesDeFraisEnAttente} note(s) de frais
           </div>
           <div className="w-28 shrink-0 text-right">
             <AssoSoldeCell solde={asso.solde} />

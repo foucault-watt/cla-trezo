@@ -59,9 +59,9 @@ export default async function AdminAssociationDetailPage({
               </div>
             </div>
             <div className="stat">
-              <div className="stat-title">Factures en attente</div>
+              <div className="stat-title">Notes de frais en attente</div>
               <div className="stat-value text-2xl">
-                {asso.facturesEnAttente}
+                {asso.notesDeFraisEnAttente}
               </div>
             </div>
           </div>
