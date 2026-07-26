@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { NavLink } from "./nav-link";
 
 type SidebarDrawerNavItem = {
@@ -30,16 +31,20 @@ export function SidebarDrawer({
           <label htmlFor="app-nav-drawer" className="btn btn-square btn-ghost btn-sm drawer-button">
             <Menu size={18} />
           </label>
-          <span className="font-semibold">{rootLabel}</span>
+          <span className="flex-1 font-semibold">{rootLabel}</span>
+          <ThemeToggle />
         </div>
         <main className="flex-1 p-6">{children}</main>
       </div>
       <div className="drawer-side z-40">
         <label htmlFor="app-nav-drawer" aria-label="Fermer le menu" className="drawer-overlay" />
         <aside className="flex h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
-          <p className="mb-4 truncate px-2 text-sm font-semibold text-base-content/70">
-            {rootLabel}
-          </p>
+          <div className="mb-4 flex items-center justify-between px-2">
+            <p className="truncate text-sm font-semibold text-base-content/70">{rootLabel}</p>
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
+          </div>
           <ul className="menu w-full flex-1 gap-1">
             {navItems.map((item) => (
               <NavLink key={item.href} {...item} />

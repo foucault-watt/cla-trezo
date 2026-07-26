@@ -11,7 +11,7 @@ export default async function DashboardPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
       <p className="mt-2 text-base-content/70">Solde de l&apos;association.</p>
 
       {(solde.status === "not_initialized" || solde.status === "ready") && (

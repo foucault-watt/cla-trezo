@@ -18,7 +18,7 @@ export default async function MemberLayout({
   const navItems = [
     {
       href: `/app/${assoSlug}`,
-      label: "Tableau de bord",
+      label: "Dashboard",
       icon: <LayoutDashboard size={18} />,
     },
     {
@@ -35,15 +35,15 @@ export default async function MemberLayout({
 
   const footerSlot = (
     <div>
+      <p className="px-2 pb-2 text-sm font-medium">
+        {user.firstname} {user.lastname}
+      </p>
       {user.structures.length > 1 && (
         <Link href="/app" className="btn btn-ghost btn-sm w-full justify-start gap-2">
           <ArrowLeftRight size={18} />
           Changer de structure
         </Link>
       )}
-      <p className="px-2 pb-2 text-sm font-medium">
-        {user.firstname} {user.lastname}
-      </p>
       <LogoutButton />
     </div>
   );

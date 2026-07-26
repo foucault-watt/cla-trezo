@@ -17,7 +17,7 @@ export function ViewToggle({ current }: { current: "list" | "grid" }) {
   return (
     <div className="join">
       <button
-        className={`btn btn-sm join-item ${current === "list" ? "btn-active" : ""}`}
+        className={`btn btn-sm join-item ${current === "list" ? "btn-secondary" : "btn-ghost"}`}
         aria-pressed={current === "list"}
         onClick={() => setView("list")}
       >
@@ -25,7 +25,7 @@ export function ViewToggle({ current }: { current: "list" | "grid" }) {
         Liste
       </button>
       <button
-        className={`btn btn-sm join-item ${current === "grid" ? "btn-active" : ""}`}
+        className={`btn btn-sm join-item ${current === "grid" ? "btn-secondary" : "btn-ghost"}`}
         aria-pressed={current === "grid"}
         onClick={() => setView("grid")}
       >

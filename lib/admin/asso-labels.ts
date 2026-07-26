@@ -25,9 +25,9 @@ export const assoTypeOptions: {
 }));
 
 export const assoStatusLabel: Record<AssoStatus, string> = {
-  ACTIVE: "Active",
-  INACTIVE: "Inactive",
-  ARCHIVED: "Archivée",
+  ACTIVE: "Actif",
+  INACTIVE: "Inactif",
+  ARCHIVED: "Archivé",
 };
 
 export const assoStatusBadgeClass: Record<AssoStatus, string> = {

@@ -57,7 +57,7 @@ export function SoldeCard({
                   </div>
                 </div>
                 <span
-                  className={`badge ${m.movementType === "CREDIT" ? "badge-success" : "badge-error"} badge-soft`}
+                  className={`badge ${m.movementType === "CREDIT" ? "badge-success" : "badge-error"} badge-outline`}
                 >
                   {m.movementType === "CREDIT" ? "+" : "-"}
                   {currency.format(m.amountCents / 100)}

@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+    <div className="relative flex flex-1 flex-col items-center justify-center gap-4 text-center">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <h1 className="text-3xl font-semibold">Trésorerie des associations</h1>
       <p className="max-w-md text-base-content/70">
         Suivi des soldes, subventions et notes de frais des associations de

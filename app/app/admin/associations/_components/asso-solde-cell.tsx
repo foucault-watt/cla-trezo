@@ -12,7 +12,7 @@ export function AssoSoldeCell({ solde }: { solde: SoldeView }) {
 
   if (solde.status === "not_initialized") {
     return (
-      <span className="badge badge-warning badge-soft">Non initialisé</span>
+      <span className="badge badge-warning badge-outline">Non initialisé</span>
     );
   }
 

@@ -7,7 +7,7 @@ export function AssoTypeAlert({ type }: { type: AssoType | null }) {
   }
 
   return (
-    <span className="badge badge-error badge-soft gap-1 whitespace-nowrap">
+    <span className="badge badge-error badge-outline gap-1 whitespace-nowrap">
       <TriangleAlert size={12} />
       Type à définir
     </span>
