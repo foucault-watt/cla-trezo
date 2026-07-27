@@ -3,6 +3,7 @@ import type {
   AssoType,
   ExpenseReportStatus,
   FundingSourceType,
+  SupportingDocumentType,
 } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
@@ -66,6 +67,14 @@ export type ExpenseReportLineDetail = {
   subventionReason: string | null;
 };
 
+export type SupportingDocumentDetail = {
+  id: string;
+  type: SupportingDocumentType;
+  originalFilename: string;
+  mimeType: string;
+  createdAt: Date;
+};
+
 export type ExpenseReportDetail = {
   id: string;
   title: string;
@@ -73,6 +82,7 @@ export type ExpenseReportDetail = {
   status: ExpenseReportStatus;
   createdAt: Date;
   lines: ExpenseReportLineDetail[];
+  supportingDocuments: SupportingDocumentDetail[];
 };
 
 export type TypeDepenseOption = { id: string; label: string };
@@ -106,6 +116,9 @@ export async function getExpenseReportDetail(
             typeDepense: { select: { label: true } },
             subvention: { select: { reason: true } },
           },
+        },
+        supportingDocuments: {
+          orderBy: { createdAt: "asc" },
         },
       },
     }),
@@ -141,6 +154,13 @@ export async function getExpenseReportDetail(
         fundingSource: line.fundingSource,
         subventionId: line.subventionId,
         subventionReason: line.subvention?.reason ?? null,
+      })),
+      supportingDocuments: report.supportingDocuments.map((doc) => ({
+        id: doc.id,
+        type: doc.type,
+        originalFilename: doc.originalFilename,
+        mimeType: doc.mimeType,
+        createdAt: doc.createdAt,
       })),
     },
     assoType: asso?.type ?? null,

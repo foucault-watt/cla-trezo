@@ -7,12 +7,13 @@ import {
 } from "@/lib/expense-reports/expense-report-actions";
 import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { formatCents } from "@/lib/money";
-import type { AssoType } from "@/app/generated/prisma/enums";
+import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import type {
   ExpenseReportLineDetail,
   TypeDepenseOption,
 } from "@/lib/expense-reports/expense-reports";
+import { useSubventionSelectionConsumer } from "./subvention-selection-context";
 
 const initialState: UpdateExpenseReportLineState = { ok: false };
 const CUSTOM_TYPE_DEPENSE = "autre";
@@ -107,7 +108,16 @@ export function LigneRow({
     setEditing((value) => !value);
   }
 
+  useSubventionSelectionConsumer({
+    active: editing && fields.fundingSource === "SUBVENTION",
+    selectedId: fields.subventionId,
+    onSelect: (id) => setField("subventionId", id),
+  });
+
   const canUseClubBalance = assoType === "CLUB";
+  const selectedSubvention = visibleSubventions.find(
+    (s) => s.id === fields.subventionId,
+  );
   const sourceDetail =
     line.fundingSource === "SUBVENTION" && line.subventionReason
       ? `${fundingSourceLabel[line.fundingSource]} — ${line.subventionReason}`
@@ -252,39 +262,61 @@ export function LigneRow({
                 <legend className="fieldset-legend">
                   Source de financement
                 </legend>
-                <select
+                <input
+                  type="hidden"
                   name="fundingSource"
-                  className="select select-sm w-full"
                   value={fields.fundingSource}
-                  onChange={(e) => setField("fundingSource", e.target.value)}
-                  required
-                >
-                  {canUseClubBalance && (
-                    <option value="CLUB_BALANCE">Solde</option>
-                  )}
-                  <option value="SUBVENTION">Subvention</option>
-                </select>
+                />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      ...(canUseClubBalance ? (["CLUB_BALANCE"] as const) : []),
+                      "SUBVENTION" as const,
+                    ] satisfies FundingSourceType[]
+                  ).map((source) => {
+                    const checked = fields.fundingSource === source;
+                    return (
+                      <label
+                        key={source}
+                        className={`card cursor-pointer border-2 p-2 text-center transition-all duration-150 ${
+                          checked
+                            ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                            : "border-base-300 hover:border-primary/50 hover:bg-base-200/40"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="fundingSourceChoice"
+                          className="sr-only"
+                          checked={checked}
+                          onChange={() => setField("fundingSource", source)}
+                        />
+                        <span className="text-xs font-medium">
+                          {fundingSourceLabel[source]}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </fieldset>
 
               {fields.fundingSource === "SUBVENTION" && (
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Subvention</legend>
-                  <select
+                  <input
+                    type="hidden"
                     name="subventionId"
-                    className="select select-sm w-full"
                     value={fields.subventionId}
-                    onChange={(e) => setField("subventionId", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>
-                      Choisir une Subvention
-                    </option>
-                    {visibleSubventions.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.reason} — reste {formatCents(s.remainingAmountCents)}
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  {selectedSubvention ? (
+                    <p className="text-sm font-medium text-primary">
+                      {selectedSubvention.reason}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-base-content/70">
+                      Choisissez une Subvention dans le panneau à droite.
+                    </p>
+                  )}
                 </fieldset>
               )}
 
@@ -300,7 +332,12 @@ export function LigneRow({
               <button
                 type="submit"
                 className="btn btn-primary btn-sm self-start"
-                disabled={pending}
+                disabled={
+                  pending ||
+                  !fields.fundingSource ||
+                  (fields.fundingSource === "SUBVENTION" &&
+                    !fields.subventionId)
+                }
               >
                 {pending ? (
                   <span className="loading loading-spinner loading-xs" />

@@ -27,10 +27,11 @@ export const expenseReportStatusBadgeClass: Record<
   REJECTED: "badge-error",
 };
 
-export const expenseReportStatusDotClass: Record<ExpenseReportStatus, string> = {
-  DRAFT: "bg-base-content/40",
-  SUBMITTED: "bg-info",
-  TAKEN_OVER: "bg-warning",
-  FINALIZED: "bg-success",
-  REJECTED: "bg-error",
-};
+export const expenseReportStatusDotClass: Record<ExpenseReportStatus, string> =
+  {
+    DRAFT: "bg-base-content/40",
+    SUBMITTED: "bg-info",
+    TAKEN_OVER: "bg-warning",
+    FINALIZED: "bg-success",
+    REJECTED: "bg-error",
+  };

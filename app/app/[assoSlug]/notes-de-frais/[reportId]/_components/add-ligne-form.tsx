@@ -5,10 +5,11 @@ import {
   addExpenseReportLineAction,
   type AddExpenseReportLineState,
 } from "@/lib/expense-reports/expense-report-actions";
-import { formatCents } from "@/lib/money";
-import type { AssoType } from "@/app/generated/prisma/enums";
+import { fundingSourceLabel } from "@/lib/expense-reports/labels";
+import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
+import { useSubventionSelectionConsumer } from "./subvention-selection-context";
 
 const initialState: AddExpenseReportLineState = { ok: false };
 const CUSTOM_TYPE_DEPENSE = "autre";
@@ -75,7 +76,8 @@ export function AddLigneForm({
         iban: v.iban,
         amount: v.amount,
         expenseName: v.expenseName,
-        typeDepenseChoice: v.typeDepenseId || (v.customLabel ? CUSTOM_TYPE_DEPENSE : ""),
+        typeDepenseChoice:
+          v.typeDepenseId || (v.customLabel ? CUSTOM_TYPE_DEPENSE : ""),
         customLabel: v.customLabel,
         fundingSource: v.fundingSource,
         subventionId: v.subventionId,
@@ -83,11 +85,23 @@ export function AddLigneForm({
     }
   }
 
-  function setField<K extends keyof FieldsState>(key: K, value: FieldsState[K]) {
+  function setField<K extends keyof FieldsState>(
+    key: K,
+    value: FieldsState[K],
+  ) {
     setFields((current) => ({ ...current, [key]: value }));
   }
 
+  useSubventionSelectionConsumer({
+    active: fields.fundingSource === "SUBVENTION",
+    selectedId: fields.subventionId,
+    onSelect: (id) => setField("subventionId", id),
+  });
+
   const canUseClubBalance = assoType === "CLUB";
+  const selectedSubvention = visibleSubventions.find(
+    (s) => s.id === fields.subventionId,
+  );
 
   return (
     <div className="card border border-base-300 bg-base-100 shadow-md">
@@ -207,42 +221,61 @@ export function AddLigneForm({
 
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Source de financement</legend>
-            <select
+            <input
+              type="hidden"
               name="fundingSource"
-              className="select w-full"
               value={fields.fundingSource}
-              onChange={(e) => setField("fundingSource", e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                Choisir une source
-              </option>
-              {canUseClubBalance && (
-                <option value="CLUB_BALANCE">Solde</option>
-              )}
-              <option value="SUBVENTION">Subvention</option>
-            </select>
+            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {(
+                [
+                  ...(canUseClubBalance ? (["CLUB_BALANCE"] as const) : []),
+                  "SUBVENTION" as const,
+                ] satisfies FundingSourceType[]
+              ).map((source) => {
+                const checked = fields.fundingSource === source;
+                return (
+                  <label
+                    key={source}
+                    className={`card cursor-pointer border-2 p-3 text-center transition-all duration-150 ${
+                      checked
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-base-300 hover:border-primary/50 hover:bg-base-200/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="fundingSourceChoice"
+                      className="sr-only"
+                      checked={checked}
+                      onChange={() => setField("fundingSource", source)}
+                    />
+                    <span className="text-sm font-medium">
+                      {fundingSourceLabel[source]}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </fieldset>
 
           {fields.fundingSource === "SUBVENTION" && (
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Subvention</legend>
-              <select
+              <input
+                type="hidden"
                 name="subventionId"
-                className="select w-full"
                 value={fields.subventionId}
-                onChange={(e) => setField("subventionId", e.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Choisir une Subvention
-                </option>
-                {visibleSubventions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.reason} — reste {formatCents(s.remainingAmountCents)}
-                  </option>
-                ))}
-              </select>
+              />
+              {selectedSubvention ? (
+                <p className="text-sm font-medium text-primary">
+                  {selectedSubvention.reason}
+                </p>
+              ) : (
+                <p className="text-sm text-base-content/70">
+                  Choisissez une Subvention dans le panneau à droite.
+                </p>
+              )}
               {visibleSubventions.length === 0 && (
                 <p className="mt-1 text-xs text-warning">
                   Aucune Subvention Publiée disponible pour cette Structure.
@@ -262,7 +295,15 @@ export function AddLigneForm({
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary" disabled={pending}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={
+              pending ||
+              !fields.fundingSource ||
+              (fields.fundingSource === "SUBVENTION" && !fields.subventionId)
+            }
+          >
             {pending ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (

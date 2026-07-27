@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* Ni Tailwind ni daisyUI ne réinitialisent la bordure native du <fieldset>
+   (groove grisâtre/noire du navigateur), qui vient sinon se superposer aux
+   bordures et halos de couleur qu'on applique nous-mêmes sur nos cartes. */
+fieldset {
+  border: none;
+}
+
 @plugin "daisyui/theme" {
   name: "bumblebee";
   default: true;
@@ -35,7 +42,6 @@
   --depth: 1;
   --noise: 1;
 }
-
 
 @plugin "daisyui/theme" {
   name: "dim";

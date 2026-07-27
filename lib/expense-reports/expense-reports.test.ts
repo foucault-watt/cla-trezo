@@ -38,9 +38,8 @@ vi.mock("@/lib/subventions/visible-subventions", () => ({
 }));
 vi.mock("next/navigation", () => ({ notFound: notFoundMock }));
 
-const { listExpenseReports, getExpenseReportDetail } = await import(
-  "./expense-reports"
-);
+const { listExpenseReports, getExpenseReportDetail } =
+  await import("./expense-reports");
 
 beforeEach(() => {
   requireStructureAccessMock.mockReset();
@@ -151,6 +150,15 @@ describe("getExpenseReportDetail", () => {
           subvention: { reason: "Achat de matériel" },
         },
       ],
+      supportingDocuments: [
+        {
+          id: "doc-1",
+          type: "RECEIPT",
+          originalFilename: "facture.pdf",
+          mimeType: "application/pdf",
+          createdAt: new Date("2026-01-02"),
+        },
+      ],
     });
     typeDepenseFindManyMock.mockResolvedValue([
       { id: "type-1", label: "Transport" },
@@ -174,6 +182,15 @@ describe("getExpenseReportDetail", () => {
         fundingSource: "SUBVENTION",
         subventionId: "sub-1",
         subventionReason: "Achat de matériel",
+      },
+    ]);
+    expect(result.report.supportingDocuments).toEqual([
+      {
+        id: "doc-1",
+        type: "RECEIPT",
+        originalFilename: "facture.pdf",
+        mimeType: "application/pdf",
+        createdAt: new Date("2026-01-02"),
       },
     ]);
   });
