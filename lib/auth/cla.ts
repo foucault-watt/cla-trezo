@@ -60,9 +60,6 @@ export async function validateClaTicket(
       "La réponse du serveur d'authentification CLA est invalide.",
     );
   }
-  //log du payload pour debug, à supprimer en prod
-  console.log("[CLA] Payload reçu :", parsed.data.payload);
-
   return parsed.data.payload;
 }
 
@@ -95,11 +92,6 @@ export async function syncUserFromCla(
         createdAt: new Date(),
       },
     });
-
-    const slugs = payload.associationRoles.map((r) => r.associationSlug);
-    console.log(
-      `[CLA] Synchronisation des rôles pour l'utilisateur ${user.username} : ${slugs.join(", ")}`,
-    );
 
     const currentRoles: { role: string; asso: AssoModel }[] = [];
     for (const entry of payload.associationRoles) {
