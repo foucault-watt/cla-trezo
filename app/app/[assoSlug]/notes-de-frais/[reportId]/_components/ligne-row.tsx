@@ -22,6 +22,7 @@ type FieldsState = {
   beneficiaryLastname: string;
   iban: string;
   amount: string;
+  expenseName: string;
   typeDepenseChoice: string;
   customLabel: string;
   fundingSource: string;
@@ -34,6 +35,7 @@ function fieldsFromLine(line: ExpenseReportLineDetail): FieldsState {
     beneficiaryLastname: line.beneficiaryLastname,
     iban: line.iban ?? "",
     amount: (line.amountCents / 100).toFixed(2),
+    expenseName: line.expenseName,
     typeDepenseChoice: line.typeDepenseId ?? CUSTOM_TYPE_DEPENSE,
     customLabel: line.customLabel ?? "",
     fundingSource: line.fundingSource,
@@ -81,6 +83,7 @@ export function LigneRow({
         beneficiaryLastname: v.beneficiaryLastname,
         iban: v.iban,
         amount: v.amount,
+        expenseName: v.expenseName,
         typeDepenseChoice:
           v.typeDepenseId || (v.customLabel ? CUSTOM_TYPE_DEPENSE : ""),
         customLabel: v.customLabel,
@@ -116,6 +119,7 @@ export function LigneRow({
         <td>
           {line.beneficiaryFirstname} {line.beneficiaryLastname}
         </td>
+        <td>{line.expenseName}</td>
         <td>{line.typeDepenseLabel ?? line.customLabel}</td>
         <td>{formatCents(line.amountCents)}</td>
         <td>{sourceDetail}</td>
@@ -133,7 +137,7 @@ export function LigneRow({
       </tr>
       {editable && editing && (
         <tr>
-          <td colSpan={5}>
+          <td colSpan={6}>
             <form action={formAction} className="flex flex-col gap-3 py-2">
               <input type="hidden" name="id" value={line.id} />
               <input type="hidden" name="assoSlug" value={assoSlug} />
@@ -189,6 +193,18 @@ export function LigneRow({
                   value={fields.amount}
                   onChange={(e) => setField("amount", e.target.value)}
                   className="input input-sm w-32"
+                  required
+                />
+              </fieldset>
+
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Nom de la dépense</legend>
+                <input
+                  type="text"
+                  name="expenseName"
+                  value={fields.expenseName}
+                  onChange={(e) => setField("expenseName", e.target.value)}
+                  className="input input-sm w-full"
                   required
                 />
               </fieldset>

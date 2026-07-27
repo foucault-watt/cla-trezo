@@ -88,6 +88,41 @@ in this ladder. This bit us once already (`grid-view.tsx`, `solde-card.tsx`,
 `card-border` and went invisible) — grep for `card-border` before adding a
 new card and swap it for the explicit border.
 
+## Funding source preview (notes de frais detail page)
+
+Decided over two other options (a full-page dashboard with sources behind a
+drawer, a "+" FAB opening a modal with sources chosen via a chip row) —
+prototyped as `/prototype` variants A/B/C on the expense report detail page.
+
+- The Club's Solde and available Subventions are shown in a dedicated
+  `FundingSourcesPanel`, sticky at `lg+` (`lg:sticky lg:top-4`) alongside the
+  Lignes table, and folded into a `collapse-arrow` accordion below `lg`
+  (labelled "Mes sources de financement"). Same component, same data, just
+  repositioned — no separate mobile-only variant.
+- Each Subvention is its own `card` with a `progress` bar (remaining /
+  total) and a `collapse` for its free-text `commentary`, so the detail is
+  there without competing with the scan-at-a-glance total.
+- The Solde card shows the balance up top and folds its last movements into
+  a `collapse` ("Historique (N)") — same reasoning: totals visible, detail
+  one click away.
+- Rejected: a `drawer`-based sources panel (variant C) — behind an extra
+  click just to see the balance, and reusing the nav drawer primitive for
+  unrelated content read as clutter, not clarity.
+
+## Justificatif exclusivity (Facture(s) vs Attestation sur l'honneur) — for T10
+
+Not yet built (no upload backend exists — `SupportingDocument` is a bare
+Prisma model with no actions wired up), but the layout direction was
+validated during the same prototype session, to reuse once T10 lands:
+
+- Two big selectable `card`s side by side (radio input + label + a line of
+  description text under each), not a `tabs` bar. Rejected the tabs version
+  (variant A) — no room for the "when to use this instead" explanation text,
+  and the exclusivity read as a display grouping rather than a real choice.
+- Each card gets its own short description (e.g. "Un ou plusieurs
+  reçus/factures." / "Uniquement sans facture disponible.") directly under
+  the label — that description is the main reason this style won over tabs.
+
 ## Page structure (list-style admin pages)
 
 ```

@@ -195,6 +195,7 @@ model ExpenseReportLine {
   beneficiaryLastname  String            @map("beneficiary_lastname")
   iban                 String?
   amountCents          Int               @map("amount_cents")
+  expenseName          String            @map("expense_name")
   typeDepenseId        String?           @map("type_depense_id") @db.Uuid
   customLabel          String?           @map("custom_label")
   fundingSource        FundingSourceType @map("funding_source")
@@ -409,6 +410,8 @@ model FinancialMovement {
 //   iban varchar
 
 //   amount_cents int [not null]
+//   expense_name varchar [not null]
+//   // nom libre de la dépense (ex: "Taxi gare Lille Flandres"), toujours renseigné
 //   type_depense_id uuid
 //   custom_label varchar
 //   // exactement un des deux (type_depense_id, custom_label) rempli — contrôlé en service métier

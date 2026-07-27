@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
+import { getClubSolde } from "@/lib/solde/actions";
 import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
@@ -7,6 +8,7 @@ import {
 import { formatCents } from "@/lib/money";
 import { AddLigneForm } from "./_components/add-ligne-form";
 import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
+import { FundingSourcesPanel } from "./_components/funding-sources-panel";
 import { LigneRow } from "./_components/ligne-row";
 
 export default async function ExpenseReportDetailPage({
@@ -15,8 +17,11 @@ export default async function ExpenseReportDetailPage({
   params: Promise<{ assoSlug: string; reportId: string }>;
 }) {
   const { assoSlug, reportId } = await params;
-  const { report, assoType, typeDepenses, visibleSubventions } =
-    await getExpenseReportDetail(assoSlug, reportId);
+  const [{ report, assoType, typeDepenses, visibleSubventions }, soldeView] =
+    await Promise.all([
+      getExpenseReportDetail(assoSlug, reportId),
+      getClubSolde(assoSlug),
+    ]);
 
   const totalAmountCents = report.lines.reduce(
     (sum, line) => sum + line.amountCents,
@@ -61,51 +66,76 @@ export default async function ExpenseReportDetailPage({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-md">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Bénéficiaire</th>
-                <th>Type de dépense</th>
-                <th>Montant</th>
-                <th>Source</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {report.lines.length === 0 ? (
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="flex flex-col gap-6">
+          <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-md">
+            <table className="table">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="text-base-content/70">
-                    Aucune Ligne pour l&apos;instant.
-                  </td>
+                  <th>Bénéficiaire</th>
+                  <th>Nom de la dépense</th>
+                  <th>Type de dépense</th>
+                  <th>Montant</th>
+                  <th>Source</th>
+                  <th />
                 </tr>
-              ) : (
-                report.lines.map((line) => (
-                  <LigneRow
-                    key={line.id}
-                    assoSlug={assoSlug}
-                    line={line}
-                    assoType={assoType}
-                    typeDepenses={typeDepenses}
-                    visibleSubventions={visibleSubventions}
-                    editable={report.status === "DRAFT"}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {report.lines.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-base-content/70">
+                      Aucune Ligne pour l&apos;instant.
+                    </td>
+                  </tr>
+                ) : (
+                  report.lines.map((line) => (
+                    <LigneRow
+                      key={line.id}
+                      assoSlug={assoSlug}
+                      line={line}
+                      assoType={assoType}
+                      typeDepenses={typeDepenses}
+                      visibleSubventions={visibleSubventions}
+                      editable={report.status === "DRAFT"}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
+            <input type="checkbox" />
+            <div className="collapse-title font-medium">
+              Mes sources de financement
+            </div>
+            <div className="collapse-content">
+              <FundingSourcesPanel
+                assoType={assoType}
+                soldeView={soldeView}
+                visibleSubventions={visibleSubventions}
+              />
+            </div>
+          </div>
+
+          {report.status === "DRAFT" && (
+            <AddLigneForm
+              assoSlug={assoSlug}
+              expenseReportId={report.id}
+              assoType={assoType}
+              typeDepenses={typeDepenses}
+              visibleSubventions={visibleSubventions}
+            />
+          )}
         </div>
 
-        {report.status === "DRAFT" && (
-          <AddLigneForm
-            assoSlug={assoSlug}
-            expenseReportId={report.id}
+        <div className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
+          <FundingSourcesPanel
             assoType={assoType}
-            typeDepenses={typeDepenses}
+            soldeView={soldeView}
             visibleSubventions={visibleSubventions}
           />
-        )}
+        </div>
       </div>
 
       {report.status === "DRAFT" && (

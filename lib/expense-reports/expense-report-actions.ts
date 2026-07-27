@@ -134,6 +134,7 @@ export type ExpenseReportLineFormValues = {
   beneficiaryLastname: string;
   iban: string;
   amount: string;
+  expenseName: string;
   typeDepenseId: string;
   customLabel: string;
   fundingSource: string;
@@ -151,6 +152,7 @@ function rawLineFormValues(formData: FormData): ExpenseReportLineFormValues {
     beneficiaryLastname: String(formData.get("beneficiaryLastname") ?? ""),
     iban: String(formData.get("iban") ?? ""),
     amount: String(formData.get("amount") ?? ""),
+    expenseName: String(formData.get("expenseName") ?? ""),
     typeDepenseId: String(formData.get("typeDepenseId") ?? ""),
     customLabel: String(formData.get("customLabel") ?? ""),
     fundingSource: String(formData.get("fundingSource") ?? ""),
@@ -212,6 +214,7 @@ export async function addExpenseReportLineAction(
       beneficiaryLastname: parsed.data.beneficiaryLastname,
       iban: parsed.data.iban,
       amountCents: toAmountCents(parsed.data.amount),
+      expenseName: parsed.data.expenseName,
       typeDepenseId: parsed.data.typeDepenseId,
       customLabel: parsed.data.customLabel,
       fundingSource: parsed.data.fundingSource,
@@ -282,6 +285,7 @@ export async function updateExpenseReportLineAction(
       beneficiaryLastname: parsed.data.beneficiaryLastname,
       iban: parsed.data.iban,
       amountCents: toAmountCents(parsed.data.amount),
+      expenseName: parsed.data.expenseName,
       typeDepenseId: parsed.data.typeDepenseId,
       customLabel: parsed.data.customLabel,
       fundingSource: parsed.data.fundingSource,

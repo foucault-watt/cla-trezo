@@ -87,6 +87,11 @@ const expenseReportLineBaseSchema = z.object({
     .max(100),
   iban: ibanSchema,
   amount: z.coerce.number().positive("Le montant doit être positif."),
+  expenseName: z
+    .string()
+    .trim()
+    .min(1, "Le nom de la dépense est obligatoire.")
+    .max(200),
   typeDepenseId: nullableUuid(),
   customLabel: z
     .string()
@@ -139,6 +144,7 @@ export function parseAddExpenseReportLineForm(formData: FormData) {
     beneficiaryLastname: formData.get("beneficiaryLastname"),
     iban: formData.get("iban"),
     amount: formData.get("amount"),
+    expenseName: formData.get("expenseName"),
     typeDepenseId: formData.get("typeDepenseId"),
     customLabel: formData.get("customLabel"),
     fundingSource: formData.get("fundingSource"),
@@ -165,6 +171,7 @@ export function parseUpdateExpenseReportLineForm(formData: FormData) {
     beneficiaryLastname: formData.get("beneficiaryLastname"),
     iban: formData.get("iban"),
     amount: formData.get("amount"),
+    expenseName: formData.get("expenseName"),
     typeDepenseId: formData.get("typeDepenseId"),
     customLabel: formData.get("customLabel"),
     fundingSource: formData.get("fundingSource"),

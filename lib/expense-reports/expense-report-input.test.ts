@@ -77,6 +77,7 @@ const validLine = {
   beneficiaryLastname: "Dupont",
   iban: "FR7630006000011234567890189",
   amount: "42.50",
+  expenseName: "Courses pour le pot d'intégration",
   typeDepenseId: "22222222-2222-2222-8222-222222222222",
   customLabel: "",
   fundingSource: "CLUB_BALANCE",

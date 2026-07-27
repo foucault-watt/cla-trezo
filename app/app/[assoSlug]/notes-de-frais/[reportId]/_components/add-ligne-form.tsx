@@ -18,6 +18,7 @@ type FieldsState = {
   beneficiaryLastname: string;
   iban: string;
   amount: string;
+  expenseName: string;
   typeDepenseChoice: string;
   customLabel: string;
   fundingSource: string;
@@ -29,6 +30,7 @@ const emptyFields: FieldsState = {
   beneficiaryLastname: "",
   iban: "",
   amount: "",
+  expenseName: "",
   typeDepenseChoice: "",
   customLabel: "",
   fundingSource: "",
@@ -72,6 +74,7 @@ export function AddLigneForm({
         beneficiaryLastname: v.beneficiaryLastname,
         iban: v.iban,
         amount: v.amount,
+        expenseName: v.expenseName,
         typeDepenseChoice: v.typeDepenseId || (v.customLabel ? CUSTOM_TYPE_DEPENSE : ""),
         customLabel: v.customLabel,
         fundingSource: v.fundingSource,
@@ -148,6 +151,19 @@ export function AddLigneForm({
               placeholder="0.00"
               value={fields.amount}
               onChange={(e) => setField("amount", e.target.value)}
+              required
+            />
+          </fieldset>
+
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Nom de la dépense</legend>
+            <input
+              type="text"
+              name="expenseName"
+              className="input w-full"
+              placeholder="Taxi gare Lille Flandres"
+              value={fields.expenseName}
+              onChange={(e) => setField("expenseName", e.target.value)}
               required
             />
           </fieldset>

@@ -57,6 +57,7 @@ export type ExpenseReportLineDetail = {
   beneficiaryLastname: string;
   iban: string | null;
   amountCents: number;
+  expenseName: string;
   typeDepenseId: string | null;
   typeDepenseLabel: string | null;
   customLabel: string | null;
@@ -133,6 +134,7 @@ export async function getExpenseReportDetail(
         beneficiaryLastname: line.beneficiaryLastname,
         iban: line.iban,
         amountCents: line.amountCents,
+        expenseName: line.expenseName,
         typeDepenseId: line.typeDepenseId,
         typeDepenseLabel: line.typeDepense?.label ?? null,
         customLabel: line.customLabel,
