@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { SupportingDocumentType } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
+import { isEditableExpenseReportStatus } from "./expense-report-status";
 import {
   buildSupportingDocumentPath,
   deleteStoredFile,
@@ -47,7 +48,7 @@ async function loadEditableReport(
   if (!report || report.assoId !== assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
-  if (report.status !== "DRAFT") {
+  if (!isEditableExpenseReportStatus(report.status)) {
     return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
   }
   return { ok: true, report: { id: report.id } };
@@ -233,7 +234,7 @@ export async function removeSupportingDocumentAction(
   if (!document || document.expenseReport.assoId !== structure.assoId) {
     return { ok: false, error: "Justificatif introuvable." };
   }
-  if (document.expenseReport.status !== "DRAFT") {
+  if (!isEditableExpenseReportStatus(document.expenseReport.status)) {
     return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
   }
 

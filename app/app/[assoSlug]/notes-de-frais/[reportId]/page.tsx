@@ -5,11 +5,13 @@ import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
 } from "@/lib/expense-reports/labels";
+import { isEditableExpenseReportStatus } from "@/lib/expense-reports/expense-report-status";
 import { formatCents } from "@/lib/money";
 import { AddLigneForm } from "./_components/add-ligne-form";
 import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
 import { FundingSourcesPanel } from "./_components/funding-sources-panel";
 import { LigneRow } from "./_components/ligne-row";
+import { SubmitExpenseReportForm } from "./_components/submit-expense-report-form";
 import { SubventionSelectionProvider } from "./_components/subvention-selection-context";
 import { SupportingDocumentsPanel } from "./_components/supporting-documents-panel";
 
@@ -29,6 +31,7 @@ export default async function ExpenseReportDetailPage({
     (sum, line) => sum + line.amountCents,
     0,
   );
+  const editable = isEditableExpenseReportStatus(report.status);
 
   return (
     <div>
@@ -73,7 +76,7 @@ export default async function ExpenseReportDetailPage({
           assoSlug={assoSlug}
           reportId={report.id}
           documents={report.supportingDocuments}
-          editable={report.status === "DRAFT"}
+          editable={editable}
         />
       </div>
 
@@ -108,7 +111,7 @@ export default async function ExpenseReportDetailPage({
                         assoType={assoType}
                         typeDepenses={typeDepenses}
                         visibleSubventions={visibleSubventions}
-                        editable={report.status === "DRAFT"}
+                        editable={editable}
                       />
                     ))
                   )}
@@ -130,7 +133,7 @@ export default async function ExpenseReportDetailPage({
               </div>
             </div>
 
-            {report.status === "DRAFT" && (
+            {editable && (
               <AddLigneForm
                 assoSlug={assoSlug}
                 expenseReportId={report.id}
@@ -151,13 +154,19 @@ export default async function ExpenseReportDetailPage({
         </div>
       </SubventionSelectionProvider>
 
-      {report.status === "DRAFT" && (
+      {editable && (
         <EditExpenseReportForm
           assoSlug={assoSlug}
           reportId={report.id}
           title={report.title}
           description={report.description}
         />
+      )}
+
+      {report.status === "DRAFT" && (
+        <div className="mt-6">
+          <SubmitExpenseReportForm assoSlug={assoSlug} reportId={report.id} />
+        </div>
       )}
     </div>
   );

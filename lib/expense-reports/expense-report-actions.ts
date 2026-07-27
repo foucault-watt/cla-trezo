@@ -5,9 +5,11 @@ import type { FundingSourceType } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { isEditableExpenseReportStatus } from "./expense-report-status";
 import {
   parseAddExpenseReportLineForm,
   parseCreateExpenseReportForm,
+  parseSubmitExpenseReportForm,
   parseUpdateExpenseReportForm,
   parseUpdateExpenseReportLineForm,
 } from "./expense-report-input";
@@ -113,7 +115,7 @@ export async function updateExpenseReportAction(
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
-  if (report.status !== "DRAFT") {
+  if (!isEditableExpenseReportStatus(report.status)) {
     return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
   }
 
@@ -125,6 +127,56 @@ export async function updateExpenseReportAction(
   revalidatePath(
     `/app/${parsed.data.assoSlug}/notes-de-frais/${report.id}`,
   );
+
+  return { ok: true };
+}
+
+export type SubmitExpenseReportState = { ok: boolean; error?: string };
+
+export async function submitExpenseReportAction(
+  _prevState: SubmitExpenseReportState,
+  formData: FormData,
+): Promise<SubmitExpenseReportState> {
+  const parsed = parseSubmitExpenseReportForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+
+  const report = await prisma.expenseReport.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, assoId: true, status: true },
+  });
+  if (!report || report.assoId !== structure.assoId) {
+    return { ok: false, error: "Note de frais introuvable." };
+  }
+  if (report.status !== "DRAFT") {
+    return {
+      ok: false,
+      error: "Cette Note de frais n'est plus en Brouillon.",
+    };
+  }
+
+  const lineCount = await prisma.expenseReportLine.count({
+    where: { expenseReportId: report.id },
+  });
+  if (lineCount === 0) {
+    return {
+      ok: false,
+      error: "Ajoutez au moins une Ligne avant de soumettre.",
+    };
+  }
+
+  await prisma.expenseReport.update({
+    where: { id: report.id },
+    data: { status: "SUBMITTED", submittedAt: new Date() },
+  });
+
+  revalidatePath(`/app/${parsed.data.assoSlug}/notes-de-frais/${report.id}`);
 
   return { ok: true };
 }
@@ -190,7 +242,7 @@ export async function addExpenseReportLineAction(
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable.", values };
   }
-  if (report.status !== "DRAFT") {
+  if (!isEditableExpenseReportStatus(report.status)) {
     return {
       ok: false,
       error: "Cette Note de frais n'est plus modifiable.",
@@ -261,7 +313,7 @@ export async function updateExpenseReportLineAction(
   if (!line || line.expenseReport.assoId !== structure.assoId) {
     return { ok: false, error: "Ligne introuvable.", values };
   }
-  if (line.expenseReport.status !== "DRAFT") {
+  if (!isEditableExpenseReportStatus(line.expenseReport.status)) {
     return {
       ok: false,
       error: "Cette Note de frais n'est plus modifiable.",

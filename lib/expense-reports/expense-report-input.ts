@@ -48,6 +48,22 @@ export function parseUpdateExpenseReportForm(formData: FormData) {
   });
 }
 
+export const submitExpenseReportFormSchema = z.object({
+  id: z.string().uuid(),
+  assoSlug: z.string().min(1),
+});
+
+export type SubmitExpenseReportFormInput = z.infer<
+  typeof submitExpenseReportFormSchema
+>;
+
+export function parseSubmitExpenseReportForm(formData: FormData) {
+  return submitExpenseReportFormSchema.safeParse({
+    id: formData.get("id"),
+    assoSlug: formData.get("assoSlug"),
+  });
+}
+
 const ibanSchema = z
   .string()
   .transform((value) => value.replace(/\s+/g, "").toUpperCase())

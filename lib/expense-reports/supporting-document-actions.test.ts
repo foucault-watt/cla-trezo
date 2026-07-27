@@ -143,10 +143,10 @@ describe("addSupportingDocumentsAction", () => {
     expect(transactionMock).not.toHaveBeenCalled();
   });
 
-  it("refuse si la Note n'est plus en Brouillon", async () => {
+  it("refuse si la Note est Prise en charge ou au-delà", async () => {
     reportFindUniqueMock.mockResolvedValue({
       ...draftReport,
-      status: "SUBMITTED",
+      status: "TAKEN_OVER",
     });
 
     const result = await addSupportingDocumentsAction(
@@ -160,6 +160,22 @@ describe("addSupportingDocumentsAction", () => {
       ok: false,
       error: "Cette Note de frais n'est plus modifiable.",
     });
+  });
+
+  it("autorise l'ajout d'un Justificatif en statut Soumise", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      ...draftReport,
+      status: "SUBMITTED",
+    });
+
+    const result = await addSupportingDocumentsAction(
+      { ok: false },
+      formData(validFields, [
+        { name: "facture.pdf", content: pdfContent, type: "application/pdf" },
+      ]),
+    );
+
+    expect(result.ok).toBe(true);
   });
 
   it("refuse d'ajouter un Justificatif si une Attestation existe déjà (exclusivité)", async () => {

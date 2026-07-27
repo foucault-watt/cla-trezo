@@ -8,6 +8,7 @@ const {
   lineCreateMock,
   lineFindUniqueMock,
   lineUpdateMock,
+  lineCountMock,
   assoFindUniqueMock,
   subventionFindUniqueMock,
   revalidatePathMock,
@@ -19,6 +20,7 @@ const {
   lineCreateMock: vi.fn(),
   lineFindUniqueMock: vi.fn(),
   lineUpdateMock: vi.fn(),
+  lineCountMock: vi.fn(),
   assoFindUniqueMock: vi.fn(),
   subventionFindUniqueMock: vi.fn(),
   revalidatePathMock: vi.fn(),
@@ -38,6 +40,7 @@ vi.mock("@/lib/prisma", () => ({
       create: lineCreateMock,
       findUnique: lineFindUniqueMock,
       update: lineUpdateMock,
+      count: lineCountMock,
     },
     asso: { findUnique: assoFindUniqueMock },
     subvention: { findUnique: subventionFindUniqueMock },
@@ -50,6 +53,7 @@ const {
   updateExpenseReportAction,
   addExpenseReportLineAction,
   updateExpenseReportLineAction,
+  submitExpenseReportAction,
 } = await import("./expense-report-actions");
 
 function formData(entries: Record<string, string>): FormData {
@@ -73,6 +77,7 @@ beforeEach(() => {
   lineCreateMock.mockReset();
   lineFindUniqueMock.mockReset();
   lineUpdateMock.mockReset();
+  lineCountMock.mockReset();
   assoFindUniqueMock.mockReset();
   subventionFindUniqueMock.mockReset();
   revalidatePathMock.mockReset();
@@ -144,11 +149,11 @@ describe("updateExpenseReportAction", () => {
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
-  it("refuse si la Note n'est plus en Brouillon", async () => {
+  it("refuse si la Note est Prise en charge ou au-delà", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: valid.id,
       assoId: "asso-1",
-      status: "SUBMITTED",
+      status: "TAKEN_OVER",
     });
 
     const result = await updateExpenseReportAction(
@@ -163,27 +168,30 @@ describe("updateExpenseReportAction", () => {
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
-  it("met à jour le titre et la description, et revalide la page détail", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-1",
-      status: "DRAFT",
-    });
+  it.each(["DRAFT", "SUBMITTED"] as const)(
+    "met à jour le titre et la description en statut %s, et revalide la page détail",
+    async (status) => {
+      reportFindUniqueMock.mockResolvedValue({
+        id: valid.id,
+        assoId: "asso-1",
+        status,
+      });
 
-    const result = await updateExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
+      const result = await updateExpenseReportAction(
+        { ok: false },
+        formData(valid),
+      );
 
-    expect(reportUpdateMock).toHaveBeenCalledWith({
-      where: { id: valid.id },
-      data: { title: valid.title, description: null },
-    });
-    expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/club-info/notes-de-frais/${valid.id}`,
-    );
-    expect(result).toEqual({ ok: true });
-  });
+      expect(reportUpdateMock).toHaveBeenCalledWith({
+        where: { id: valid.id },
+        data: { title: valid.title, description: null },
+      });
+      expect(revalidatePathMock).toHaveBeenCalledWith(
+        `/app/club-info/notes-de-frais/${valid.id}`,
+      );
+      expect(result).toEqual({ ok: true });
+    },
+  );
 });
 
 const validLine = {
@@ -446,6 +454,91 @@ describe("updateExpenseReportLineAction", () => {
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/club-info/notes-de-frais/${validLine.expenseReportId}`,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("submitExpenseReportAction", () => {
+  const valid = {
+    id: "66666666-6666-6666-8666-666666666666",
+    assoSlug: "club-info",
+  };
+
+  it("refuse une Note introuvable ou d'une autre Structure", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      assoId: "asso-autre",
+      status: "DRAFT",
+    });
+
+    const result = await submitExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({ ok: false, error: "Note de frais introuvable." });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Note n'est pas en Brouillon", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      assoId: "asso-1",
+      status: "SUBMITTED",
+    });
+
+    const result = await submitExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Cette Note de frais n'est plus en Brouillon.",
+    });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse une Note sans Ligne", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      assoId: "asso-1",
+      status: "DRAFT",
+    });
+    lineCountMock.mockResolvedValue(0);
+
+    const result = await submitExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Ajoutez au moins une Ligne avant de soumettre.",
+    });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("passe la Note de Brouillon à Soumise et revalide la page détail", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      assoId: "asso-1",
+      status: "DRAFT",
+    });
+    lineCountMock.mockResolvedValue(1);
+
+    const result = await submitExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(reportUpdateMock).toHaveBeenCalledWith({
+      where: { id: valid.id },
+      data: { status: "SUBMITTED", submittedAt: expect.any(Date) },
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      `/app/club-info/notes-de-frais/${valid.id}`,
     );
     expect(result).toEqual({ ok: true });
   });
