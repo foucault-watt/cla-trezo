@@ -9,6 +9,7 @@ const {
   lineFindUniqueMock,
   lineUpdateMock,
   lineCountMock,
+  documentCountMock,
   assoFindUniqueMock,
   subventionFindUniqueMock,
   revalidatePathMock,
@@ -21,6 +22,7 @@ const {
   lineFindUniqueMock: vi.fn(),
   lineUpdateMock: vi.fn(),
   lineCountMock: vi.fn(),
+  documentCountMock: vi.fn(),
   assoFindUniqueMock: vi.fn(),
   subventionFindUniqueMock: vi.fn(),
   revalidatePathMock: vi.fn(),
@@ -42,6 +44,7 @@ vi.mock("@/lib/prisma", () => ({
       update: lineUpdateMock,
       count: lineCountMock,
     },
+    supportingDocument: { count: documentCountMock },
     asso: { findUnique: assoFindUniqueMock },
     subvention: { findUnique: subventionFindUniqueMock },
   },
@@ -78,6 +81,7 @@ beforeEach(() => {
   lineFindUniqueMock.mockReset();
   lineUpdateMock.mockReset();
   lineCountMock.mockReset();
+  documentCountMock.mockReset();
   assoFindUniqueMock.mockReset();
   subventionFindUniqueMock.mockReset();
   revalidatePathMock.mockReset();
@@ -520,6 +524,28 @@ describe("submitExpenseReportAction", () => {
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
+  it("refuse une Note sans Justificatif ni Attestation sur l'honneur", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      assoId: "asso-1",
+      status: "DRAFT",
+    });
+    lineCountMock.mockResolvedValue(1);
+    documentCountMock.mockResolvedValue(0);
+
+    const result = await submitExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error:
+        "Ajoutez au moins un Justificatif ou une Attestation sur l'honneur avant de soumettre.",
+    });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
   it("passe la Note de Brouillon à Soumise et revalide la page détail", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: valid.id,
@@ -527,6 +553,7 @@ describe("submitExpenseReportAction", () => {
       status: "DRAFT",
     });
     lineCountMock.mockResolvedValue(1);
+    documentCountMock.mockResolvedValue(1);
 
     const result = await submitExpenseReportAction(
       { ok: false },

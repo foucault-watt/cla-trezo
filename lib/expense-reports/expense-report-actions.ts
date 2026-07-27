@@ -171,6 +171,17 @@ export async function submitExpenseReportAction(
     };
   }
 
+  const documentCount = await prisma.supportingDocument.count({
+    where: { expenseReportId: report.id },
+  });
+  if (documentCount === 0) {
+    return {
+      ok: false,
+      error:
+        "Ajoutez au moins un Justificatif ou une Attestation sur l'honneur avant de soumettre.",
+    };
+  }
+
   await prisma.expenseReport.update({
     where: { id: report.id },
     data: { status: "SUBMITTED", submittedAt: new Date() },
