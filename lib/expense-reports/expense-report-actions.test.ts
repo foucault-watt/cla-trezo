@@ -273,6 +273,24 @@ describe("addExpenseReportLineAction", () => {
     expect(lineCreateMock).not.toHaveBeenCalled();
   });
 
+  it("refuse le Solde comme source pour une Association loi 1901 (T11)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    assoFindUniqueMock.mockResolvedValue({ type: "ASSOCIATION_1901" });
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(validLine),
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: "Seuls les Clubs peuvent utiliser le Solde.",
+      }),
+    );
+    expect(lineCreateMock).not.toHaveBeenCalled();
+  });
+
   it("crée la Ligne financée par le Solde pour un Club, montant converti en centimes", async () => {
     reportFindUniqueMock.mockResolvedValue(draftReport);
     assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
