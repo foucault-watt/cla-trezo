@@ -78,7 +78,7 @@ export function FundingSourcesPanel({
         )}
         {visibleSubventions.length === 0 ? (
           <p className="text-xs text-base-content/50">
-            Aucune Subvention Publiée pour cette Structure.
+            Aucune Subvention Publiée pour cette association.
           </p>
         ) : (
           visibleSubventions.map((s) => {

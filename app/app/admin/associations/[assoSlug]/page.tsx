@@ -69,7 +69,7 @@ export default async function AdminAssociationDetailPage({
           {asso.type === "CLUB" &&
             (asso.solde.status === "not_initialized" ||
               asso.solde.status === "ready") && (
-              <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
                 <SoldeCard solde={asso.solde} />
                 <ManualMovementForm assoId={asso.id} assoSlug={asso.slug} />
               </div>

@@ -17,3 +17,7 @@ Single-context layout — one `CONTEXT.md` at the repo root plus `docs/adr/`. Se
 ### Testing
 
 Vitest, unit tests colocated as `*.test.ts`. Write a test whenever a change touches a business rule from `CONTEXT.md` or an ADR. See `docs/agents/testing.md`.
+
+### Seeds
+
+`prisma/seed.ts` = données de référence permanentes. `scripts/seed-*.ts` = seeds manuels jetables pour du volume de test, toujours gardés par `ALLOW_DEV_SEED=true`. See `docs/agents/seeds.md`.

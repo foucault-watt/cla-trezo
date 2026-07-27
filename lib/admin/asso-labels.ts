@@ -7,11 +7,11 @@ export const assoTypeLabel: Record<AssoType, string> = {
 };
 
 export const assoTypeDescription: Record<AssoType, string> = {
-  CLUB: "Structure interne à CLA, sans compte bancaire propre ni personnalité juridique séparée. Son argent est géré par CLA et suivi via un Solde interne dans l'application.",
+  CLUB: "Asso interne de CLA, sans compte bancaire propre.\nSon argent est géré par CLA et suivi via un Solde interne dans l'application.",
   COMMISSION:
-    "Structure interne à CLA disposant de son propre compte bancaire ou fonctionnement financier séparé. N'a pas de Solde interne CLA ; suit uniquement des Subventions.",
+    "Asso interne de CLA disposant de son propre compte bancaire.\nPas de Solde interne, suivi uniquement par Subventions.",
   ASSOCIATION_1901:
-    "Structure juridiquement indépendante de CLA, avec son propre compte bancaire. Fonctionne comme une Commission dans l'application : pas de Solde interne, suivi uniquement par Subventions.",
+    "Asso juridiquement indépendante de CLA disposant de son propre compte bancaire.\nPas de Solde interne, suivi uniquement par Subventions.",
 };
 
 export const assoTypeOptions: {

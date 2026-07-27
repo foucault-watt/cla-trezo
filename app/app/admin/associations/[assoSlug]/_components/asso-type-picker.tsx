@@ -48,7 +48,9 @@ function AssoTypeCard({
           <Icon size={20} className="text-primary" />
           <h3 className="card-title text-base">{label}</h3>
         </div>
-        <p className="text-sm text-base-content/70">{description}</p>
+        <p className="text-sm whitespace-pre-line text-base-content/70">
+          {description}
+        </p>
 
         {!state.ok && state.error && (
           <div role="alert" className="alert alert-error alert-soft mt-2">

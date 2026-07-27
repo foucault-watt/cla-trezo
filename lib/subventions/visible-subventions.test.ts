@@ -32,7 +32,7 @@ describe("listVisibleSubventions", () => {
     expect(requireStructureAccessMock).toHaveBeenCalledWith("club-info");
   });
 
-  it("ne interroge que les Subventions dont la Campagne est publiée pour cette Structure", async () => {
+  it("ne interroge que les Subventions dont la Campagne est publiée pour cette Association", async () => {
     findManyMock.mockResolvedValue([]);
 
     await listVisibleSubventions("club-info");

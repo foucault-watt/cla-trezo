@@ -278,7 +278,7 @@ export function AddLigneForm({
               )}
               {visibleSubventions.length === 0 && (
                 <p className="mt-1 text-xs text-warning">
-                  Aucune Subvention Publiée disponible pour cette Structure.
+                  Aucune Subvention Publiée disponible pour cette Association.
                 </p>
               )}
             </fieldset>
