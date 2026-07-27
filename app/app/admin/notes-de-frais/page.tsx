@@ -1,10 +1,39 @@
-export default function AdminNotesDeFraisPage() {
+import { ViewToggle } from "@/components/nav/view-toggle";
+import { listExpenseReportsForAdmin } from "@/lib/admin/expense-reports";
+import { ListView } from "./_components/list-view";
+import { GridView } from "./_components/grid-view";
+
+export default async function AdminNotesDeFraisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view } = await searchParams;
+  const current = view === "grid" ? "grid" : "list";
+  const reports = await listExpenseReportsForAdmin();
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Notes de frais</h1>
-      <p className="mt-2 text-base-content/70">
-        Validation des Notes de frais soumises par les associations.
-      </p>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Notes de frais</h1>
+          <p className="mt-1 text-sm text-base-content/70">
+            Notes de frais Soumises ou Prises en charge, toutes Structures
+            confondues.
+          </p>
+        </div>
+        {reports.length > 0 && <ViewToggle current={current} />}
+      </div>
+
+      {reports.length === 0 ? (
+        <p className="text-base-content/70">
+          Aucune Note de frais en attente de traitement.
+        </p>
+      ) : current === "list" ? (
+        <ListView reports={reports} />
+      ) : (
+        <GridView reports={reports} />
+      )}
     </div>
   );
 }

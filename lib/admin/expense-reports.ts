@@ -7,6 +7,48 @@ import type {
 } from "@/lib/expense-reports/expense-reports";
 import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
 
+export type ExpenseReportOverviewForAdmin = {
+  id: string;
+  title: string;
+  status: ExpenseReportStatus;
+  createdAt: Date;
+  assoName: string;
+  linesCount: number;
+  totalAmountCents: number;
+};
+
+/**
+ * Notes de frais en attente de traitement (Soumises ou Prises en charge),
+ * toutes Structures confondues — cf. T24.
+ */
+export async function listExpenseReportsForAdmin(): Promise<
+  ExpenseReportOverviewForAdmin[]
+> {
+  await requireAdmin();
+
+  const reports = await prisma.expenseReport.findMany({
+    where: { status: { in: ["SUBMITTED", "TAKEN_OVER"] } },
+    orderBy: { submittedAt: "asc" },
+    include: {
+      asso: { select: { name: true } },
+      lines: { select: { amountCents: true } },
+    },
+  });
+
+  return reports.map((report) => ({
+    id: report.id,
+    title: report.title,
+    status: report.status,
+    createdAt: report.createdAt,
+    assoName: report.asso.name,
+    linesCount: report.lines.length,
+    totalAmountCents: report.lines.reduce(
+      (sum, line) => sum + line.amountCents,
+      0,
+    ),
+  }));
+}
+
 export type ExpenseReportDetailForAdmin = {
   id: string;
   title: string;
