@@ -10,6 +10,7 @@ import {
   assertExpenseReportTransition,
   ExpenseReportLifecycleError,
 } from "./expense-report-lifecycle";
+import { checkFundingSourceEligibility } from "./funding-source-eligibility";
 import {
   parseAddExpenseReportLineForm,
   parseCreateExpenseReportForm,
@@ -19,12 +20,11 @@ import {
 } from "./expense-report-input";
 
 /**
- * Vérifie la règle T11 : Solde réservé aux Clubs, Subvention réservée à une
- * Structure destinataire dont la Campagne est Publiée. Partagée par l'ajout
- * et la modification de Ligne, seuls points d'entrée où une source de
- * financement est choisie.
+ * Charge les données Prisma nécessaires à la règle T11 (type de la Structure
+ * ou Subvention candidate selon la source choisie) puis délègue la décision
+ * à la fonction pure checkFundingSourceEligibility (cf. issue #29).
  */
-async function checkFundingSourceEligibility({
+async function loadFundingSourceEligibility({
   assoId,
   fundingSource,
   subventionId,
@@ -38,26 +38,27 @@ async function checkFundingSourceEligibility({
       where: { id: assoId },
       select: { type: true },
     });
-    if (asso?.type !== "CLUB") {
-      return { ok: false, error: "Seuls les Clubs peuvent utiliser le Solde." };
-    }
-    return { ok: true };
+    return checkFundingSourceEligibility({
+      fundingSource,
+      assoType: asso?.type ?? null,
+    });
   }
 
   const subvention = await prisma.subvention.findUnique({
     where: { id: subventionId as string },
     select: { assoId: true, campaign: { select: { publicationDate: true } } },
   });
-  const now = new Date();
-  if (
-    !subvention ||
-    subvention.assoId !== assoId ||
-    !subvention.campaign.publicationDate ||
-    subvention.campaign.publicationDate > now
-  ) {
-    return { ok: false, error: "Subvention introuvable ou non publiée." };
-  }
-  return { ok: true };
+  return checkFundingSourceEligibility({
+    assoId,
+    fundingSource,
+    subvention: subvention
+      ? {
+          assoId: subvention.assoId,
+          campaignPublicationDate: subvention.campaign.publicationDate,
+        }
+      : null,
+    now: new Date(),
+  });
 }
 
 export type CreateExpenseReportState = {
@@ -284,7 +285,7 @@ export async function addExpenseReportLineAction(
     };
   }
 
-  const eligibility = await checkFundingSourceEligibility({
+  const eligibility = await loadFundingSourceEligibility({
     assoId: structure.assoId,
     fundingSource: parsed.data.fundingSource,
     subventionId: parsed.data.subventionId,
@@ -361,7 +362,7 @@ export async function updateExpenseReportLineAction(
     };
   }
 
-  const eligibility = await checkFundingSourceEligibility({
+  const eligibility = await loadFundingSourceEligibility({
     assoId: structure.assoId,
     fundingSource: parsed.data.fundingSource,
     subventionId: parsed.data.subventionId,
