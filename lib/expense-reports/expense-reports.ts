@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import type {
   AssoType,
   ExpenseReportStatus,
-  FundingSourceType,
-  SupportingDocumentType,
 } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +9,15 @@ import {
   listVisibleSubventions,
   type VisibleSubvention,
 } from "@/lib/subventions/visible-subventions";
+import {
+  mapExpenseReportToDetail,
+  type ExpenseReportDetail,
+} from "@/lib/expense-reports/expense-report-detail-mapping";
+export type {
+  ExpenseReportLineDetail,
+  SupportingDocumentDetail,
+  ExpenseReportDetail,
+} from "@/lib/expense-reports/expense-report-detail-mapping";
 
 export type ExpenseReportOverview = {
   id: string;
@@ -51,39 +58,6 @@ export async function listExpenseReports(
     ),
   }));
 }
-
-export type ExpenseReportLineDetail = {
-  id: string;
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  iban: string | null;
-  amountCents: number;
-  expenseName: string;
-  typeDepenseId: string | null;
-  typeDepenseLabel: string | null;
-  customLabel: string | null;
-  fundingSource: FundingSourceType;
-  subventionId: string | null;
-  subventionReason: string | null;
-};
-
-export type SupportingDocumentDetail = {
-  id: string;
-  type: SupportingDocumentType;
-  originalFilename: string;
-  mimeType: string;
-  createdAt: Date;
-};
-
-export type ExpenseReportDetail = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: ExpenseReportStatus;
-  createdAt: Date;
-  lines: ExpenseReportLineDetail[];
-  supportingDocuments: SupportingDocumentDetail[];
-};
 
 export type TypeDepenseOption = { id: string; label: string };
 
@@ -136,34 +110,7 @@ export async function getExpenseReportDetail(
   }
 
   return {
-    report: {
-      id: report.id,
-      title: report.title,
-      description: report.description,
-      status: report.status,
-      createdAt: report.createdAt,
-      lines: report.lines.map((line) => ({
-        id: line.id,
-        beneficiaryFirstname: line.beneficiaryFirstname,
-        beneficiaryLastname: line.beneficiaryLastname,
-        iban: line.iban,
-        amountCents: line.amountCents,
-        expenseName: line.expenseName,
-        typeDepenseId: line.typeDepenseId,
-        typeDepenseLabel: line.typeDepense?.label ?? null,
-        customLabel: line.customLabel,
-        fundingSource: line.fundingSource,
-        subventionId: line.subventionId,
-        subventionReason: line.subvention?.reason ?? null,
-      })),
-      supportingDocuments: report.supportingDocuments.map((doc) => ({
-        id: doc.id,
-        type: doc.type,
-        originalFilename: doc.originalFilename,
-        mimeType: doc.mimeType,
-        createdAt: doc.createdAt,
-      })),
-    },
+    report: mapExpenseReportToDetail(report, { includeAdminFields: false }),
     assoId: structure.assoId,
     assoType: asso?.type ?? null,
     typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
+import { mapExpenseReportToDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import type {
   ExpenseReportLineDetail,
   SupportingDocumentDetail,
-} from "@/lib/expense-reports/expense-reports";
+} from "@/lib/expense-reports/expense-report-detail-mapping";
 import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
 
 export type ExpenseReportOverviewForAdmin = {
@@ -93,33 +94,8 @@ export async function getExpenseReportDetailForAdmin(
   }
 
   return {
-    id: report.id,
-    title: report.title,
-    description: report.description,
-    status: report.status,
-    createdAt: report.createdAt,
+    ...mapExpenseReportToDetail(report, { includeAdminFields: true }),
     assoName: report.asso.name,
     assoSlug: report.asso.slug,
-    lines: report.lines.map((line) => ({
-      id: line.id,
-      beneficiaryFirstname: line.beneficiaryFirstname,
-      beneficiaryLastname: line.beneficiaryLastname,
-      iban: line.iban,
-      amountCents: line.amountCents,
-      expenseName: line.expenseName,
-      typeDepenseId: line.typeDepenseId,
-      typeDepenseLabel: line.typeDepense?.label ?? null,
-      customLabel: line.customLabel,
-      fundingSource: line.fundingSource,
-      subventionId: line.subventionId,
-      subventionReason: line.subvention?.reason ?? null,
-    })),
-    supportingDocuments: report.supportingDocuments.map((doc) => ({
-      id: doc.id,
-      type: doc.type,
-      originalFilename: doc.originalFilename,
-      mimeType: doc.mimeType,
-      createdAt: doc.createdAt,
-    })),
   };
 }

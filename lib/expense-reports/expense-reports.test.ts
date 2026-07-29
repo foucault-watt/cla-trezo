@@ -173,7 +173,7 @@ describe("getExpenseReportDetail", () => {
         id: "line-1",
         beneficiaryFirstname: "Jean",
         beneficiaryLastname: "Dupont",
-        iban: "FR7630006000011234567890189",
+        iban: null,
         amountCents: 4250,
         expenseName: "Billets de train",
         typeDepenseId: "type-1",
@@ -193,5 +193,37 @@ describe("getExpenseReportDetail", () => {
         createdAt: new Date("2026-01-02"),
       },
     ]);
+  });
+
+  it("ne renvoie jamais l'IBAN à la Structure, même si la Ligne en a un en base", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: "report-1",
+      assoId: "asso-1",
+      title: "Gala 2026",
+      description: null,
+      status: "DRAFT",
+      createdAt: new Date("2026-01-01"),
+      lines: [
+        {
+          id: "line-1",
+          beneficiaryFirstname: "Jean",
+          beneficiaryLastname: "Dupont",
+          iban: "FR7630006000011234567890189",
+          amountCents: 4250,
+          expenseName: "Billets de train",
+          typeDepenseId: null,
+          typeDepense: null,
+          customLabel: "Frais divers",
+          fundingSource: "SOLDE",
+          subventionId: null,
+          subvention: null,
+        },
+      ],
+      supportingDocuments: [],
+    });
+
+    const result = await getExpenseReportDetail("club-info", "report-1");
+
+    expect(result.report.lines[0]?.iban).toBeNull();
   });
 });
