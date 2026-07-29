@@ -8,6 +8,20 @@ export const fundingSourceLabel: Record<FundingSourceType, string> = {
   SUBVENTION: "Subvention",
 };
 
+/**
+ * Libellé de la source de financement d'une Ligne, complété par la raison de
+ * la Subvention quand elle est renseignée. Partagé par les vues Structure et
+ * Admin (cf. issue #30).
+ */
+export function fundingSourceDetail(line: {
+  fundingSource: FundingSourceType;
+  subventionReason: string | null;
+}): string {
+  return line.fundingSource === "SUBVENTION" && line.subventionReason
+    ? `${fundingSourceLabel[line.fundingSource]} — ${line.subventionReason}`
+    : fundingSourceLabel[line.fundingSource];
+}
+
 export const expenseReportStatusLabel: Record<ExpenseReportStatus, string> = {
   DRAFT: "Brouillon",
   SUBMITTED: "Soumise",

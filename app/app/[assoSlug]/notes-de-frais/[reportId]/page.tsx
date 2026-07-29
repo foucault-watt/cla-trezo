@@ -2,14 +2,13 @@ import Link from "next/link";
 import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
 import { getClubSolde } from "@/lib/solde/actions";
 import {
-  expenseReportStatusBadgeClass,
-  expenseReportStatusLabel,
-} from "@/lib/expense-reports/labels";
-import {
   assertExpenseReportMutable,
   ExpenseReportLifecycleError,
 } from "@/lib/expense-reports/expense-report-lifecycle";
-import { formatCents } from "@/lib/money";
+import {
+  ExpenseReportDetailHeader,
+  ExpenseReportLinesTable,
+} from "@/components/expense-reports/expense-report-detail-view";
 import { AddLigneForm } from "./_components/add-ligne-form";
 import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
 import { FundingSourcesPanel } from "./_components/funding-sources-panel";
@@ -30,10 +29,6 @@ export default async function ExpenseReportDetailPage({
       getClubSolde(assoSlug),
     ]);
 
-  const totalAmountCents = report.lines.reduce(
-    (sum, line) => sum + line.amountCents,
-    0,
-  );
   let editable = true;
   try {
     assertExpenseReportMutable({
@@ -54,34 +49,7 @@ export default async function ExpenseReportDetailPage({
         ← Toutes les Notes de frais
       </Link>
 
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{report.title}</h1>
-          {report.description && (
-            <p className="mt-1 text-sm text-base-content/70">
-              {report.description}
-            </p>
-          )}
-        </div>
-        <span
-          className={`badge ${expenseReportStatusBadgeClass[report.status]}`}
-        >
-          {expenseReportStatusLabel[report.status]}
-        </span>
-      </div>
-
-      <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-        <div className="stat">
-          <div className="stat-title">Lignes</div>
-          <div className="stat-value text-2xl">{report.lines.length}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Montant total</div>
-          <div className="stat-value text-2xl">
-            {formatCents(totalAmountCents)}
-          </div>
-        </div>
-      </div>
+      <ExpenseReportDetailHeader report={report} />
 
       <div className="mt-6">
         <SupportingDocumentsPanel
@@ -95,41 +63,21 @@ export default async function ExpenseReportDetailPage({
       <SubventionSelectionProvider>
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="flex flex-col gap-6">
-            <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-md">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Bénéficiaire</th>
-                    <th>Nom de la dépense</th>
-                    <th>Type de dépense</th>
-                    <th>Montant</th>
-                    <th>Source</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.lines.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-base-content/70">
-                        Aucune Ligne pour l&apos;instant.
-                      </td>
-                    </tr>
-                  ) : (
-                    report.lines.map((line) => (
-                      <LigneRow
-                        key={line.id}
-                        assoSlug={assoSlug}
-                        line={line}
-                        assoType={assoType}
-                        typeDepenses={typeDepenses}
-                        visibleSubventions={visibleSubventions}
-                        editable={editable}
-                      />
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <ExpenseReportLinesTable
+              lines={report.lines}
+              showIban={false}
+              renderLine={(line) => (
+                <LigneRow
+                  key={line.id}
+                  assoSlug={assoSlug}
+                  line={line}
+                  assoType={assoType}
+                  typeDepenses={typeDepenses}
+                  visibleSubventions={visibleSubventions}
+                  editable={editable}
+                />
+              )}
+            />
 
             <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
               <input type="checkbox" />

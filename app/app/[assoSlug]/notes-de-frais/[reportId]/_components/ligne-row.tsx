@@ -5,7 +5,7 @@ import {
   updateExpenseReportLineAction,
   type UpdateExpenseReportLineState,
 } from "@/lib/expense-reports/expense-report-actions";
-import { fundingSourceLabel } from "@/lib/expense-reports/labels";
+import { fundingSourceDetail, fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { formatCents } from "@/lib/money";
 import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
@@ -118,10 +118,7 @@ export function LigneRow({
   const selectedSubvention = visibleSubventions.find(
     (s) => s.id === fields.subventionId,
   );
-  const sourceDetail =
-    line.fundingSource === "SUBVENTION" && line.subventionReason
-      ? `${fundingSourceLabel[line.fundingSource]} — ${line.subventionReason}`
-      : fundingSourceLabel[line.fundingSource];
+  const sourceDetail = fundingSourceDetail(line);
 
   return (
     <>

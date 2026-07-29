@@ -2,11 +2,10 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { getExpenseReportDetailForAdmin } from "@/lib/admin/expense-reports";
 import {
-  expenseReportStatusBadgeClass,
-  expenseReportStatusLabel,
-  fundingSourceLabel,
-} from "@/lib/expense-reports/labels";
-import { formatCents } from "@/lib/money";
+  ExpenseReportDetailHeader,
+  ExpenseReportLinesTable,
+} from "@/components/expense-reports/expense-report-detail-view";
+import { AdminLigneRow } from "./_components/admin-ligne-row";
 import { TakeOverButton } from "./_components/take-over-button";
 
 function documentUrl(reportId: string, documentId: string) {
@@ -21,11 +20,6 @@ export default async function AdminExpenseReportDetailPage({
   const { reportId } = await params;
   const report = await getExpenseReportDetailForAdmin(reportId);
 
-  const totalAmountCents = report.lines.reduce(
-    (sum, line) => sum + line.amountCents,
-    0,
-  );
-
   return (
     <div>
       <Link
@@ -35,78 +29,21 @@ export default async function AdminExpenseReportDetailPage({
         ← Toutes les Notes de frais
       </Link>
 
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{report.title}</h1>
+      <ExpenseReportDetailHeader
+        report={report}
+        subtitle={
           <p className="mt-1 text-sm text-base-content/70">
             {report.assoName}
           </p>
-          {report.description && (
-            <p className="mt-1 text-sm text-base-content/70">
-              {report.description}
-            </p>
-          )}
-        </div>
-        <span
-          className={`badge ${expenseReportStatusBadgeClass[report.status]}`}
-        >
-          {expenseReportStatusLabel[report.status]}
-        </span>
-      </div>
+        }
+      />
 
-      <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-        <div className="stat">
-          <div className="stat-title">Lignes</div>
-          <div className="stat-value text-2xl">{report.lines.length}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Montant total</div>
-          <div className="stat-value text-2xl">
-            {formatCents(totalAmountCents)}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-md">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Bénéficiaire</th>
-              <th>IBAN</th>
-              <th>Nom de la dépense</th>
-              <th>Type de dépense</th>
-              <th>Montant</th>
-              <th>Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.lines.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-base-content/70">
-                  Aucune Ligne pour l&apos;instant.
-                </td>
-              </tr>
-            ) : (
-              report.lines.map((line) => (
-                <tr key={line.id}>
-                  <td>
-                    {line.beneficiaryFirstname} {line.beneficiaryLastname}
-                  </td>
-                  <td>{line.iban ?? "—"}</td>
-                  <td>{line.expenseName}</td>
-                  <td>{line.typeDepenseLabel ?? line.customLabel}</td>
-                  <td>{formatCents(line.amountCents)}</td>
-                  <td>
-                    {line.fundingSource === "SUBVENTION" &&
-                    line.subventionReason
-                      ? `${fundingSourceLabel[line.fundingSource]} — ${line.subventionReason}`
-                      : fundingSourceLabel[line.fundingSource]}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <ExpenseReportLinesTable
+          lines={report.lines}
+          showIban
+          renderLine={(line) => <AdminLigneRow key={line.id} line={line} />}
+        />
       </div>
 
       <div className="card mt-6 border border-base-300 bg-base-100 shadow-md">
