@@ -5,7 +5,11 @@ import type { FundingSourceType } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
-import { isEditableExpenseReportStatus } from "./expense-report-status";
+import {
+  assertExpenseReportMutable,
+  assertExpenseReportTransition,
+  ExpenseReportLifecycleError,
+} from "./expense-report-lifecycle";
 import {
   parseAddExpenseReportLineForm,
   parseCreateExpenseReportForm,
@@ -115,7 +119,13 @@ export async function updateExpenseReportAction(
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
-  if (!isEditableExpenseReportStatus(report.status)) {
+  try {
+    assertExpenseReportMutable({
+      status: report.status,
+      actor: { type: "STRUCTURE", assoId: structure.assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
     return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
   }
 
@@ -154,7 +164,14 @@ export async function submitExpenseReportAction(
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
-  if (report.status !== "DRAFT") {
+  try {
+    assertExpenseReportTransition({
+      from: report.status,
+      to: "SUBMITTED",
+      actor: { type: "STRUCTURE", assoId: structure.assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
     return {
       ok: false,
       error: "Cette Note de frais n'est plus en Brouillon.",
@@ -253,7 +270,13 @@ export async function addExpenseReportLineAction(
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable.", values };
   }
-  if (!isEditableExpenseReportStatus(report.status)) {
+  try {
+    assertExpenseReportMutable({
+      status: report.status,
+      actor: { type: "STRUCTURE", assoId: structure.assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
     return {
       ok: false,
       error: "Cette Note de frais n'est plus modifiable.",
@@ -324,7 +347,13 @@ export async function updateExpenseReportLineAction(
   if (!line || line.expenseReport.assoId !== structure.assoId) {
     return { ok: false, error: "Ligne introuvable.", values };
   }
-  if (!isEditableExpenseReportStatus(line.expenseReport.status)) {
+  try {
+    assertExpenseReportMutable({
+      status: line.expenseReport.status,
+      actor: { type: "STRUCTURE", assoId: structure.assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
     return {
       ok: false,
       error: "Cette Note de frais n'est plus modifiable.",

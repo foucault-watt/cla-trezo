@@ -89,6 +89,7 @@ export type TypeDepenseOption = { id: string; label: string };
 
 export type ExpenseReportDetailContext = {
   report: ExpenseReportDetail;
+  assoId: string;
   assoType: AssoType | null;
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
@@ -163,6 +164,7 @@ export async function getExpenseReportDetail(
         createdAt: doc.createdAt,
       })),
     },
+    assoId: structure.assoId,
     assoType: asso?.type ?? null,
     typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),
     visibleSubventions,

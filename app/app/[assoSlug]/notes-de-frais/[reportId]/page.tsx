@@ -5,7 +5,10 @@ import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
 } from "@/lib/expense-reports/labels";
-import { isEditableExpenseReportStatus } from "@/lib/expense-reports/expense-report-status";
+import {
+  assertExpenseReportMutable,
+  ExpenseReportLifecycleError,
+} from "@/lib/expense-reports/expense-report-lifecycle";
 import { formatCents } from "@/lib/money";
 import { AddLigneForm } from "./_components/add-ligne-form";
 import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
@@ -21,7 +24,7 @@ export default async function ExpenseReportDetailPage({
   params: Promise<{ assoSlug: string; reportId: string }>;
 }) {
   const { assoSlug, reportId } = await params;
-  const [{ report, assoType, typeDepenses, visibleSubventions }, soldeView] =
+  const [{ report, assoId, assoType, typeDepenses, visibleSubventions }, soldeView] =
     await Promise.all([
       getExpenseReportDetail(assoSlug, reportId),
       getClubSolde(assoSlug),
@@ -31,7 +34,16 @@ export default async function ExpenseReportDetailPage({
     (sum, line) => sum + line.amountCents,
     0,
   );
-  const editable = isEditableExpenseReportStatus(report.status);
+  let editable = true;
+  try {
+    assertExpenseReportMutable({
+      status: report.status,
+      actor: { type: "STRUCTURE", assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
+    editable = false;
+  }
 
   return (
     <div>

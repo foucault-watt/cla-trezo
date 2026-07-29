@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/guards";
+import {
+  assertExpenseReportTransition,
+  ExpenseReportLifecycleError,
+} from "@/lib/expense-reports/expense-report-lifecycle";
 import { prisma } from "@/lib/prisma";
 import { parseTakeOverExpenseReportForm } from "./expense-report-input";
 
@@ -33,7 +37,14 @@ export async function takeOverExpenseReportAction(
   if (!report) {
     return { ok: false, error: "Note de frais introuvable." };
   }
-  if (report.status !== "SUBMITTED") {
+  try {
+    assertExpenseReportTransition({
+      from: report.status,
+      to: "TAKEN_OVER",
+      actor: { type: "ADMIN" },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
     return {
       ok: false,
       error: "Cette Note de frais n'est pas en attente de prise en charge.",
