@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
+import { listActiveAssoMembers } from "@/lib/asso/members";
 import { getExpenseReportDetailForAdmin } from "@/lib/admin/expense-reports";
-import {
-  ExpenseReportDetailHeader,
-  ExpenseReportLinesTable,
-} from "@/components/expense-reports/expense-report-detail-view";
-import { AdminLigneRow } from "./_components/admin-ligne-row";
+import { ExpenseReportDetailHeader } from "@/components/expense-reports/expense-report-detail-view";
+import { PersonGroupsAdmin } from "./_components/person-groups-admin";
 import { TakeOverButton } from "./_components/take-over-button";
 
 function documentUrl(reportId: string, documentId: string) {
@@ -19,6 +17,7 @@ export default async function AdminExpenseReportDetailPage({
 }) {
   const { reportId } = await params;
   const report = await getExpenseReportDetailForAdmin(reportId);
+  const members = await listActiveAssoMembers(report.assoId);
 
   return (
     <div>
@@ -39,11 +38,7 @@ export default async function AdminExpenseReportDetailPage({
       />
 
       <div className="mt-6">
-        <ExpenseReportLinesTable
-          lines={report.lines}
-          showIban
-          renderLine={(line) => <AdminLigneRow key={line.id} line={line} />}
-        />
+        <PersonGroupsAdmin lines={report.lines} members={members} />
       </div>
 
       <div className="card mt-6 border border-base-300 bg-base-100 shadow-md">

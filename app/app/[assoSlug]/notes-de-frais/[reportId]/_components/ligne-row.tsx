@@ -51,6 +51,7 @@ export function LigneRow({
   typeDepenses,
   visibleSubventions,
   editable,
+  showBeneficiaryColumn = true,
 }: {
   assoSlug: string;
   line: ExpenseReportLineDetail;
@@ -58,6 +59,7 @@ export function LigneRow({
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
   editable: boolean;
+  showBeneficiaryColumn?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(
@@ -120,12 +122,16 @@ export function LigneRow({
   );
   const sourceDetail = fundingSourceDetail(line);
 
+  const columnCount = showBeneficiaryColumn ? 6 : 5;
+
   return (
     <>
       <tr className="hover">
-        <td>
-          {line.beneficiaryFirstname} {line.beneficiaryLastname}
-        </td>
+        {showBeneficiaryColumn && (
+          <td>
+            {line.beneficiaryFirstname} {line.beneficiaryLastname}
+          </td>
+        )}
         <td>{line.expenseName}</td>
         <td>{line.typeDepenseLabel ?? line.customLabel}</td>
         <td>{formatCents(line.amountCents)}</td>
@@ -144,7 +150,7 @@ export function LigneRow({
       </tr>
       {editable && editing && (
         <tr>
-          <td colSpan={6}>
+          <td colSpan={columnCount}>
             <form action={formAction} className="flex flex-col gap-3 py-2">
               <input type="hidden" name="id" value={line.id} />
               <input type="hidden" name="assoSlug" value={assoSlug} />

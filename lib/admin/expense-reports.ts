@@ -56,6 +56,7 @@ export type ExpenseReportDetailForAdmin = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  assoId: string;
   assoName: string;
   assoSlug: string;
   lines: ExpenseReportLineDetail[];
@@ -95,6 +96,7 @@ export async function getExpenseReportDetailForAdmin(
 
   return {
     ...mapExpenseReportToDetail(report, { includeAdminFields: true }),
+    assoId: report.assoId,
     assoName: report.asso.name,
     assoSlug: report.asso.slug,
   };
