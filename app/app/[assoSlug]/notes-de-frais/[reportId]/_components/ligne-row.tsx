@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { TriangleAlert } from "lucide-react";
 import {
   updateExpenseReportLineAction,
   type UpdateExpenseReportLineState,
@@ -71,14 +72,18 @@ export function LigneRow({
   // Après chaque soumission, on resynchronise les champs affichés sur le
   // résultat du Server Action plutôt que de laisser le navigateur réinitialiser
   // le <form> : en échec, la saisie de l'utilisateur est restaurée telle
-  // quelle (pas besoin de tout retaper) ; en succès, le panneau se referme.
-  // Ajusté pendant le rendu (cf. règle react-hooks/set-state-in-effect), pas
-  // dans un effet.
+  // quelle (pas besoin de tout retaper) ; en succès, le panneau se referme —
+  // sauf s'il y a des Warnings à afficher (cf. T13-T15), auquel cas il reste
+  // ouvert le temps que l'utilisateur les lise, fermeture manuelle via
+  // "Annuler". Ajusté pendant le rendu (cf. règle react-hooks/set-state-in-effect),
+  // pas dans un effet.
   const [lastHandledState, setLastHandledState] = useState(state);
   if (state !== lastHandledState) {
     setLastHandledState(state);
     if (state.ok && editing) {
-      setEditing(false);
+      if (!state.warnings || state.warnings.length === 0) {
+        setEditing(false);
+      }
     } else if (!state.ok && state.values) {
       const v = state.values;
       setFields({
@@ -135,7 +140,22 @@ export function LigneRow({
         <td>{line.expenseName}</td>
         <td>{line.typeDepenseLabel ?? line.customLabel}</td>
         <td>{formatCents(line.amountCents)}</td>
-        <td>{sourceDetail}</td>
+        <td>
+          <div className="flex items-center gap-1.5">
+            <span>{sourceDetail}</span>
+            {line.warnings.length > 0 && (
+              <div
+                className="tooltip tooltip-warning"
+                data-tip={line.warnings.join(" ")}
+              >
+                <TriangleAlert
+                  className="size-4 shrink-0 text-warning"
+                  aria-label={line.warnings.join(" ")}
+                />
+              </div>
+            )}
+          </div>
+        </td>
         <td>
           {editable && (
             <button
@@ -315,6 +335,15 @@ export function LigneRow({
                     <p className="text-sm font-medium text-primary">
                       {selectedSubvention.reason}
                     </p>
+                  ) : fields.subventionId === line.subventionId &&
+                    line.subventionReason ? (
+                    // Subvention déjà assignée à cette Ligne mais sortie de la
+                    // fenêtre du panneau (plus de deux ans, cf.
+                    // isSubventionWithinFundingWindow) : on affiche quand même
+                    // sa raison, connue via la Ligne elle-même.
+                    <p className="text-sm font-medium text-primary">
+                      {line.subventionReason}
+                    </p>
                   ) : (
                     <p className="text-sm text-base-content/70">
                       Choisissez une Subvention dans le panneau à droite.
@@ -331,23 +360,46 @@ export function LigneRow({
                   <span>{state.error}</span>
                 </div>
               )}
+              {state.ok && state.warnings && state.warnings.length > 0 && (
+                <div
+                  role="alert"
+                  className="alert alert-warning alert-soft alert-sm"
+                >
+                  <ul className="list-disc pl-4">
+                    {state.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-              <button
-                type="submit"
-                className="btn btn-primary btn-sm self-start"
-                disabled={
-                  pending ||
-                  !fields.fundingSource ||
-                  (fields.fundingSource === "SUBVENTION" &&
-                    !fields.subventionId)
-                }
-              >
-                {pending ? (
-                  <span className="loading loading-spinner loading-xs" />
-                ) : (
-                  "Enregistrer"
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm self-start"
+                  disabled={
+                    pending ||
+                    !fields.fundingSource ||
+                    (fields.fundingSource === "SUBVENTION" &&
+                      !fields.subventionId)
+                  }
+                >
+                  {pending ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    "Enregistrer"
+                  )}
+                </button>
+                {state.ok && state.warnings && state.warnings.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setEditing(false)}
+                  >
+                    Fermer
+                  </button>
                 )}
-              </button>
+              </div>
             </form>
           </td>
         </tr>

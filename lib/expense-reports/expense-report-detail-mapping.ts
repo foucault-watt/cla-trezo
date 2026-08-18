@@ -17,6 +17,8 @@ export type ExpenseReportLineDetail = {
   fundingSource: FundingSourceType;
   subventionId: string | null;
   subventionReason: string | null;
+  /** Warnings T13-T15 (cf. lib/expense-reports/line-warnings.ts), calculés à la volée par l'appelant — jamais stockés. Vide par défaut : mapExpenseReportToDetail ne les calcule pas elle-même (pure, sans accès DB). */
+  warnings: string[];
 };
 
 export type SupportingDocumentDetail = {
@@ -117,6 +119,7 @@ function mapLineToDetail(
     fundingSource: line.fundingSource,
     subventionId: line.subventionId,
     subventionReason: line.subvention?.reason ?? null,
+    warnings: [],
   };
 }
 

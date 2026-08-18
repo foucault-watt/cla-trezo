@@ -9,9 +9,11 @@ const {
   lineFindUniqueMock,
   lineUpdateMock,
   lineCountMock,
+  lineFindManyMock,
   documentCountMock,
   assoFindUniqueMock,
   subventionFindUniqueMock,
+  financialMovementFindManyMock,
   revalidatePathMock,
 } = vi.hoisted(() => ({
   requireStructureAccessMock: vi.fn(),
@@ -22,9 +24,11 @@ const {
   lineFindUniqueMock: vi.fn(),
   lineUpdateMock: vi.fn(),
   lineCountMock: vi.fn(),
+  lineFindManyMock: vi.fn(),
   documentCountMock: vi.fn(),
   assoFindUniqueMock: vi.fn(),
   subventionFindUniqueMock: vi.fn(),
+  financialMovementFindManyMock: vi.fn(),
   revalidatePathMock: vi.fn(),
 }));
 
@@ -43,10 +47,12 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: lineFindUniqueMock,
       update: lineUpdateMock,
       count: lineCountMock,
+      findMany: lineFindManyMock,
     },
     supportingDocument: { count: documentCountMock },
     asso: { findUnique: assoFindUniqueMock },
     subvention: { findUnique: subventionFindUniqueMock },
+    financialMovement: { findMany: financialMovementFindManyMock },
   },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
@@ -81,11 +87,15 @@ beforeEach(() => {
   lineFindUniqueMock.mockReset();
   lineUpdateMock.mockReset();
   lineCountMock.mockReset();
+  lineFindManyMock.mockReset();
   documentCountMock.mockReset();
   assoFindUniqueMock.mockReset();
   subventionFindUniqueMock.mockReset();
+  financialMovementFindManyMock.mockReset();
   revalidatePathMock.mockReset();
   requireStructureAccessMock.mockResolvedValue(structureAccess);
+  lineFindManyMock.mockResolvedValue([]);
+  financialMovementFindManyMock.mockResolvedValue([]);
 });
 
 describe("createExpenseReportAction", () => {
@@ -306,6 +316,9 @@ describe("addExpenseReportLineAction", () => {
   it("crée la Ligne financée par le Solde pour un Club, montant converti en centimes", async () => {
     reportFindUniqueMock.mockResolvedValue(draftReport);
     assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
+    financialMovementFindManyMock.mockResolvedValue([
+      { movementType: "CREDIT", amountCents: 100000 },
+    ]);
 
     const result = await addExpenseReportLineAction(
       { ok: false },
@@ -329,7 +342,41 @@ describe("addExpenseReportLineAction", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/club-info/notes-de-frais/${validLine.expenseReportId}`,
     );
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, warnings: [] });
+  });
+
+  it("déclenche le Warning Solde négatif sans bloquer la création (T13)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
+    financialMovementFindManyMock.mockResolvedValue([
+      { movementType: "CREDIT", amountCents: 1000 },
+    ]);
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(validLine),
+    );
+
+    expect(lineCreateMock).toHaveBeenCalled();
+    expect(result).toEqual({
+      ok: true,
+      warnings: ["Cette Ligne crée ou aggrave un solde négatif."],
+    });
+  });
+
+  it("ne déclenche pas le Warning Solde négatif quand le solde projeté reste positif (T13)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
+    financialMovementFindManyMock.mockResolvedValue([
+      { movementType: "CREDIT", amountCents: 100000 },
+    ]);
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(validLine),
+    );
+
+    expect(result).toEqual({ ok: true, warnings: [] });
   });
 
   it("refuse une Subvention introuvable, d'une autre Structure, ou dont la campagne n'est pas publiée", async () => {
@@ -362,7 +409,11 @@ describe("addExpenseReportLineAction", () => {
     reportFindUniqueMock.mockResolvedValue(draftReport);
     subventionFindUniqueMock.mockResolvedValue({
       assoId: "asso-1",
-      campaign: { publicationDate: new Date("2020-01-01") },
+      amountCents: 100000,
+      campaign: {
+        publicationDate: new Date("2020-01-01"),
+        date: new Date(),
+      },
     });
 
     const subventionLine = {
@@ -386,7 +437,112 @@ describe("addExpenseReportLineAction", () => {
         typeDepenseId: null,
       }),
     });
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, warnings: [] });
+  });
+
+  const subventionLine = {
+    ...validLine,
+    typeDepenseId: "",
+    customLabel: "Location de matériel",
+    fundingSource: "SUBVENTION",
+    subventionId: "44444444-4444-4444-8444-444444444444",
+  };
+
+  it("déclenche le Warning dépassement de Subvention sans bloquer la création (T14)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    subventionFindUniqueMock.mockResolvedValue({
+      assoId: "asso-1",
+      amountCents: 1000,
+      campaign: { publicationDate: new Date("2020-01-01"), date: new Date() },
+    });
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(subventionLine),
+    );
+
+    expect(lineCreateMock).toHaveBeenCalled();
+    expect(result).toEqual({
+      ok: true,
+      warnings: ["Cette Ligne dépasse le montant restant de la Subvention."],
+    });
+  });
+
+  it("cumule les autres Lignes en attente sur la même Subvention pour le Warning dépassement (T14)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    subventionFindUniqueMock.mockResolvedValue({
+      assoId: "asso-1",
+      amountCents: 10000,
+      campaign: { publicationDate: new Date("2020-01-01"), date: new Date() },
+    });
+    lineFindManyMock.mockResolvedValue([{ amountCents: 9000 }]);
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(subventionLine),
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      warnings: ["Cette Ligne dépasse le montant restant de la Subvention."],
+    });
+  });
+
+  it("ne déclenche pas le Warning dépassement quand la Ligne tient dans le montant restant (T14)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    subventionFindUniqueMock.mockResolvedValue({
+      assoId: "asso-1",
+      amountCents: 100000,
+      campaign: { publicationDate: new Date("2020-01-01"), date: new Date() },
+    });
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(subventionLine),
+    );
+
+    expect(result).toEqual({ ok: true, warnings: [] });
+  });
+
+  it("déclenche le Warning Subvention ancienne sans bloquer la création (T15)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    subventionFindUniqueMock.mockResolvedValue({
+      assoId: "asso-1",
+      amountCents: 100000,
+      campaign: {
+        publicationDate: new Date("2020-01-01"),
+        date: new Date("2020-01-01"),
+      },
+    });
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(subventionLine),
+    );
+
+    expect(lineCreateMock).toHaveBeenCalled();
+    expect(result).toEqual({
+      ok: true,
+      warnings: [
+        "La Subvention utilisée date de plus d'un an ; elle sera probablement refusée.",
+      ],
+    });
+  });
+
+  it("ne déclenche pas le Warning Subvention ancienne pour une Campagne récente (T15)", async () => {
+    reportFindUniqueMock.mockResolvedValue(draftReport);
+    subventionFindUniqueMock.mockResolvedValue({
+      assoId: "asso-1",
+      amountCents: 100000,
+      campaign: { publicationDate: new Date("2020-01-01"), date: new Date() },
+    });
+
+    const result = await addExpenseReportLineAction(
+      { ok: false },
+      formData(subventionLine),
+    );
+
+    expect(result).toEqual({ ok: true, warnings: [] });
   });
 });
 
@@ -442,6 +598,9 @@ describe("updateExpenseReportLineAction", () => {
   it("met à jour la Ligne et revalide la page détail", async () => {
     lineFindUniqueMock.mockResolvedValue(draftLine);
     assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
+    financialMovementFindManyMock.mockResolvedValue([
+      { movementType: "CREDIT", amountCents: 100000 },
+    ]);
 
     const result = await updateExpenseReportLineAction(
       { ok: false },
@@ -459,7 +618,29 @@ describe("updateExpenseReportLineAction", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/club-info/notes-de-frais/${validLine.expenseReportId}`,
     );
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, warnings: [] });
+  });
+
+  it("exclut la Ligne éditée de ses propres cumuls en attente (T13)", async () => {
+    lineFindUniqueMock.mockResolvedValue(draftLine);
+    assoFindUniqueMock.mockResolvedValue({ type: "CLUB" });
+    financialMovementFindManyMock.mockResolvedValue([
+      { movementType: "CREDIT", amountCents: 4250 },
+    ]);
+
+    const result = await updateExpenseReportLineAction(
+      { ok: false },
+      formData(validUpdate),
+    );
+
+    expect(lineFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: { not: validUpdate.id },
+        }),
+      }),
+    );
+    expect(result).toEqual({ ok: true, warnings: [] });
   });
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import type { AssoType } from "@/app/generated/prisma/enums";
 import type { SoldeView } from "@/lib/solde/solde";
@@ -90,9 +90,11 @@ export function FundingSourcesPanel({
                 className={`card border-2 transition-all duration-150 ${
                   selected
                     ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-                    : clickable
-                      ? "border-base-300 hover:border-primary/50"
-                      : "border-base-300"
+                    : s.stale
+                      ? "border-error/50 hover:border-error"
+                      : clickable
+                        ? "border-base-300 hover:border-primary/50"
+                        : "border-base-300"
                 }`}
               >
                 <div className="card-body gap-1 p-4">
@@ -113,14 +115,22 @@ export function FundingSourcesPanel({
                         </span>
                       )}
                     </div>
-                    <span className="text-lg font-semibold text-success">
+                    <span
+                      className={`text-lg font-semibold ${s.stale ? "text-error" : "text-success"}`}
+                    >
                       reste {formatCents(s.remainingAmountCents)}
                     </span>
                     <progress
-                      className="progress progress-success w-full"
+                      className={`progress w-full ${s.stale ? "progress-error" : "progress-success"}`}
                       value={s.remainingAmountCents}
                       max={s.totalAmountCents}
                     />
+                    {s.stale && (
+                      <span className="flex items-center gap-1 text-xs text-error">
+                        <TriangleAlert className="size-3.5 shrink-0" />
+                        Subvention ancienne — risque de refus par l&apos;Admin.
+                      </span>
+                    )}
                   </button>
                   {s.commentary && (
                     <div className="collapse-arrow collapse mt-1 border border-base-300 bg-base-200">

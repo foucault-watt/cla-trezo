@@ -57,6 +57,7 @@ describe("mapExpenseReportToDetail", () => {
         fundingSource: "SUBVENTION",
         subventionId: "sub-1",
         subventionReason: "Achat de matériel",
+        warnings: [],
       },
     ]);
   });
@@ -80,6 +81,7 @@ describe("mapExpenseReportToDetail", () => {
         fundingSource: "SUBVENTION",
         subventionId: "sub-1",
         subventionReason: "Achat de matériel",
+        warnings: [],
       },
     ]);
   });

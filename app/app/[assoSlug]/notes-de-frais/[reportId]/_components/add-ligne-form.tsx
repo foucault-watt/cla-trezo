@@ -333,6 +333,15 @@ export function AddLigneForm({
           <span>Ligne ajoutée.</span>
         </div>
       )}
+      {state.ok && state.warnings && state.warnings.length > 0 && (
+        <div role="alert" className="alert alert-warning alert-soft">
+          <ul className="list-disc pl-4">
+            {state.warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <button
         type="submit"

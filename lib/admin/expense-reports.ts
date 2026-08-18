@@ -6,6 +6,7 @@ import type {
   ExpenseReportLineDetail,
   SupportingDocumentDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
+import { attachLineWarnings } from "@/lib/expense-reports/line-warnings";
 import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
 
 export type ExpenseReportOverviewForAdmin = {
@@ -94,8 +95,11 @@ export async function getExpenseReportDetailForAdmin(
     notFound();
   }
 
+  const detail = mapExpenseReportToDetail(report, { includeAdminFields: true });
+
   return {
-    ...mapExpenseReportToDetail(report, { includeAdminFields: true }),
+    ...detail,
+    lines: await attachLineWarnings(report.assoId, detail.status, detail.lines),
     assoId: report.assoId,
     assoName: report.asso.name,
     assoSlug: report.asso.slug,

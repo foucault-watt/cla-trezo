@@ -7,6 +7,9 @@ const {
   assoFindUniqueMock,
   typeDepenseFindManyMock,
   listVisibleSubventionsMock,
+  lineFindManyMock,
+  subventionFindUniqueMock,
+  financialMovementFindManyMock,
   notFoundMock,
 } = vi.hoisted(() => ({
   requireStructureAccessMock: vi.fn(),
@@ -15,6 +18,9 @@ const {
   assoFindUniqueMock: vi.fn(),
   typeDepenseFindManyMock: vi.fn(),
   listVisibleSubventionsMock: vi.fn(),
+  lineFindManyMock: vi.fn(),
+  subventionFindUniqueMock: vi.fn(),
+  financialMovementFindManyMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NOT_FOUND");
   }),
@@ -29,6 +35,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: reportFindManyMock,
       findUnique: reportFindUniqueMock,
     },
+    expenseReportLine: { findMany: lineFindManyMock },
+    subvention: { findUnique: subventionFindUniqueMock },
+    financialMovement: { findMany: financialMovementFindManyMock },
     asso: { findUnique: assoFindUniqueMock },
     typeDepense: { findMany: typeDepenseFindManyMock },
   },
@@ -48,11 +57,17 @@ beforeEach(() => {
   assoFindUniqueMock.mockReset();
   typeDepenseFindManyMock.mockReset();
   listVisibleSubventionsMock.mockReset();
+  lineFindManyMock.mockReset();
+  subventionFindUniqueMock.mockReset();
+  financialMovementFindManyMock.mockReset();
   notFoundMock.mockClear();
   requireStructureAccessMock.mockResolvedValue({
     structure: { assoId: "asso-1", slug: "club-info", name: "Club Info" },
     user: { id: "user-1" },
   });
+  lineFindManyMock.mockResolvedValue([]);
+  subventionFindUniqueMock.mockResolvedValue(null);
+  financialMovementFindManyMock.mockResolvedValue([]);
 });
 
 describe("listExpenseReports", () => {
@@ -182,6 +197,7 @@ describe("getExpenseReportDetail", () => {
         fundingSource: "SUBVENTION",
         subventionId: "sub-1",
         subventionReason: "Achat de matériel",
+        warnings: [],
       },
     ]);
     expect(result.report.supportingDocuments).toEqual([
@@ -192,6 +208,57 @@ describe("getExpenseReportDetail", () => {
         mimeType: "application/pdf",
         createdAt: new Date("2026-01-02"),
       },
+    ]);
+  });
+
+  it("exclut du panneau de sélection les Subventions dont la Campagne date de plus de deux ans", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: "report-1",
+      assoId: "asso-1",
+      title: "Gala 2026",
+      description: null,
+      status: "DRAFT",
+      createdAt: new Date("2026-01-01"),
+      lines: [],
+      supportingDocuments: [],
+    });
+    const threeYearsAgo = new Date();
+    threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    listVisibleSubventionsMock.mockResolvedValue([
+      {
+        id: "sub-old",
+        campaignName: "Vieille campagne",
+        type: "CA_BUDGET",
+        reason: "Achat de matériel",
+        totalAmountCents: 1000,
+        usedAmountCents: 0,
+        remainingAmountCents: 1000,
+        commentary: null,
+        publicationDate: threeYearsAgo,
+        campaignDate: threeYearsAgo,
+        stale: true,
+      },
+      {
+        id: "sub-recent",
+        campaignName: "Campagne récente",
+        type: "CA_BUDGET",
+        reason: "Location de salle",
+        totalAmountCents: 2000,
+        usedAmountCents: 0,
+        remainingAmountCents: 2000,
+        commentary: null,
+        publicationDate: sixMonthsAgo,
+        campaignDate: sixMonthsAgo,
+        stale: false,
+      },
+    ]);
+
+    const result = await getExpenseReportDetail("club-info", "report-1");
+
+    expect(result.visibleSubventions.map((s) => s.id)).toEqual([
+      "sub-recent",
     ]);
   });
 

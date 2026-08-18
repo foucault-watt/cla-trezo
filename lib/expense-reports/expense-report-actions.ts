@@ -11,6 +11,7 @@ import {
   ExpenseReportLifecycleError,
 } from "./expense-report-lifecycle";
 import { checkFundingSourceEligibility } from "./funding-source-eligibility";
+import { loadExpenseLineWarnings } from "./line-warnings";
 import {
   parseAddExpenseReportLineForm,
   parseCreateExpenseReportForm,
@@ -245,6 +246,7 @@ export type AddExpenseReportLineState = {
   ok: boolean;
   error?: string;
   values?: ExpenseReportLineFormValues;
+  warnings?: string[];
 };
 
 export async function addExpenseReportLineAction(
@@ -294,13 +296,21 @@ export async function addExpenseReportLineAction(
     return { ok: false, error: eligibility.error, values };
   }
 
+  const amountCents = toAmountCents(parsed.data.amount);
+  const warnings = await loadExpenseLineWarnings({
+    assoId: structure.assoId,
+    fundingSource: parsed.data.fundingSource,
+    subventionId: parsed.data.subventionId,
+    lineAmountCents: amountCents,
+  });
+
   await prisma.expenseReportLine.create({
     data: {
       expenseReportId: report.id,
       beneficiaryFirstname: parsed.data.beneficiaryFirstname,
       beneficiaryLastname: parsed.data.beneficiaryLastname,
       iban: parsed.data.iban,
-      amountCents: toAmountCents(parsed.data.amount),
+      amountCents,
       expenseName: parsed.data.expenseName,
       typeDepenseId: parsed.data.typeDepenseId,
       customLabel: parsed.data.customLabel,
@@ -311,13 +321,14 @@ export async function addExpenseReportLineAction(
 
   revalidatePath(`/app/${parsed.data.assoSlug}/notes-de-frais/${report.id}`);
 
-  return { ok: true };
+  return { ok: true, warnings };
 }
 
 export type UpdateExpenseReportLineState = {
   ok: boolean;
   error?: string;
   values?: ExpenseReportLineFormValues;
+  warnings?: string[];
 };
 
 export async function updateExpenseReportLineAction(
@@ -371,13 +382,22 @@ export async function updateExpenseReportLineAction(
     return { ok: false, error: eligibility.error, values };
   }
 
+  const amountCents = toAmountCents(parsed.data.amount);
+  const warnings = await loadExpenseLineWarnings({
+    assoId: structure.assoId,
+    fundingSource: parsed.data.fundingSource,
+    subventionId: parsed.data.subventionId,
+    lineAmountCents: amountCents,
+    excludeLineId: line.id,
+  });
+
   await prisma.expenseReportLine.update({
     where: { id: line.id },
     data: {
       beneficiaryFirstname: parsed.data.beneficiaryFirstname,
       beneficiaryLastname: parsed.data.beneficiaryLastname,
       iban: parsed.data.iban,
-      amountCents: toAmountCents(parsed.data.amount),
+      amountCents,
       expenseName: parsed.data.expenseName,
       typeDepenseId: parsed.data.typeDepenseId,
       customLabel: parsed.data.customLabel,
@@ -390,5 +410,5 @@ export async function updateExpenseReportLineAction(
     `/app/${parsed.data.assoSlug}/notes-de-frais/${line.expenseReportId}`,
   );
 
-  return { ok: true };
+  return { ok: true, warnings };
 }

@@ -58,6 +58,19 @@ export function assertExpenseReportTransition({
 const MUTABLE_STATUSES: ExpenseReportStatus[] = ["DRAFT", "SUBMITTED"];
 
 /**
+ * Statuts d'une Note de frais dont les Lignes ne sont pas encore Validées
+ * (donc pas encore reflétées dans un FinancialMovement) mais pèsent déjà sur
+ * le Solde/la Subvention qu'elles ciblent — utilisé par le calcul des
+ * Warnings (cf. lib/expense-reports/line-warnings.ts) pour cumuler les
+ * Lignes en attente sur une même source de financement.
+ */
+export const PENDING_EXPENSE_REPORT_STATUSES: ExpenseReportStatus[] = [
+  "DRAFT",
+  "SUBMITTED",
+  "TAKEN_OVER",
+];
+
+/**
  * Vérifie qu'une Ligne ou un Justificatif peut être ajouté/modifié dans le
  * statut courant, par cet acteur. Seule la Structure modifie le contenu, et
  * seulement tant que l'Admin n'a pas pris la note en charge (cf. ADR-0001).

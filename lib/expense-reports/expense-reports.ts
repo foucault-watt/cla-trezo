@@ -13,6 +13,10 @@ import {
   mapExpenseReportToDetail,
   type ExpenseReportDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
+import {
+  attachLineWarnings,
+  isSubventionWithinFundingWindow,
+} from "@/lib/expense-reports/line-warnings";
 export type {
   ExpenseReportLineDetail,
   SupportingDocumentDetail,
@@ -109,11 +113,26 @@ export async function getExpenseReportDetail(
     notFound();
   }
 
+  const detail = mapExpenseReportToDetail(report, { includeAdminFields: false });
+  const now = new Date();
+
   return {
-    report: mapExpenseReportToDetail(report, { includeAdminFields: false }),
+    report: {
+      ...detail,
+      lines: await attachLineWarnings(
+        structure.assoId,
+        detail.status,
+        detail.lines,
+      ),
+    },
     assoId: structure.assoId,
     assoType: asso?.type ?? null,
     typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),
-    visibleSubventions,
+    // Restreint au panneau de sélection lors de l'ajout d'une Ligne : la
+    // page /subventions dédiée (T7) affiche tout l'historique publié, sans
+    // limite d'âge (cf. lib/subventions/visible-subventions.ts).
+    visibleSubventions: visibleSubventions.filter((s) =>
+      isSubventionWithinFundingWindow(s.campaignDate, now),
+    ),
   };
 }

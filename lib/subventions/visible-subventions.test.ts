@@ -1,15 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { requireStructureAccessMock, findManyMock } = vi.hoisted(() => ({
+const {
+  requireStructureAccessMock,
+  findManyMock,
+  financialMovementFindManyMock,
+} = vi.hoisted(() => ({
   requireStructureAccessMock: vi.fn(),
   findManyMock: vi.fn(),
+  financialMovementFindManyMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireStructureAccess: requireStructureAccessMock,
 }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { subvention: { findMany: findManyMock } },
+  prisma: {
+    subvention: { findMany: findManyMock },
+    financialMovement: { findMany: financialMovementFindManyMock },
+  },
 }));
 
 const { listVisibleSubventions } = await import("./visible-subventions");
@@ -17,6 +25,8 @@ const { listVisibleSubventions } = await import("./visible-subventions");
 beforeEach(() => {
   requireStructureAccessMock.mockReset();
   findManyMock.mockReset();
+  financialMovementFindManyMock.mockReset();
+  financialMovementFindManyMock.mockResolvedValue([]);
   requireStructureAccessMock.mockResolvedValue({
     structure: { assoId: "asso-1", slug: "club-info", name: "Club Info" },
     user: { id: "user-1" },
@@ -44,7 +54,7 @@ describe("listVisibleSubventions", () => {
     );
   });
 
-  it("mappe chaque Subvention en vue avec montant utilisé à 0 et montant restant égal au total", async () => {
+  it("mappe chaque Subvention en vue avec le montant utilisé calculé depuis les mouvements Validés", async () => {
     findManyMock.mockResolvedValue([
       {
         id: "sub-1",
@@ -55,8 +65,12 @@ describe("listVisibleSubventions", () => {
           name: "Campagne CA Budget 2026",
           type: "CA_BUDGET",
           publicationDate: new Date("2026-01-01"),
+          date: new Date("2026-01-01"),
         },
       },
+    ]);
+    financialMovementFindManyMock.mockResolvedValue([
+      { subventionId: "sub-1", movementType: "DEBIT", amountCents: 1500 },
     ]);
 
     const result = await listVisibleSubventions("club-info");
@@ -68,11 +82,37 @@ describe("listVisibleSubventions", () => {
         type: "CA_BUDGET",
         reason: "Achat de matériel",
         totalAmountCents: 5000,
-        usedAmountCents: 0,
-        remainingAmountCents: 5000,
+        usedAmountCents: 1500,
+        remainingAmountCents: 3500,
         commentary: "RAS",
         publicationDate: new Date("2026-01-01"),
+        campaignDate: new Date("2026-01-01"),
+        stale: false,
       },
     ]);
+  });
+
+  it("flague stale une Subvention dont la Campagne date de plus d'un an", async () => {
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+
+    findManyMock.mockResolvedValue([
+      {
+        id: "sub-2",
+        reason: "Vieux projet",
+        amountCents: 2000,
+        commentary: null,
+        campaign: {
+          name: "Campagne CA Event 2024",
+          type: "CA_EVENT",
+          publicationDate: new Date("2024-01-01"),
+          date: twoYearsAgo,
+        },
+      },
+    ]);
+
+    const result = await listVisibleSubventions("club-info");
+
+    expect(result[0].stale).toBe(true);
   });
 });

@@ -18,6 +18,7 @@ function line(
     fundingSource: "CLUB_BALANCE",
     subventionId: null,
     subventionReason: null,
+    warnings: [],
     ...overrides,
   };
 }
