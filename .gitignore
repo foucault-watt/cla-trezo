@@ -43,6 +43,12 @@ next-env.d.ts
 
 /app/generated/prisma
 
+# generated PDF artifacts and temporary visual QA files
+/output/pdf/*
+!/output/pdf/.gitkeep
+/tmp/pdfs/*
+!/tmp/pdfs/.gitkeep
+
 # uploaded invoice/receipt files (local disk storage)
 /uploads/*
 !/uploads/.gitkeep

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { FileDown } from "lucide-react";
 import {
   getSubventionCampaign,
   listAssosForSelect,
@@ -27,6 +28,33 @@ export default async function AdminSubventionCampaignDetailPage({
   if (!campaign) {
     notFound();
   }
+
+  const conventionGroups = Array.from(
+    campaign.subventions
+      .reduce(
+        (groups, subvention) => {
+          const current = groups.get(subvention.assoId);
+          groups.set(subvention.assoId, {
+            assoId: subvention.assoId,
+            assoName: subvention.assoName,
+            linesCount: (current?.linesCount ?? 0) + 1,
+            totalAmountCents:
+              (current?.totalAmountCents ?? 0) + subvention.amountCents,
+          });
+          return groups;
+        },
+        new Map<
+          string,
+          {
+            assoId: string;
+            assoName: string;
+            linesCount: number;
+            totalAmountCents: number;
+          }
+        >(),
+      )
+      .values(),
+  );
 
   return (
     <div>
@@ -96,6 +124,46 @@ export default async function AdminSubventionCampaignDetailPage({
         </div>
 
         <AddSubventionForm campaignId={campaign.id} assos={assos} />
+      </div>
+
+      <div className="card card-border mt-8 bg-base-100">
+        <div className="card-body gap-4">
+          <div>
+            <h2 className="card-title">Conventions de subvention</h2>
+            <p className="text-sm text-base-content/60">
+              Une convention regroupe toutes les lignes accordées à une même
+              association dans cette campagne.
+            </p>
+          </div>
+
+          {conventionGroups.length === 0 ? (
+            <p className="text-sm text-base-content/70">
+              Ajoutez une ligne de subvention pour préparer une convention.
+            </p>
+          ) : (
+            <ul className="list rounded-box border border-base-300">
+              {conventionGroups.map((group) => (
+                <li className="list-row items-center" key={group.assoId}>
+                  <FileDown size={20} className="text-base-content/60" />
+                  <div>
+                    <p className="font-medium">{group.assoName}</p>
+                    <p className="text-xs text-base-content/60">
+                      {group.linesCount} ligne
+                      {group.linesCount > 1 ? "s" : ""} ·{" "}
+                      {formatCents(group.totalAmountCents)}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/app/admin/subventions/${campaign.id}/conventions/${group.assoId}`}
+                    className="btn btn-sm"
+                  >
+                    Préparer le PDF
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="collapse-arrow collapse mt-8 border border-base-300 bg-base-100">

@@ -1,0 +1,50 @@
+"use client";
+
+import { useState } from "react";
+import type { SubsidyConventionPdfData } from "@/pdf-lab/templates/convention/types";
+import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
+import { ConventionPdfLabEditor } from "./convention-pdf-lab-editor";
+import { PdfLabEditor } from "./pdf-lab-editor";
+
+type PdfLabTab = "expense-report" | "subsidy-convention";
+
+export function PdfLabTabs({
+  expenseReportData,
+  subsidyConventionData,
+}: {
+  expenseReportData: ExpenseReportPdfData;
+  subsidyConventionData: SubsidyConventionPdfData;
+}) {
+  const [activeTab, setActiveTab] = useState<PdfLabTab>("expense-report");
+
+  return (
+    <div className="space-y-6">
+      <div role="tablist" className="tabs tabs-box w-fit">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "expense-report"}
+          className={`tab ${activeTab === "expense-report" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("expense-report")}
+        >
+          Note de frais
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "subsidy-convention"}
+          className={`tab ${activeTab === "subsidy-convention" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("subsidy-convention")}
+        >
+          Convention de subvention
+        </button>
+      </div>
+
+      {activeTab === "expense-report" ? (
+        <PdfLabEditor initialData={expenseReportData} />
+      ) : (
+        <ConventionPdfLabEditor initialData={subsidyConventionData} />
+      )}
+    </div>
+  );
+}

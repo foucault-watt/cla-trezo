@@ -199,7 +199,7 @@ export function PersonGroupsBoard({
                       <li key={group.key}>
                         <button
                           type="button"
-                          className="btn btn-dash btn-secondary h-auto justify-between py-3"
+                          className="btn btn-soft h-auto justify-between py-3"
                           onClick={() =>
                             setTarget({
                               kind: "existing",
@@ -227,7 +227,7 @@ export function PersonGroupsBoard({
                     <li>
                       <button
                         type="button"
-                        className="btn btn-dash btn-secondary h-auto justify-center py-3"
+                        className="btn btn-soft h-auto justify-center py-3"
                         onClick={() => {
                           setTarget({ kind: "new" });
                           setMenuOpen(false);

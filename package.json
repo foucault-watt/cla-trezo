@@ -10,7 +10,9 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest"
+    "test": "vitest",
+    "pdf:render": "tsx pdf-lab/render.tsx",
+    "pdf:preview": "tsx pdf-lab/preview.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

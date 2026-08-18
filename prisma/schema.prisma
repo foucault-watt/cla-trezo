@@ -154,6 +154,22 @@ model Subvention {
   @@map("subvention")
 }
 
+/// Paramètres institutionnels réutilisés pour toutes les conventions de
+/// subvention. L'application maintient une seule ligne, identifiée par
+/// `default`; les représentants sont stockés en JSON car leur nombre varie.
+model ConventionPdfSettings {
+  id                 String   @id @default("default")
+  claAssociationName String   @map("cla_association_name")
+  claAddress         String   @map("cla_address")
+  claRepresentatives Json     @map("cla_representatives")
+  claSignatoryName   String   @map("cla_signatory_name")
+  claSignatoryRole   String   @map("cla_signatory_role")
+  claSignatureCity   String   @map("cla_signature_city")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("convention_pdf_settings")
+}
+
 model ExpenseReport {
   id             String              @id @default(uuid()) @db.Uuid
   assoId         String              @map("asso_id") @db.Uuid
