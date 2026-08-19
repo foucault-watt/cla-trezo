@@ -4,6 +4,7 @@ import { listExpenseReports } from "@/lib/expense-reports/expense-reports";
 import { StatsBar } from "./_components/stats-bar";
 import { ListView } from "./_components/list-view";
 import { GridView } from "./_components/grid-view";
+import { ExpenseReportGuide } from "./_components/expense-report-guide";
 
 export default async function NotesDeFraisPage({
   params,
@@ -36,6 +37,8 @@ export default async function NotesDeFraisPage({
           </Link>
         </div>
       </div>
+
+      <ExpenseReportGuide />
 
       <StatsBar reports={reports} />
 
