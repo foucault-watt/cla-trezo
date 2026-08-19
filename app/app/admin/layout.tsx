@@ -1,19 +1,24 @@
-import Link from "next/link";
 import {
-  ArrowLeftRight,
   Building2,
   FileCog,
   FileText,
   FlaskConical,
   HandCoins,
+  LayoutDashboard,
   Receipt,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { BackToAppLink } from "@/components/nav/back-to-app-link";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { requireAdmin } from "@/lib/auth/guards";
 
 const navItems = [
+  {
+    href: "/app/admin",
+    label: "Tableau de bord",
+    icon: <LayoutDashboard size={18} />,
+  },
   {
     href: "/app/admin/associations",
     label: "Associations",
@@ -58,13 +63,7 @@ export default async function AdminLayout({
       <p className="px-2 pb-2 text-sm font-medium">
         {user.firstname} {user.lastname}
       </p>
-      <Link
-        href="/app"
-        className="btn btn-ghost btn-sm w-full justify-start gap-2"
-      >
-        <ArrowLeftRight size={18} />
-        Mode application
-      </Link>
+      <BackToAppLink />
       <LogoutButton />
     </div>
   );
@@ -74,6 +73,7 @@ export default async function AdminLayout({
       navItems={navItems}
       rootLabel="Administration"
       footerSlot={footerSlot}
+      edgeGlow
     >
       <SectionBreadcrumbs root="Administration" items={navItems} />
       {children}

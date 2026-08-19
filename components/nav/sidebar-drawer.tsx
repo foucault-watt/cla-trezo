@@ -18,14 +18,19 @@ export function SidebarDrawer({
   rootLabel,
   footerSlot,
   children,
+  edgeGlow = false,
 }: {
   navItems: SidebarDrawerNavItem[];
   rootLabel: string;
   footerSlot: ReactNode;
   children: ReactNode;
+  edgeGlow?: boolean;
 }) {
   return (
     <div className="drawer lg:drawer-open flex-1">
+      {edgeGlow && (
+        <div className="admin-edge-glow pointer-events-none fixed inset-0 z-50" aria-hidden="true" />
+      )}
       <input id="app-nav-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-1 flex-col bg-base-200">
         <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3 lg:hidden">

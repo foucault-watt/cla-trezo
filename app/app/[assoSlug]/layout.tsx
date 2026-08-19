@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowLeftRight, LayoutDashboard, Receipt, HandCoins } from "lucide-react";
+import { ArrowLeftRight, LayoutDashboard, Receipt, HandCoins, ShieldCheck } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { LastStructureTracker } from "@/components/nav/last-structure-tracker";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { requireStructureAccess } from "@/lib/auth/guards";
@@ -44,12 +45,19 @@ export default async function MemberLayout({
           Changer de structure
         </Link>
       )}
+      {user.isAdmin && (
+        <Link href="/app/admin" className="btn btn-ghost btn-sm w-full justify-start gap-2">
+          <ShieldCheck size={18} />
+          Vue admin
+        </Link>
+      )}
       <LogoutButton />
     </div>
   );
 
   return (
     <SidebarDrawer navItems={navItems} rootLabel={structure.name} footerSlot={footerSlot}>
+      <LastStructureTracker assoSlug={assoSlug} />
       <SectionBreadcrumbs root={structure.name} items={navItems} />
       {children}
     </SidebarDrawer>
