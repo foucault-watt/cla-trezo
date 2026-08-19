@@ -10,9 +10,9 @@ export function SectionBreadcrumbs({
   items: { href: string; label: string }[];
 }) {
   const pathname = usePathname();
-  const current = items.find(
-    ({ href }) => pathname === href || pathname.startsWith(`${href}/`)
-  );
+  const current = items
+    .filter(({ href }) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 
   return (
     <div className="breadcrumbs mb-4 text-sm">
