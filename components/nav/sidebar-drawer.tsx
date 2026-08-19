@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { NavLink } from "./nav-link";
@@ -31,6 +32,7 @@ export function SidebarDrawer({
           <label htmlFor="app-nav-drawer" className="btn btn-square btn-ghost btn-sm drawer-button">
             <Menu size={18} />
           </label>
+          <Image src="/logo.png" alt="" width={24} height={24} className="rounded-sm" />
           <span className="flex-1 font-semibold">{rootLabel}</span>
           <ThemeToggle />
         </div>
@@ -40,7 +42,10 @@ export function SidebarDrawer({
         <label htmlFor="app-nav-drawer" aria-label="Fermer le menu" className="drawer-overlay" />
         <aside className="flex h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
           <div className="mb-4 flex items-center justify-between px-2">
-            <p className="truncate text-sm font-semibold text-base-content/70">{rootLabel}</p>
+            <div className="flex min-w-0 items-center gap-2">
+              <Image src="/logo.png" alt="" width={28} height={28} className="shrink-0 rounded-sm" />
+              <p className="truncate text-sm font-semibold text-base-content/70">{rootLabel}</p>
+            </div>
             <div className="hidden lg:block">
               <ThemeToggle />
             </div>

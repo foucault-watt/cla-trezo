@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CLA - Trézo",
   description: "Suivi des soldes, subventions et notes de frais des associations pour les assos de Centrale Lille Associations",
+  appleWebApp: {
+    title: "CLA Trézo",
+  },
 };
 
 export const viewport: Viewport = {
