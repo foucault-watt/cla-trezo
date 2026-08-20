@@ -1,17 +1,14 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import {
-  addExpenseReportLineAction,
-  type AddExpenseReportLineState,
-} from "@/lib/expense-reports/expense-report-actions";
+import type { ExpenseReportLineFormState } from "@/lib/expense-reports/expense-report-line-shared";
 import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 import { useSubventionSelectionConsumer } from "./subvention-selection-context";
 
-const initialState: AddExpenseReportLineState = { ok: false };
+const initialState: ExpenseReportLineFormState = { ok: false };
 const CUSTOM_TYPE_DEPENSE = "autre";
 
 type FieldsState = {
@@ -39,6 +36,7 @@ const emptyFields: FieldsState = {
 };
 
 export function AddLigneForm({
+  action,
   assoSlug,
   expenseReportId,
   assoType,
@@ -48,7 +46,13 @@ export function AddLigneForm({
   initialIban,
   onSuccess,
 }: {
-  assoSlug: string;
+  /** Server Action liée (Structure ou Admin, cf. #18) — le formulaire ne connaît pas l'acteur qui l'invoque. */
+  action: (
+    state: ExpenseReportLineFormState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineFormState>;
+  /** Absent côté Admin : la page Admin n'est pas scopée à une Structure (cf. #18). */
+  assoSlug?: string;
   expenseReportId: string;
   assoType: AssoType | null;
   typeDepenses: TypeDepenseOption[];
@@ -64,10 +68,7 @@ export function AddLigneForm({
     iban: string;
   }) => void;
 }) {
-  const [state, formAction, pending] = useActionState(
-    addExpenseReportLineAction,
-    initialState,
-  );
+  const [state, formAction, pending] = useActionState(action, initialState);
   const [fields, setFields] = useState<FieldsState>(() => ({
     ...emptyFields,
     ...(lockedBeneficiary && {
@@ -138,7 +139,9 @@ export function AddLigneForm({
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="expenseReportId" value={expenseReportId} />
-      <input type="hidden" name="assoSlug" value={assoSlug} />
+      {assoSlug !== undefined && (
+        <input type="hidden" name="assoSlug" value={assoSlug} />
+      )}
 
       {lockedBeneficiary ? (
         <>

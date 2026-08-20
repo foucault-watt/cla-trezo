@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { listActiveAssoMembers } from "@/lib/asso/members";
 import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
+import {
+  addExpenseReportLineAction,
+  updateExpenseReportLineAction,
+} from "@/lib/expense-reports/expense-report-actions";
 import { getClubSolde } from "@/lib/solde/actions";
 import {
   assertExpenseReportMutable,
   ExpenseReportLifecycleError,
 } from "@/lib/expense-reports/expense-report-lifecycle";
 import { ExpenseReportDetailHeader } from "@/components/expense-reports/expense-report-detail-view";
+import { FundingSourcesPanel } from "@/components/expense-reports/funding-sources-panel";
+import { PersonGroupsBoard } from "@/components/expense-reports/person-groups-board";
+import { SubventionSelectionProvider } from "@/components/expense-reports/subvention-selection-context";
 import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
-import { FundingSourcesPanel } from "./_components/funding-sources-panel";
-import { PersonGroupsBoard } from "./_components/person-groups-board";
 import { SubmitExpenseReportForm } from "./_components/submit-expense-report-form";
-import { SubventionSelectionProvider } from "./_components/subvention-selection-context";
 import { SupportingDocumentsPanel } from "./_components/supporting-documents-panel";
 
 export default async function ExpenseReportDetailPage({
@@ -62,6 +66,8 @@ export default async function ExpenseReportDetailPage({
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="flex flex-col gap-6">
             <PersonGroupsBoard
+              addAction={addExpenseReportLineAction}
+              updateAction={updateExpenseReportLineAction}
               assoSlug={assoSlug}
               expenseReportId={report.id}
               lines={report.lines}

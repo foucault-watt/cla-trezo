@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { TriangleAlert } from "lucide-react";
-import {
-  updateExpenseReportLineAction,
-  type UpdateExpenseReportLineState,
-} from "@/lib/expense-reports/expense-report-actions";
+import { Trash2, TriangleAlert } from "lucide-react";
+import type {
+  ExpenseReportLineDeleteState,
+  ExpenseReportLineFormState,
+} from "@/lib/expense-reports/expense-report-line-shared";
 import { fundingSourceDetail, fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { formatCents } from "@/lib/money";
 import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
@@ -16,8 +16,51 @@ import type {
 } from "@/lib/expense-reports/expense-reports";
 import { useSubventionSelectionConsumer } from "./subvention-selection-context";
 
-const initialState: UpdateExpenseReportLineState = { ok: false };
+const initialState: ExpenseReportLineFormState = { ok: false };
+const initialDeleteState: ExpenseReportLineDeleteState = { ok: false };
 const CUSTOM_TYPE_DEPENSE = "autre";
+
+/**
+ * Suppression de Ligne : réservée à l'Admin (deleteAction absent côté
+ * Structure, cf. #18), même pattern de confirmation navigateur que
+ * RemoveDocumentButton (supporting-documents-panel.tsx).
+ */
+function DeleteLigneButton({
+  deleteAction,
+  lineId,
+}: {
+  deleteAction: (
+    state: ExpenseReportLineDeleteState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineDeleteState>;
+  lineId: string;
+}) {
+  const [, formAction, pending] = useActionState(
+    deleteAction,
+    initialDeleteState,
+  );
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        if (!confirm("Supprimer cette Ligne ?")) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <input type="hidden" name="id" value={lineId} />
+      <button
+        type="submit"
+        className="btn btn-ghost btn-xs text-error"
+        disabled={pending}
+        aria-label="Supprimer cette Ligne"
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </form>
+  );
+}
 
 type FieldsState = {
   beneficiaryFirstname: string;
@@ -46,6 +89,8 @@ function fieldsFromLine(line: ExpenseReportLineDetail): FieldsState {
 }
 
 export function LigneRow({
+  action,
+  deleteAction,
   assoSlug,
   line,
   assoType,
@@ -53,20 +98,31 @@ export function LigneRow({
   visibleSubventions,
   editable,
   showBeneficiaryColumn = true,
+  showIbanColumn = false,
 }: {
-  assoSlug: string;
+  /** Server Action liée (Structure ou Admin, cf. #18) — la ligne ne connaît pas l'acteur qui l'invoque. */
+  action: (
+    state: ExpenseReportLineFormState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineFormState>;
+  /** Réservée à l'Admin (#18) : sans elle, pas de bouton de suppression — le Structure ne peut jamais supprimer une Ligne. */
+  deleteAction?: (
+    state: ExpenseReportLineDeleteState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineDeleteState>;
+  /** Absent côté Admin : la page Admin n'est pas scopée à une Structure (cf. #18). */
+  assoSlug?: string;
   line: ExpenseReportLineDetail;
   assoType: AssoType | null;
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
   editable: boolean;
   showBeneficiaryColumn?: boolean;
+  /** Colonne IBAN affichée en lecture seule : l'Admin voit l'IBAN sans avoir à ouvrir l'édition (cf. #17), pas la Structure. */
+  showIbanColumn?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
-  const [state, formAction, pending] = useActionState(
-    updateExpenseReportLineAction,
-    initialState,
-  );
+  const [state, formAction, pending] = useActionState(action, initialState);
   const [fields, setFields] = useState<FieldsState>(() => fieldsFromLine(line));
 
   // Après chaque soumission, on resynchronise les champs affichés sur le
@@ -127,7 +183,8 @@ export function LigneRow({
   );
   const sourceDetail = fundingSourceDetail(line);
 
-  const columnCount = showBeneficiaryColumn ? 6 : 5;
+  const columnCount =
+    (showBeneficiaryColumn ? 1 : 0) + (showIbanColumn ? 1 : 0) + 5;
 
   return (
     <>
@@ -137,6 +194,7 @@ export function LigneRow({
             {line.beneficiaryFirstname} {line.beneficiaryLastname}
           </td>
         )}
+        {showIbanColumn && <td>{line.iban ?? "—"}</td>}
         <td>{line.expenseName}</td>
         <td>{line.typeDepenseLabel ?? line.customLabel}</td>
         <td>{formatCents(line.amountCents)}</td>
@@ -158,13 +216,18 @@ export function LigneRow({
         </td>
         <td>
           {editable && (
-            <button
-              type="button"
-              className="btn btn-secondary btn-xs"
-              onClick={toggleEditing}
-            >
-              {editing ? "Annuler" : "Modifier"}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="btn btn-secondary btn-xs"
+                onClick={toggleEditing}
+              >
+                {editing ? "Annuler" : "Modifier"}
+              </button>
+              {deleteAction && (
+                <DeleteLigneButton deleteAction={deleteAction} lineId={line.id} />
+              )}
+            </div>
           )}
         </td>
       </tr>
@@ -173,7 +236,9 @@ export function LigneRow({
           <td colSpan={columnCount}>
             <form action={formAction} className="flex flex-col gap-3 py-2">
               <input type="hidden" name="id" value={line.id} />
-              <input type="hidden" name="assoSlug" value={assoSlug} />
+              {assoSlug !== undefined && (
+                <input type="hidden" name="assoSlug" value={assoSlug} />
+              )}
 
               <div className="flex flex-col gap-2 sm:flex-row">
                 <fieldset className="fieldset flex-1">

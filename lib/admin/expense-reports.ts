@@ -7,7 +7,13 @@ import type {
   SupportingDocumentDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
 import { attachLineWarnings } from "@/lib/expense-reports/line-warnings";
-import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
+import type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
+import { listVisibleSubventionsForAdmin } from "@/lib/subventions/visible-subventions";
+import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
+import { getClubSoldeForAdmin } from "@/lib/solde/actions";
+import type { SoldeView } from "@/lib/solde/solde";
+import type { AssoType, ExpenseReportStatus } from "@/app/generated/prisma/enums";
+export type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 
 export type ExpenseReportOverviewForAdmin = {
   id: string;
@@ -60,6 +66,10 @@ export type ExpenseReportDetailForAdmin = {
   assoId: string;
   assoName: string;
   assoSlug: string;
+  assoType: AssoType | null;
+  typeDepenses: TypeDepenseOption[];
+  visibleSubventions: VisibleSubvention[];
+  soldeView: SoldeView;
   lines: ExpenseReportLineDetail[];
   supportingDocuments: SupportingDocumentDetail[];
 };
@@ -68,6 +78,9 @@ export type ExpenseReportDetailForAdmin = {
  * Détail complet d'une Note de frais pour l'écran de consultation Admin :
  * l'Admin voit toutes les Structures, contrairement à la Structure qui ne
  * voit que ses propres notes (cf. lib/expense-reports/expense-reports.ts).
+ * Charge en plus le type de la Structure, les Types de dépense et les
+ * Subventions visibles — nécessaires pour que l'Admin puisse éditer les
+ * Lignes d'une Note Prise en charge (#18), pas seulement les consulter.
  */
 export async function getExpenseReportDetailForAdmin(
   reportId: string,
@@ -77,7 +90,7 @@ export async function getExpenseReportDetailForAdmin(
   const report = await prisma.expenseReport.findUnique({
     where: { id: reportId },
     include: {
-      asso: { select: { name: true, slug: true } },
+      asso: { select: { name: true, slug: true, type: true } },
       lines: {
         orderBy: { createdAt: "asc" },
         include: {
@@ -96,6 +109,11 @@ export async function getExpenseReportDetailForAdmin(
   }
 
   const detail = mapExpenseReportToDetail(report, { includeAdminFields: true });
+  const [typeDepenses, visibleSubventions, soldeView] = await Promise.all([
+    prisma.typeDepense.findMany({ orderBy: { label: "asc" } }),
+    listVisibleSubventionsForAdmin(report.assoId),
+    getClubSoldeForAdmin(report.assoId),
+  ]);
 
   return {
     ...detail,
@@ -103,5 +121,9 @@ export async function getExpenseReportDetailForAdmin(
     assoId: report.assoId,
     assoName: report.asso.name,
     assoSlug: report.asso.slug,
+    assoType: report.asso.type,
+    typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),
+    visibleSubventions,
+    soldeView,
   };
 }

@@ -55,7 +55,14 @@ export function assertExpenseReportTransition({
   }
 }
 
-const MUTABLE_STATUSES: ExpenseReportStatus[] = ["DRAFT", "SUBMITTED"];
+const MUTABLE_RULES: {
+  status: ExpenseReportStatus;
+  actor: ExpenseReportActor["type"];
+}[] = [
+  { status: "DRAFT", actor: "STRUCTURE" },
+  { status: "SUBMITTED", actor: "STRUCTURE" },
+  { status: "TAKEN_OVER", actor: "ADMIN" },
+];
 
 /**
  * Statuts d'une Note de frais dont les Lignes ne sont pas encore Validées
@@ -72,8 +79,10 @@ export const PENDING_EXPENSE_REPORT_STATUSES: ExpenseReportStatus[] = [
 
 /**
  * Vérifie qu'une Ligne ou un Justificatif peut être ajouté/modifié dans le
- * statut courant, par cet acteur. Seule la Structure modifie le contenu, et
- * seulement tant que l'Admin n'a pas pris la note en charge (cf. ADR-0001).
+ * statut courant, par cet acteur. La Structure modifie le contenu tant que
+ * l'Admin n'a pas pris la note en charge ; une fois Prise en charge, seul
+ * l'Admin peut encore modifier les Lignes (cf. ADR-0001, #18) — jamais les
+ * deux en même temps sur un même statut.
  */
 export function assertExpenseReportMutable({
   status,
@@ -82,7 +91,10 @@ export function assertExpenseReportMutable({
   status: ExpenseReportStatus;
   actor: ExpenseReportActor;
 }): void {
-  if (actor.type !== "STRUCTURE" || !MUTABLE_STATUSES.includes(status)) {
+  const allowed = MUTABLE_RULES.some(
+    (rule) => rule.status === status && rule.actor === actor.type,
+  );
+  if (!allowed) {
     throw new ExpenseReportLifecycleError(
       `Cette Note de frais n'est plus modifiable (statut ${status}).`,
     );

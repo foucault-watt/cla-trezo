@@ -90,7 +90,7 @@ const nullableUuid = () =>
       { message: "Identifiant invalide." },
     );
 
-const expenseReportLineBaseSchema = z.object({
+export const expenseReportLineBaseSchema = z.object({
   beneficiaryFirstname: z
     .string()
     .trim()
@@ -119,7 +119,7 @@ const expenseReportLineBaseSchema = z.object({
   subventionId: nullableUuid(),
 });
 
-function refineExpenseReportLine<T extends z.infer<typeof expenseReportLineBaseSchema>>(
+export function refineExpenseReportLine<T extends z.infer<typeof expenseReportLineBaseSchema>>(
   schema: z.ZodType<T>,
 ) {
   return schema

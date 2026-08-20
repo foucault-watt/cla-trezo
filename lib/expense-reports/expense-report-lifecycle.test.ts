@@ -135,7 +135,7 @@ describe("assertExpenseReportMutable", () => {
     },
   );
 
-  it("refuse l'Admin, y compris en statut modifiable pour la Structure", () => {
+  it("refuse l'Admin en statut modifiable pour la Structure (pas encore Prise en charge)", () => {
     expect(() =>
       assertExpenseReportMutable({ status: "DRAFT", actor: ADMIN }),
     ).toThrow(ExpenseReportLifecycleError);
@@ -143,4 +143,19 @@ describe("assertExpenseReportMutable", () => {
       assertExpenseReportMutable({ status: "SUBMITTED", actor: ADMIN }),
     ).toThrow(ExpenseReportLifecycleError);
   });
+
+  it("autorise l'Admin à modifier en statut Prise en charge (#18)", () => {
+    expect(() =>
+      assertExpenseReportMutable({ status: "TAKEN_OVER", actor: ADMIN }),
+    ).not.toThrow();
+  });
+
+  it.each(["FINALIZED", "REJECTED"] as ExpenseReportStatus[])(
+    "refuse l'Admin en statut %s (note déjà close)",
+    (status) => {
+      expect(() =>
+        assertExpenseReportMutable({ status, actor: ADMIN }),
+      ).toThrow(ExpenseReportLifecycleError);
+    },
+  );
 });

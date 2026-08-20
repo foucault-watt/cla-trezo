@@ -2,16 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const {
   requireStructureAccessMock,
+  requireAdminMock,
   findManyMock,
   financialMovementFindManyMock,
 } = vi.hoisted(() => ({
   requireStructureAccessMock: vi.fn(),
+  requireAdminMock: vi.fn(),
   findManyMock: vi.fn(),
   financialMovementFindManyMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireStructureAccess: requireStructureAccessMock,
+  requireAdmin: requireAdminMock,
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -20,10 +23,12 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { listVisibleSubventions } = await import("./visible-subventions");
+const { listVisibleSubventions, listVisibleSubventionsForAdmin } =
+  await import("./visible-subventions");
 
 beforeEach(() => {
   requireStructureAccessMock.mockReset();
+  requireAdminMock.mockReset();
   findManyMock.mockReset();
   financialMovementFindManyMock.mockReset();
   financialMovementFindManyMock.mockResolvedValue([]);
@@ -31,6 +36,7 @@ beforeEach(() => {
     structure: { assoId: "asso-1", slug: "club-info", name: "Club Info" },
     user: { id: "user-1" },
   });
+  requireAdminMock.mockResolvedValue({ id: "admin-1", isAdmin: true });
 });
 
 describe("listVisibleSubventions", () => {
@@ -114,5 +120,18 @@ describe("listVisibleSubventions", () => {
     const result = await listVisibleSubventions("club-info");
 
     expect(result[0].stale).toBe(true);
+  });
+});
+
+describe("listVisibleSubventionsForAdmin", () => {
+  it("délègue le contrôle d'accès à requireAdmin et scope directement par assoId (#18)", async () => {
+    findManyMock.mockResolvedValue([]);
+
+    await listVisibleSubventionsForAdmin("asso-1");
+
+    expect(requireAdminMock).toHaveBeenCalled();
+    expect(requireStructureAccessMock).not.toHaveBeenCalled();
+    const call = findManyMock.mock.calls[0][0];
+    expect(call.where.assoId).toBe("asso-1");
   });
 });

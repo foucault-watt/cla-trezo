@@ -2,8 +2,19 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { listActiveAssoMembers } from "@/lib/asso/members";
 import { getExpenseReportDetailForAdmin } from "@/lib/admin/expense-reports";
+import {
+  addExpenseReportLineAsAdminAction,
+  deleteExpenseReportLineAsAdminAction,
+  updateExpenseReportLineAsAdminAction,
+} from "@/lib/admin/expense-report-actions";
+import {
+  assertExpenseReportMutable,
+  ExpenseReportLifecycleError,
+} from "@/lib/expense-reports/expense-report-lifecycle";
 import { ExpenseReportDetailHeader } from "@/components/expense-reports/expense-report-detail-view";
-import { PersonGroupsAdmin } from "./_components/person-groups-admin";
+import { FundingSourcesPanel } from "@/components/expense-reports/funding-sources-panel";
+import { PersonGroupsBoard } from "@/components/expense-reports/person-groups-board";
+import { SubventionSelectionProvider } from "@/components/expense-reports/subvention-selection-context";
 import { TakeOverButton } from "./_components/take-over-button";
 
 function documentUrl(reportId: string, documentId: string) {
@@ -18,6 +29,17 @@ export default async function AdminExpenseReportDetailPage({
   const { reportId } = await params;
   const report = await getExpenseReportDetailForAdmin(reportId);
   const members = await listActiveAssoMembers(report.assoId);
+
+  let editable = true;
+  try {
+    assertExpenseReportMutable({
+      status: report.status,
+      actor: { type: "ADMIN" },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
+    editable = false;
+  }
 
   return (
     <div>
@@ -37,9 +59,47 @@ export default async function AdminExpenseReportDetailPage({
         }
       />
 
-      <div className="mt-6">
-        <PersonGroupsAdmin lines={report.lines} members={members} />
-      </div>
+      <SubventionSelectionProvider>
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="flex flex-col gap-6">
+            <PersonGroupsBoard
+              addAction={addExpenseReportLineAsAdminAction}
+              updateAction={updateExpenseReportLineAsAdminAction}
+              deleteAction={deleteExpenseReportLineAsAdminAction}
+              expenseReportId={report.id}
+              lines={report.lines}
+              members={members}
+              assoType={report.assoType}
+              typeDepenses={report.typeDepenses}
+              visibleSubventions={report.visibleSubventions}
+              editable={editable}
+              showIbanColumn
+            />
+
+            <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
+              <input type="checkbox" />
+              <div className="collapse-title font-medium">
+                Sources de financement de la Structure
+              </div>
+              <div className="collapse-content">
+                <FundingSourcesPanel
+                  assoType={report.assoType}
+                  soldeView={report.soldeView}
+                  visibleSubventions={report.visibleSubventions}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
+            <FundingSourcesPanel
+              assoType={report.assoType}
+              soldeView={report.soldeView}
+              visibleSubventions={report.visibleSubventions}
+            />
+          </div>
+        </div>
+      </SubventionSelectionProvider>
 
       <div className="card mt-6 border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">

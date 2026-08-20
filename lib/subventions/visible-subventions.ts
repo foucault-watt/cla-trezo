@@ -1,5 +1,5 @@
 import type { SubventionType } from "@/app/generated/prisma/enums";
-import { requireStructureAccess } from "@/lib/auth/guards";
+import { requireAdmin, requireStructureAccess } from "@/lib/auth/guards";
 import { isSubventionStale } from "@/lib/expense-reports/line-warnings";
 import { prisma } from "@/lib/prisma";
 
@@ -19,22 +19,19 @@ export type VisibleSubvention = {
 };
 
 /**
- * Subventions visibles par la Structure bénéficiaire : uniquement celles
- * dont la Campagne est Publiée (cf. lib/subventions/status.ts). Le montant
- * utilisé vient des FinancialMovement Validés (mouvements EXPENSE_REPORT
- * créés à la Validation d'une Note, cf. ADR-0003) ; il ne reflète donc pas
- * encore les Lignes en Brouillon/Soumise/Prise en charge — c'est le rôle des
- * Warnings T13-T15, pas de cette vue.
+ * Cœur du calcul, indépendant de l'acteur qui consulte : la Structure
+ * bénéficiaire (listVisibleSubventions) et l'Admin qui édite une Note Prise
+ * en charge (listVisibleSubventionsForAdmin, cf. #18) partagent exactement
+ * la même vue, seul le contrôle d'accès en amont diffère.
  */
-export async function listVisibleSubventions(
-  assoSlug: string,
+async function listVisibleSubventionsForAsso(
+  assoId: string,
 ): Promise<VisibleSubvention[]> {
-  const { structure } = await requireStructureAccess(assoSlug);
   const now = new Date();
 
   const subventions = await prisma.subvention.findMany({
     where: {
-      assoId: structure.assoId,
+      assoId,
       campaign: { publicationDate: { not: null, lte: now } },
     },
     orderBy: { createdAt: "desc" },
@@ -84,4 +81,32 @@ export async function listVisibleSubventions(
       stale: isSubventionStale(s.campaign.date, now),
     };
   });
+}
+
+/**
+ * Subventions visibles par la Structure bénéficiaire : uniquement celles
+ * dont la Campagne est Publiée (cf. lib/subventions/status.ts). Le montant
+ * utilisé vient des FinancialMovement Validés (mouvements EXPENSE_REPORT
+ * créés à la Validation d'une Note, cf. ADR-0003) ; il ne reflète donc pas
+ * encore les Lignes en Brouillon/Soumise/Prise en charge — c'est le rôle des
+ * Warnings T13-T15, pas de cette vue.
+ */
+export async function listVisibleSubventions(
+  assoSlug: string,
+): Promise<VisibleSubvention[]> {
+  const { structure } = await requireStructureAccess(assoSlug);
+  return listVisibleSubventionsForAsso(structure.assoId);
+}
+
+/**
+ * Même vue que listVisibleSubventions, pour l'Admin qui édite une Note de
+ * frais Prise en charge (#18) : celui-ci n'est rattaché à aucune Structure,
+ * donc scopé directement par assoId (déduit de la Note) plutôt que par
+ * assoSlug.
+ */
+export async function listVisibleSubventionsForAdmin(
+  assoId: string,
+): Promise<VisibleSubvention[]> {
+  await requireAdmin();
+  return listVisibleSubventionsForAsso(assoId);
 }

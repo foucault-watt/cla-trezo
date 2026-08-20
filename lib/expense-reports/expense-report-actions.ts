@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { FundingSourceType } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -10,7 +9,11 @@ import {
   assertExpenseReportTransition,
   ExpenseReportLifecycleError,
 } from "./expense-report-lifecycle";
-import { checkFundingSourceEligibility } from "./funding-source-eligibility";
+import {
+  loadFundingSourceEligibility,
+  rawLineFormValues,
+  type ExpenseReportLineFormState,
+} from "./expense-report-line-shared";
 import { loadExpenseLineWarnings } from "./line-warnings";
 import {
   parseAddExpenseReportLineForm,
@@ -19,48 +22,7 @@ import {
   parseUpdateExpenseReportForm,
   parseUpdateExpenseReportLineForm,
 } from "./expense-report-input";
-
-/**
- * Charge les données Prisma nécessaires à la règle T11 (type de la Structure
- * ou Subvention candidate selon la source choisie) puis délègue la décision
- * à la fonction pure checkFundingSourceEligibility (cf. issue #29).
- */
-async function loadFundingSourceEligibility({
-  assoId,
-  fundingSource,
-  subventionId,
-}: {
-  assoId: string;
-  fundingSource: FundingSourceType;
-  subventionId: string | null;
-}): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (fundingSource === "CLUB_BALANCE") {
-    const asso = await prisma.asso.findUnique({
-      where: { id: assoId },
-      select: { type: true },
-    });
-    return checkFundingSourceEligibility({
-      fundingSource,
-      assoType: asso?.type ?? null,
-    });
-  }
-
-  const subvention = await prisma.subvention.findUnique({
-    where: { id: subventionId as string },
-    select: { assoId: true, campaign: { select: { publicationDate: true } } },
-  });
-  return checkFundingSourceEligibility({
-    assoId,
-    fundingSource,
-    subvention: subvention
-      ? {
-          assoId: subvention.assoId,
-          campaignPublicationDate: subvention.campaign.publicationDate,
-        }
-      : null,
-    now: new Date(),
-  });
-}
+export type { ExpenseReportLineFormValues } from "./expense-report-line-shared";
 
 export type CreateExpenseReportState = {
   ok: boolean;
@@ -211,43 +173,7 @@ export async function submitExpenseReportAction(
   return { ok: true };
 }
 
-export type ExpenseReportLineFormValues = {
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  iban: string;
-  amount: string;
-  expenseName: string;
-  typeDepenseId: string;
-  customLabel: string;
-  fundingSource: string;
-  subventionId: string;
-};
-
-/**
- * Valeurs brutes (non validées) resaisies telles quelles en cas d'échec, pour
- * que le formulaire puisse les réafficher au lieu de forcer une resaisie
- * complète après une erreur de validation.
- */
-function rawLineFormValues(formData: FormData): ExpenseReportLineFormValues {
-  return {
-    beneficiaryFirstname: String(formData.get("beneficiaryFirstname") ?? ""),
-    beneficiaryLastname: String(formData.get("beneficiaryLastname") ?? ""),
-    iban: String(formData.get("iban") ?? ""),
-    amount: String(formData.get("amount") ?? ""),
-    expenseName: String(formData.get("expenseName") ?? ""),
-    typeDepenseId: String(formData.get("typeDepenseId") ?? ""),
-    customLabel: String(formData.get("customLabel") ?? ""),
-    fundingSource: String(formData.get("fundingSource") ?? ""),
-    subventionId: String(formData.get("subventionId") ?? ""),
-  };
-}
-
-export type AddExpenseReportLineState = {
-  ok: boolean;
-  error?: string;
-  values?: ExpenseReportLineFormValues;
-  warnings?: string[];
-};
+export type AddExpenseReportLineState = ExpenseReportLineFormState;
 
 export async function addExpenseReportLineAction(
   _prevState: AddExpenseReportLineState,
@@ -324,12 +250,7 @@ export async function addExpenseReportLineAction(
   return { ok: true, warnings };
 }
 
-export type UpdateExpenseReportLineState = {
-  ok: boolean;
-  error?: string;
-  values?: ExpenseReportLineFormValues;
-  warnings?: string[];
-};
+export type UpdateExpenseReportLineState = ExpenseReportLineFormState;
 
 export async function updateExpenseReportLineAction(
   _prevState: UpdateExpenseReportLineState,

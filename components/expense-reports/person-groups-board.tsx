@@ -11,6 +11,10 @@ import type {
   ExpenseReportLineDetail,
   TypeDepenseOption,
 } from "@/lib/expense-reports/expense-reports";
+import type {
+  ExpenseReportLineDeleteState,
+  ExpenseReportLineFormState,
+} from "@/lib/expense-reports/expense-report-line-shared";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import { PersonFundingBadges } from "@/components/expense-reports/person-funding-badges";
 import { AddLigneForm } from "./add-ligne-form";
@@ -30,8 +34,16 @@ type AddTarget =
  * mémorise l'IBAN saisi que côté client, le temps de la session de saisie,
  * pour éviter de le retaper à chaque Ligne d'une même personne : rien n'est
  * envoyé au serveur au-delà de ce qui existait déjà (ADR-0002 inchangé).
+ *
+ * Partagé par la vue Structure (édition sur Brouillon/Soumise) et la vue
+ * Admin (édition sur Prise en charge, cf. #18) : `addAction`/`updateAction`
+ * sont fournies par l'appelant, `deleteAction` n'existe que côté Admin (seule
+ * opération de suppression de Ligne de l'application).
  */
 export function PersonGroupsBoard({
+  addAction,
+  updateAction,
+  deleteAction,
   assoSlug,
   expenseReportId,
   lines,
@@ -40,8 +52,22 @@ export function PersonGroupsBoard({
   typeDepenses,
   visibleSubventions,
   editable,
+  showIbanColumn = false,
 }: {
-  assoSlug: string;
+  addAction: (
+    state: ExpenseReportLineFormState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineFormState>;
+  updateAction: (
+    state: ExpenseReportLineFormState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineFormState>;
+  deleteAction?: (
+    state: ExpenseReportLineDeleteState,
+    formData: FormData,
+  ) => Promise<ExpenseReportLineDeleteState>;
+  /** Absent côté Admin : la page Admin n'est pas scopée à une Structure (cf. #18). */
+  assoSlug?: string;
   expenseReportId: string;
   lines: ExpenseReportLineDetail[];
   members: AssoMember[];
@@ -49,6 +75,7 @@ export function PersonGroupsBoard({
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
   editable: boolean;
+  showIbanColumn?: boolean;
 }) {
   const [ibanByKey, setIbanByKey] = useState<Record<string, string>>({});
   const [menuOpen, setMenuOpen] = useState(false);
@@ -99,6 +126,7 @@ export function PersonGroupsBoard({
               <table className="table">
                 <thead>
                   <tr>
+                    {showIbanColumn && <th>IBAN</th>}
                     <th>Nom de la dépense</th>
                     <th>Type de dépense</th>
                     <th>Montant</th>
@@ -110,6 +138,8 @@ export function PersonGroupsBoard({
                   {group.lines.map((line) => (
                     <LigneRow
                       key={line.id}
+                      action={updateAction}
+                      deleteAction={deleteAction}
                       assoSlug={assoSlug}
                       line={line}
                       assoType={assoType}
@@ -117,6 +147,7 @@ export function PersonGroupsBoard({
                       visibleSubventions={visibleSubventions}
                       editable={editable}
                       showBeneficiaryColumn={false}
+                      showIbanColumn={showIbanColumn}
                     />
                   ))}
                 </tbody>
@@ -147,6 +178,7 @@ export function PersonGroupsBoard({
                   </button>
                 </div>
                 <AddLigneForm
+                  action={addAction}
                   assoSlug={assoSlug}
                   expenseReportId={expenseReportId}
                   assoType={assoType}
