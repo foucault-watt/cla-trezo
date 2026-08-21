@@ -1,25 +1,57 @@
-import { CheckCircle2, Info, Lock, Pencil, XCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, Lock } from "lucide-react";
+import { Fragment } from "react";
+import { AdminOutcomesPopover } from "./admin-outcomes-popover";
 
-const TIMELINE_STEPS = [
+type Step =
+  | { kind: "text"; label: string; detail: string; highlight?: boolean }
+  | { kind: "admin" };
+
+const STEPS: Step[] = [
+  { kind: "text", label: "Créer", detail: "La note démarre en Brouillon." },
   {
-    label: "Créer",
-    detail: "La note démarre en Brouillon.",
-  },
-  {
+    kind: "text",
     label: "Compléter",
     detail: "Justificatifs et lignes de dépense.",
   },
   {
+    kind: "text",
     label: "Soumettre",
     detail: "Vous ne pouvez plus la modifier : elle part chez l'Admin CLA.",
     highlight: true,
   },
-  {
-    label: "Prise en charge",
-    detail: "Par l'Admin CLA.",
-    pending: true,
-  },
+  { kind: "admin" },
 ];
+
+function StepBadge({
+  tone,
+  children,
+}: {
+  tone: "default" | "highlight" | "pending";
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+        tone === "highlight"
+          ? "bg-primary text-primary-content"
+          : tone === "pending"
+            ? "bg-warning/20 text-warning"
+            : "bg-base-300 text-base-content/70"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Connector() {
+  return (
+    <div className="flex items-center justify-center py-1 text-base-content/30 lg:px-1 lg:py-0">
+      <ChevronDown size={16} className="lg:hidden" />
+      <ChevronRight size={16} className="hidden lg:block" />
+    </div>
+  );
+}
 
 export function ExpenseReportGuide() {
   return (
@@ -30,67 +62,47 @@ export function ExpenseReportGuide() {
         Comment fonctionne une Note de frais ?
       </div>
       <div className="collapse-content">
-        <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
-          <ul className="timeline timeline-vertical timeline-compact">
-            {TIMELINE_STEPS.map(({ label, detail, highlight, pending }, i) => (
-              <li key={label}>
-                {i > 0 && <hr className="bg-base-300" />}
-                <div className="timeline-middle">
-                  <div
-                    className={`flex size-6 items-center justify-center rounded-full text-xs font-semibold ${
-                      highlight
-                        ? "bg-primary text-primary-content"
-                        : pending
-                          ? "bg-warning/20 text-warning"
-                          : "bg-base-300 text-base-content/70"
-                    }`}
-                  >
-                    {i + 1}
-                  </div>
-                </div>
-                <div
-                  className={`timeline-end timeline-box ${
-                    highlight ? "border-primary/50 bg-primary/5" : ""
-                  }`}
-                >
-                  <p className="flex items-center gap-1.5 text-sm font-medium">
-                    {label}
-                    {highlight && <Lock size={12} className="text-primary" />}
-                  </p>
-                  <p className="text-xs text-base-content/60">{detail}</p>
-                </div>
-                {i < TIMELINE_STEPS.length - 1 && (
-                  <hr className="bg-base-300" />
+        <div className="mx-auto flex max-w-4xl flex-col lg:flex-row lg:items-stretch">
+          {STEPS.map((step, i) => (
+            <Fragment key={i}>
+              {i > 0 && <Connector />}
+              <div
+                className={`min-w-0 flex-1 rounded-box border p-3 ${
+                  step.kind === "text" && step.highlight
+                    ? "border-primary/50 bg-primary/5"
+                    : "border-base-300"
+                }`}
+              >
+                {step.kind === "text" ? (
+                  <>
+                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                      <StepBadge tone={step.highlight ? "highlight" : "default"}>
+                        {i + 1}
+                      </StepBadge>
+                      {step.label}
+                      {step.highlight && (
+                        <Lock size={12} className="text-primary" />
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-base-content/60">
+                      {step.detail}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                      <StepBadge tone="pending">{i + 1}</StepBadge>
+                      Décision de l&apos;Admin CLA
+                      <AdminOutcomesPopover />
+                    </div>
+                    <p className="mt-1 text-xs text-base-content/60">
+                      Valide, modifie ou rejette la note.
+                    </p>
+                  </>
                 )}
-              </li>
-            ))}
-          </ul>
-
-          <div className="divider divider-horizontal m-0 hidden lg:flex" />
-
-          <div className="mx-auto w-full max-w-xs rounded-box border border-base-300 p-3">
-            <p className="mb-2 text-sm font-medium">L&apos;Admin CLA peut :</p>
-            <ul className="flex flex-col gap-2.5 text-xs">
-              <li className="flex items-start gap-2">
-                <CheckCircle2
-                  size={14}
-                  className="mt-0.5 shrink-0 text-success"
-                />
-                <span>Valider la note de frais telle quelle.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Pencil size={14} className="mt-0.5 shrink-0 text-info" />
-                <span>La modifier, puis la valider.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <XCircle size={14} className="mt-0.5 shrink-0 text-error" />
-                <span>
-                  La rejeter — il faudra alors recommencer une nouvelle note
-                  de zéro.
-                </span>
-              </li>
-            </ul>
-          </div>
+              </div>
+            </Fragment>
+          ))}
         </div>
       </div>
     </div>
