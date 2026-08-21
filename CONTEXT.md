@@ -4,9 +4,8 @@ Application de gestion financière pour Centrale Lille Associations (CLA) : note
 
 ## Language
 
-**Structure**:
+**Asso**:
 Terme générique désignant toute entité gérée par l'application : un Club, une Commission ou une Association loi 1901.
-_Avoid_: entité, organisation, asso (générique)
 
 **Club**:
 Structure interne à CLA, sans compte bancaire propre ni personnalité juridique séparée. Son argent est géré par CLA et suivi via un solde interne dans l'application.

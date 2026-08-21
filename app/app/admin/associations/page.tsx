@@ -1,6 +1,6 @@
+import { ViewToggle } from "@/components/nav/view-toggle";
 import { listAssociations } from "@/lib/admin/associations";
 import { StatsBar } from "./_components/stats-bar";
-import { ViewToggle } from "./_components/view-toggle";
 import { ListView } from "./_components/list-view";
 import { GridView } from "./_components/grid-view";
 
@@ -10,7 +10,7 @@ export default async function AssociationsPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { view } = await searchParams;
-  const current = view === "grid" ? "grid" : "list";
+  const current = view === "grid" || view === "list" ? view : undefined;
   const associations = await listAssociations();
 
   return (
@@ -31,8 +31,17 @@ export default async function AssociationsPage({
 
       {current === "list" ? (
         <ListView associations={associations} />
-      ) : (
+      ) : current === "grid" ? (
         <GridView associations={associations} />
+      ) : (
+        <>
+          <div className="sm:hidden">
+            <GridView associations={associations} />
+          </div>
+          <div className="hidden sm:block">
+            <ListView associations={associations} />
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,13 +1,17 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 import {
   updateSubventionAction,
+  deleteSubventionAction,
   type UpdateSubventionState,
+  type DeleteSubventionState,
 } from "@/lib/admin/subvention-actions";
 import { formatCents } from "@/lib/money";
 
-const initialState: UpdateSubventionState = { ok: false };
+const initialUpdateState: UpdateSubventionState = { ok: false };
+const initialDeleteState: DeleteSubventionState = { ok: false };
 
 export function SubventionRow({
   campaignId,
@@ -25,7 +29,11 @@ export function SubventionRow({
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(
     updateSubventionAction,
-    initialState,
+    initialUpdateState,
+  );
+  const [deleteState, deleteFormAction, deletePending] = useActionState(
+    deleteSubventionAction,
+    initialDeleteState,
   );
 
   // Ferme le panneau d'édition dès que la mise à jour réussit, sans passer
@@ -53,15 +61,52 @@ export function SubventionRow({
         </td>
         <td>{formatCents(subvention.amountCents)}</td>
         <td>
-          <button
-            type="button"
-            className="btn btn-ghost btn-xs"
-            onClick={() => setEditing((value) => !value)}
-          >
-            {editing ? "Annuler" : "Modifier"}
-          </button>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              className="btn btn-ghost btn-square btn-xs"
+              aria-label="Modifier la Subvention"
+              onClick={() => setEditing((value) => !value)}
+            >
+              {editing ? <X size={15} /> : <Pencil size={15} />}
+            </button>
+            <form action={deleteFormAction}>
+              <input type="hidden" name="id" value={subvention.id} />
+              <input type="hidden" name="campaignId" value={campaignId} />
+              <button
+                type="submit"
+                className="btn btn-ghost btn-square btn-xs text-error"
+                aria-label="Supprimer la Subvention"
+                disabled={deletePending}
+                onClick={(event) => {
+                  if (
+                    !confirm(
+                      `Supprimer la Subvention de ${subvention.assoName} (${formatCents(subvention.amountCents)}) ?`,
+                    )
+                  ) {
+                    event.preventDefault();
+                  }
+                }}
+              >
+                {deletePending ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : (
+                  <Trash2 size={15} />
+                )}
+              </button>
+            </form>
+          </div>
         </td>
       </tr>
+      {!deleteState.ok && deleteState.error && (
+        <tr>
+          <td colSpan={4}>
+            <div role="alert" className="alert alert-error alert-soft alert-sm">
+              <span>{deleteState.error}</span>
+            </div>
+          </td>
+        </tr>
+      )}
       {editing && (
         <tr>
           <td colSpan={4}>
@@ -112,17 +157,28 @@ export function SubventionRow({
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="btn btn-primary btn-sm"
-                disabled={pending}
-              >
-                {pending ? (
-                  <span className="loading loading-spinner loading-xs" />
-                ) : (
-                  "Enregistrer"
-                )}
-              </button>
+              <div className="flex gap-1">
+                <button
+                  type="submit"
+                  className="btn btn-ghost btn-square btn-sm text-success"
+                  aria-label="Enregistrer les modifications"
+                  disabled={pending}
+                >
+                  {pending ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <Check size={17} />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-square btn-sm"
+                  aria-label="Annuler la modification"
+                  onClick={() => setEditing(false)}
+                >
+                  <X size={17} />
+                </button>
+              </div>
             </form>
           </td>
         </tr>

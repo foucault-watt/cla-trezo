@@ -12,7 +12,7 @@ export default async function SubventionsPage({
 }) {
   const { assoSlug } = await params;
   const { view } = await searchParams;
-  const current = view === "grid" ? "grid" : "list";
+  const current = view === "grid" || view === "list" ? view : undefined;
   const subventions = await listVisibleSubventions(assoSlug);
 
   return (
@@ -35,9 +35,18 @@ export default async function SubventionsPage({
         <div className="mt-6">
           <ListView subventions={subventions} />
         </div>
-      ) : (
+      ) : current === "grid" ? (
         <div className="mt-6">
           <GridView subventions={subventions} />
+        </div>
+      ) : (
+        <div className="mt-6">
+          <div className="sm:hidden">
+            <GridView subventions={subventions} />
+          </div>
+          <div className="hidden sm:block">
+            <ListView subventions={subventions} />
+          </div>
         </div>
       )}
     </div>

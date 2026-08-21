@@ -11,9 +11,8 @@ import {
   campaignStatusBadgeClass,
 } from "@/lib/subventions/status";
 import { formatCents } from "@/lib/money";
-import { AddSubventionForm } from "./_components/add-subvention-form";
 import { EditCampaignForm } from "./_components/edit-campaign-form";
-import { SubventionRow } from "./_components/subvention-row";
+import { SubventionsTable } from "./_components/subventions-table";
 
 export default async function AdminSubventionCampaignDetailPage({
   params,
@@ -92,38 +91,12 @@ export default async function AdminSubventionCampaignDetailPage({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-md">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Asso</th>
-                <th>Raison</th>
-                <th>Montant</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {campaign.subventions.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-base-content/70">
-                    Aucune Subvention pour l&apos;instant.
-                  </td>
-                </tr>
-              ) : (
-                campaign.subventions.map((subvention) => (
-                  <SubventionRow
-                    key={subvention.id}
-                    campaignId={campaign.id}
-                    subvention={subvention}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <AddSubventionForm campaignId={campaign.id} assos={assos} />
+      <div className="mt-6">
+        <SubventionsTable
+          campaignId={campaign.id}
+          subventions={campaign.subventions}
+          assos={assos}
+        />
       </div>
 
       <div className="card card-border mt-8 bg-base-100">

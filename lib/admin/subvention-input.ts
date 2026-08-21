@@ -51,3 +51,19 @@ export function parseSubventionUpdateForm(formData: FormData) {
     commentary: formData.get("commentary"),
   });
 }
+
+export const subventionDeleteFormSchema = z.object({
+  id: z.string().uuid(),
+  campaignId: z.string().uuid(),
+});
+
+export type SubventionDeleteFormInput = z.infer<
+  typeof subventionDeleteFormSchema
+>;
+
+export function parseSubventionDeleteForm(formData: FormData) {
+  return subventionDeleteFormSchema.safeParse({
+    id: formData.get("id"),
+    campaignId: formData.get("campaignId"),
+  });
+}

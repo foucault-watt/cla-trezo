@@ -7,6 +7,7 @@ import { toAmountCents } from "@/lib/money";
 import {
   parseSubventionForm,
   parseSubventionUpdateForm,
+  parseSubventionDeleteForm,
 } from "./subvention-input";
 
 export type AddSubventionState = { ok: boolean; error?: string };
@@ -84,6 +85,54 @@ export async function updateSubventionAction(
       commentary: parsed.data.commentary,
     },
   });
+
+  revalidatePath(`/app/admin/subventions/${parsed.data.campaignId}`);
+  revalidatePath("/app/admin/subventions");
+
+  return { ok: true };
+}
+
+export type DeleteSubventionState = { ok: boolean; error?: string };
+
+/**
+ * Supprime une Subvention. Refusée si elle est déjà consommée (par une
+ * ligne de Note de frais ou un Mouvement financier) pour ne pas casser le
+ * calcul du montant utilisé.
+ */
+export async function deleteSubventionAction(
+  _prevState: DeleteSubventionState,
+  formData: FormData,
+): Promise<DeleteSubventionState> {
+  await requireAdmin();
+
+  const parsed = parseSubventionDeleteForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const subvention = await prisma.subvention.findUnique({
+    where: { id: parsed.data.id },
+    select: {
+      _count: { select: { expenseReportLines: true, financialMovements: true } },
+    },
+  });
+  if (!subvention) {
+    return { ok: false, error: "Subvention introuvable." };
+  }
+  if (
+    subvention._count.expenseReportLines > 0 ||
+    subvention._count.financialMovements > 0
+  ) {
+    return {
+      ok: false,
+      error: "Cette Subvention est déjà utilisée, impossible de la supprimer.",
+    };
+  }
+
+  await prisma.subvention.delete({ where: { id: parsed.data.id } });
 
   revalidatePath(`/app/admin/subventions/${parsed.data.campaignId}`);
   revalidatePath("/app/admin/subventions");

@@ -9,7 +9,7 @@ export default async function AdminNotesDeFraisPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { view } = await searchParams;
-  const current = view === "grid" ? "grid" : "list";
+  const current = view === "grid" || view === "list" ? view : undefined;
   const reports = await listExpenseReportsForAdmin();
 
   return (
@@ -31,8 +31,17 @@ export default async function AdminNotesDeFraisPage({
         </p>
       ) : current === "list" ? (
         <ListView reports={reports} />
-      ) : (
+      ) : current === "grid" ? (
         <GridView reports={reports} />
+      ) : (
+        <>
+          <div className="sm:hidden">
+            <GridView reports={reports} />
+          </div>
+          <div className="hidden sm:block">
+            <ListView reports={reports} />
+          </div>
+        </>
       )}
     </div>
   );

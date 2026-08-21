@@ -15,7 +15,7 @@ export default async function NotesDeFraisPage({
 }) {
   const { assoSlug } = await params;
   const { view } = await searchParams;
-  const current = view === "grid" ? "grid" : "list";
+  const current = view === "grid" || view === "list" ? view : undefined;
   const reports = await listExpenseReports(assoSlug);
 
   return (
@@ -43,8 +43,17 @@ export default async function NotesDeFraisPage({
         </p>
       ) : current === "list" ? (
         <ListView assoSlug={assoSlug} reports={reports} />
-      ) : (
+      ) : current === "grid" ? (
         <GridView assoSlug={assoSlug} reports={reports} />
+      ) : (
+        <>
+          <div className="sm:hidden">
+            <GridView assoSlug={assoSlug} reports={reports} />
+          </div>
+          <div className="hidden sm:block">
+            <ListView assoSlug={assoSlug} reports={reports} />
+          </div>
+        </>
       )}
     </div>
   );

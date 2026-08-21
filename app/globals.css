@@ -8,14 +8,6 @@ fieldset {
   border: none;
 }
 
-/* Halo discret sur les bords de l'écran en vue admin, pour signaler un
-   contexte différent (actions à plus fort impact) sans gêner la lecture. */
-.admin-edge-glow {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--color-primary) 55%, transparent),
-    inset 0 0 55px -4px color-mix(in oklab, var(--color-primary) 55%, transparent);
-}
-
 @plugin "daisyui/theme" {
   name: "bumblebee";
   default: true;

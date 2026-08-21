@@ -10,7 +10,7 @@ export default async function AdminSubventionsPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { view } = await searchParams;
-  const current = view === "grid" ? "grid" : "list";
+  const current = view === "grid" || view === "list" ? view : undefined;
   const campaigns = await listSubventionCampaigns();
 
   return (
@@ -34,8 +34,17 @@ export default async function AdminSubventionsPage({
         </p>
       ) : current === "list" ? (
         <CampaignsListView campaigns={campaigns} />
-      ) : (
+      ) : current === "grid" ? (
         <CampaignsGridView campaigns={campaigns} />
+      ) : (
+        <>
+          <div className="sm:hidden">
+            <CampaignsGridView campaigns={campaigns} />
+          </div>
+          <div className="hidden sm:block">
+            <CampaignsListView campaigns={campaigns} />
+          </div>
+        </>
       )}
     </div>
   );

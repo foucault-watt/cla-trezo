@@ -5,12 +5,16 @@ const {
   campaignFindUniqueMock,
   subventionCreateMock,
   subventionUpdateMock,
+  subventionFindUniqueMock,
+  subventionDeleteMock,
   revalidatePathMock,
 } = vi.hoisted(() => ({
   requireAdminMock: vi.fn(),
   campaignFindUniqueMock: vi.fn(),
   subventionCreateMock: vi.fn(),
   subventionUpdateMock: vi.fn(),
+  subventionFindUniqueMock: vi.fn(),
+  subventionDeleteMock: vi.fn(),
   revalidatePathMock: vi.fn(),
 }));
 
@@ -18,14 +22,18 @@ vi.mock("@/lib/auth/guards", () => ({ requireAdmin: requireAdminMock }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     subventionCampaign: { findUnique: campaignFindUniqueMock },
-    subvention: { create: subventionCreateMock, update: subventionUpdateMock },
+    subvention: {
+      create: subventionCreateMock,
+      update: subventionUpdateMock,
+      findUnique: subventionFindUniqueMock,
+      delete: subventionDeleteMock,
+    },
   },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
-const { addSubventionAction, updateSubventionAction } = await import(
-  "./subvention-actions"
-);
+const { addSubventionAction, updateSubventionAction, deleteSubventionAction } =
+  await import("./subvention-actions");
 
 function formData(entries: Record<string, string>): FormData {
   const fd = new FormData();
@@ -57,6 +65,8 @@ beforeEach(() => {
   campaignFindUniqueMock.mockReset();
   subventionCreateMock.mockReset();
   subventionUpdateMock.mockReset();
+  subventionFindUniqueMock.mockReset();
+  subventionDeleteMock.mockReset();
   revalidatePathMock.mockReset();
   requireAdminMock.mockResolvedValue(admin);
   campaignFindUniqueMock.mockResolvedValue({ id: valid.campaignId });
@@ -158,6 +168,97 @@ describe("updateSubventionAction", () => {
         amountCents: 40000,
         commentary: null,
       },
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      `/app/admin/subventions/${valid.campaignId}`,
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("deleteSubventionAction", () => {
+  const validDelete = {
+    id: "33333333-3333-3333-8333-333333333333",
+    campaignId: valid.campaignId,
+  };
+
+  it("exige un Admin", async () => {
+    subventionFindUniqueMock.mockResolvedValue({
+      _count: { expenseReportLines: 0, financialMovements: 0 },
+    });
+
+    await deleteSubventionAction({ ok: false }, formData(validDelete));
+
+    expect(requireAdminMock).toHaveBeenCalled();
+  });
+
+  it("refuse une saisie invalide sans toucher à la base", async () => {
+    const result = await deleteSubventionAction(
+      { ok: false },
+      formData({ id: "not-a-uuid", campaignId: valid.campaignId }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(subventionFindUniqueMock).not.toHaveBeenCalled();
+    expect(subventionDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Subvention n'existe pas", async () => {
+    subventionFindUniqueMock.mockResolvedValue(null);
+
+    const result = await deleteSubventionAction(
+      { ok: false },
+      formData(validDelete),
+    );
+
+    expect(result).toEqual({ ok: false, error: "Subvention introuvable." });
+    expect(subventionDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Subvention est déjà utilisée par une ligne de Note de frais", async () => {
+    subventionFindUniqueMock.mockResolvedValue({
+      _count: { expenseReportLines: 1, financialMovements: 0 },
+    });
+
+    const result = await deleteSubventionAction(
+      { ok: false },
+      formData(validDelete),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Cette Subvention est déjà utilisée, impossible de la supprimer.",
+    });
+    expect(subventionDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Subvention est déjà utilisée par un Mouvement financier", async () => {
+    subventionFindUniqueMock.mockResolvedValue({
+      _count: { expenseReportLines: 0, financialMovements: 1 },
+    });
+
+    const result = await deleteSubventionAction(
+      { ok: false },
+      formData(validDelete),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(subventionDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("supprime la Subvention inutilisée et revalide les pages", async () => {
+    subventionFindUniqueMock.mockResolvedValue({
+      _count: { expenseReportLines: 0, financialMovements: 0 },
+    });
+
+    const result = await deleteSubventionAction(
+      { ok: false },
+      formData(validDelete),
+    );
+
+    expect(subventionDeleteMock).toHaveBeenCalledWith({
+      where: { id: validDelete.id },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/admin/subventions/${valid.campaignId}`,
