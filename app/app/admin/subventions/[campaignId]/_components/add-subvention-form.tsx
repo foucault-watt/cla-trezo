@@ -29,10 +29,10 @@ export function AddSubventionForm({
           <input type="hidden" name="campaignId" value={campaignId} />
 
           <fieldset className="fieldset">
-            <legend className="fieldset-legend">Structure</legend>
+            <legend className="fieldset-legend">Asso</legend>
             <select name="assoId" className="select" defaultValue="" required>
               <option value="" disabled>
-                Choisir une Structure
+                Choisir une Asso
               </option>
               {assos.map((asso) => (
                 <option key={asso.id} value={asso.id}>

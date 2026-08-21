@@ -13,7 +13,7 @@ export default function NewSubventionCampaignPage() {
 
       <h1 className="mt-2 text-2xl font-semibold">Nouvelle campagne</h1>
       <p className="mt-2 text-base-content/70">
-        Une campagne regroupe les Subventions accordées aux Structures pour un
+        Une campagne regroupe les Subventions accordées aux Assos pour un
         même type et une même période.
       </p>
 

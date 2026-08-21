@@ -97,7 +97,7 @@ export default async function AdminSubventionCampaignDetailPage({
           <table className="table">
             <thead>
               <tr>
-                <th>Structure</th>
+                <th>Asso</th>
                 <th>Raison</th>
                 <th>Montant</th>
                 <th />

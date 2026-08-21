@@ -113,7 +113,7 @@ export function PersonGroupsBoard({
                 </span>
               ) : (
                 <span className="badge badge-ghost badge-sm">
-                  Hors Structure
+                  Hors Asso
                 </span>
               )}
               <PersonFundingBadges
@@ -250,7 +250,7 @@ export function PersonGroupsBoard({
                             </span>
                           ) : (
                             <span className="badge badge-ghost badge-sm">
-                              Hors Structure
+                              Hors Asso
                             </span>
                           )}
                         </button>

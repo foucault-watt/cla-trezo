@@ -38,7 +38,7 @@ export default async function AdminAssociationDetailPage({
         <div className="mt-6">
           <div role="alert" className="alert alert-warning alert-soft mb-4">
             <span>
-              Le type de cette Structure n&apos;est pas encore défini.
+              Le type de cette Asso n&apos;est pas encore défini.
               Choisissez-en un pour débloquer le reste de sa gestion (dont le
               Solde si c&apos;est un Club).
             </span>
@@ -78,7 +78,7 @@ export default async function AdminAssociationDetailPage({
           <div className="collapse-arrow collapse mt-8 border border-base-300 bg-base-100">
             <input type="checkbox" />
             <div className="collapse-title font-medium">
-              Réglages : modifier le type de cette Structure
+              Réglages : modifier le type de cette Asso
             </div>
             <div className="collapse-content">
               <AssoTypePicker

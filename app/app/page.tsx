@@ -11,7 +11,7 @@ export default async function AppHomePage() {
       <div className="text-center">
         <h1 className="text-3xl font-semibold">Bonjour {user.firstname}</h1>
         <p className="mt-2 text-base-content/70">
-          Choisissez une structure pour continuer.
+          Choisissez une Asso pour continuer.
         </p>
       </div>
 
@@ -23,7 +23,7 @@ export default async function AppHomePage() {
 
       {user.structures.length === 0 ? (
         <p className="text-base-content/70">
-          Vous n&apos;êtes membre d&apos;aucune structure pour le moment.
+          Vous n&apos;êtes membre d&apos;aucune Asso pour le moment.
         </p>
       ) : (
         <div className="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

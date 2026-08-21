@@ -18,7 +18,7 @@ export default async function AdminNotesDeFraisPage({
         <div>
           <h1 className="text-2xl font-semibold">Notes de frais</h1>
           <p className="mt-1 text-sm text-base-content/70">
-            Notes de frais Soumises ou Prises en charge, toutes Structures
+            Notes de frais Soumises ou Prises en charge, toutes Assos
             confondues.
           </p>
         </div>

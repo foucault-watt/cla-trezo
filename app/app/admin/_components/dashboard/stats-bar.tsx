@@ -22,7 +22,7 @@ export function StatsBar({ data }: { data: DashboardData }) {
   return (
     <div className="stats stats-vertical mb-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
       <div className="stat">
-        <div className="stat-title">Structures actives</div>
+        <div className="stat-title">Assos actives</div>
         <div className="stat-value text-2xl">{data.assosActives}</div>
       </div>
       <div className="stat">

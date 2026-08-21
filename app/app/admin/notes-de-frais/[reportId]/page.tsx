@@ -79,7 +79,7 @@ export default async function AdminExpenseReportDetailPage({
             <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
               <input type="checkbox" />
               <div className="collapse-title font-medium">
-                Sources de financement de la Structure
+                Sources de financement de l&apos;Asso
               </div>
               <div className="collapse-content">
                 <FundingSourcesPanel

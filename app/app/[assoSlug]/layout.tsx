@@ -42,7 +42,7 @@ export default async function MemberLayout({
       {user.structures.length > 1 && (
         <Link href="/app" className="btn btn-ghost btn-sm w-full justify-start gap-2">
           <ArrowLeftRight size={18} />
-          Changer de structure
+          Changer d&apos;Asso
         </Link>
       )}
       {user.isAdmin && (

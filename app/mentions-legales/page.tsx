@@ -144,7 +144,7 @@ export default function MentionsLegalesPage() {
               </p>
               <p className="mt-2">
                 L&apos;application traite uniquement les données nécessaires à
-                la gestion des structures de CLA, des notes de frais, des
+                la gestion des Assos de CLA, des notes de frais, des
                 remboursements, des soldes et des subventions. Ces données
                 peuvent notamment comprendre l&apos;identité et l&apos;adresse
                 électronique des utilisateurs, les informations relatives aux
@@ -154,7 +154,7 @@ export default function MentionsLegalesPage() {
               <p className="mt-2">
                 Ces traitements sont réalisés dans le cadre de la gestion
                 administrative et financière de Centrale Lille Associations et
-                de ses structures.
+                de ses Assos.
               </p>
               <p className="mt-2">
                 Les données sont accessibles uniquement aux personnes

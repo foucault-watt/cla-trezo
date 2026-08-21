@@ -19,7 +19,7 @@ export default async function AdminSubventionsPage({
         <div>
           <h1 className="text-2xl font-semibold">Subventions</h1>
           <p className="mt-1 text-sm text-base-content/70">
-            Campagnes de subvention et Subventions accordées aux Structures.
+            Campagnes de subvention et Subventions accordées aux Assos.
           </p>
         </div>
         <div className="flex items-center gap-2">
