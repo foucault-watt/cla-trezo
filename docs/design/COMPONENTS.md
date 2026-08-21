@@ -123,6 +123,58 @@ validated during the same prototype session, to reuse once T10 lands:
   reçus/factures." / "Uniquement sans facture disponible.") directly under
   the label — that description is the main reason this style won over tabs.
 
+## Subventions page (member `[assoSlug]/subventions`) — grouped by Campagne, no list/grid toggle
+
+Deliberate exception to the list/grid toggle convention above. Prototyped as
+`/design` variants A/B/C (A: sectioned card grid per Campagne; B: "enveloppe"
+Campagne cards with Subventions as nested rows; C: circular gauges with
+Type-based accent colors) — **A won** and is implemented in
+`subventions-by-campaign.tsx`.
+
+- No `ViewToggle` on this page — a flat list/grid of Subventions loses the
+  Campagne grouping, which is the one piece of context (who granted this, as
+  part of what) that actually matters when scanning. Group by `campaignId`
+  first (not `campaignName` — names aren't guaranteed unique), one `section`
+  per Campagne in encounter order.
+- Each Campagne section: `badge-primary` (Type) + name + date, a
+  `border-b border-base-300` rule, then a `grid sm:grid-cols-2` of Subvention
+  cards — same shape as the single-Campagne case in `FundingSourcesPanel`
+  (`progress` bar, `value={remainingAmountCents} max={totalAmountCents}`,
+  `progress-success`/`progress-error` on `stale`), reused here instead of
+  reinvented. `commentary`, when present, renders as a plain
+  `text-xs italic` line directly under the card content — no
+  `collapse`/"Détail" accordion: a one-click reveal for a single short line
+  of text was more interaction than the content justified.
+- The `progress` bar fills with **remaining**, not used — it drains as the
+  Subvention is spent rather than filling up. Matches the existing
+  `FundingSourcesPanel` convention; keep it consistent if this pattern shows
+  up elsewhere rather than picking the opposite convention per page.
+- A stale Campagne (`campaignDate` >1 year, cf. `isSubventionStale`) shows a
+  `text-error` "Campagne ancienne" flag next to the date, and every
+  Subvention card in it gets the same warning line as
+  `FundingSourcesPanel` ("Subvention ancienne — risque de refus par
+  l'Admin.") — staleness is a Campagne-level fact (same `campaignDate` for
+  every Subvention in it), so all cards in a stale section render red
+  together, never mixed.
+- **Historique, loaded on demand.** The page's default query
+  (`listCurrentSubventions`) only fetches Subventions within the 2-year
+  funding window (`isSubventionWithinFundingWindow` /
+  `fundingWindowCutoff`, cf. `lib/expense-reports/line-warnings.ts` — the
+  same cutoff the Note de frais funding-source panel already uses to
+  decide "current vs old", reused rather than re-invented). Older
+  Subventions live behind a `collapse-arrow` "Historique" section at the
+  bottom of the page (`historique-section.tsx`), fetched via a Server
+  Action only the first time it's opened — never on initial page load, to
+  avoid paying for a full-history query (Subvention + FinancialMovement
+  aggregation) on every visit. Rows there are flat (not grouped by
+  Campagne — this section is a single reference list, not the primary
+  scan surface) and non-interactive: reason, Type badge, Campagne + date,
+  montant restant, and `commentary` inline in italic. An earlier version
+  made each row expand-on-click to a per-Ligne usage breakdown
+  (`FinancialMovement` → `ExpenseReportLine`) — cut as more interaction
+  than the historique section warrants; re-introduce only if a real need
+  for that drill-down shows up.
+
 ## Page structure (list-style admin pages)
 
 ```

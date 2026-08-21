@@ -1,10 +1,14 @@
 import type { SubventionType } from "@/app/generated/prisma/enums";
 import { requireAdmin, requireStructureAccess } from "@/lib/auth/guards";
-import { isSubventionStale } from "@/lib/expense-reports/line-warnings";
+import {
+  fundingWindowCutoff,
+  isSubventionStale,
+} from "@/lib/expense-reports/line-warnings";
 import { prisma } from "@/lib/prisma";
 
 export type VisibleSubvention = {
   id: string;
+  campaignId: string;
   campaignName: string;
   type: SubventionType;
   reason: string;
@@ -23,16 +27,33 @@ export type VisibleSubvention = {
  * bénéficiaire (listVisibleSubventions) et l'Admin qui édite une Note Prise
  * en charge (listVisibleSubventionsForAdmin, cf. #18) partagent exactement
  * la même vue, seul le contrôle d'accès en amont diffère.
+ *
+ * `scope` filtre par date de Campagne, directement dans la requête, pour ne
+ * pas charger (Subvention + agrégation FinancialMovement) l'historique
+ * complet quand seules les Subventions actuelles sont affichées — cf.
+ * listCurrentSubventions / listHistoricalSubventions. Omis (`undefined`) :
+ * aucune coupure, comportement historique de listVisibleSubventions(ForAdmin).
  */
 async function listVisibleSubventionsForAsso(
   assoId: string,
+  scope?: "current" | "historical",
 ): Promise<VisibleSubvention[]> {
   const now = new Date();
+  const cutoff = fundingWindowCutoff(now);
+  const campaignDateFilter =
+    scope === "current"
+      ? { gte: cutoff }
+      : scope === "historical"
+        ? { lt: cutoff }
+        : undefined;
 
   const subventions = await prisma.subvention.findMany({
     where: {
       assoId,
-      campaign: { publicationDate: { not: null, lte: now } },
+      campaign: {
+        publicationDate: { not: null, lte: now },
+        ...(campaignDateFilter && { date: campaignDateFilter }),
+      },
     },
     orderBy: { createdAt: "desc" },
     include: {
@@ -69,6 +90,7 @@ async function listVisibleSubventionsForAsso(
     const usedAmountCents = usedCentsBySubventionId.get(s.id) ?? 0;
     return {
       id: s.id,
+      campaignId: s.campaignId,
       campaignName: s.campaign.name,
       type: s.campaign.type,
       reason: s.reason,
@@ -109,4 +131,29 @@ export async function listVisibleSubventionsForAdmin(
 ): Promise<VisibleSubvention[]> {
   await requireAdmin();
   return listVisibleSubventionsForAsso(assoId);
+}
+
+/**
+ * Subventions "actuelles" (cf. isSubventionWithinFundingWindow) pour l'écran
+ * de consultation dédié (T7, page /subventions) : ce qui s'affiche par
+ * défaut, sans charger l'historique au-delà de 2 ans — cf.
+ * listHistoricalSubventions pour le chargement à la demande de ce dernier.
+ */
+export async function listCurrentSubventions(
+  assoSlug: string,
+): Promise<VisibleSubvention[]> {
+  const { structure } = await requireStructureAccess(assoSlug);
+  return listVisibleSubventionsForAsso(structure.assoId, "current");
+}
+
+/**
+ * Historique (au-delà de la fenêtre de 2 ans) pour l'écran de consultation
+ * dédié (T7) : chargé à la demande (section repliée par défaut), jamais au
+ * chargement initial de la page — cf. listCurrentSubventions.
+ */
+export async function listHistoricalSubventions(
+  assoSlug: string,
+): Promise<VisibleSubvention[]> {
+  const { structure } = await requireStructureAccess(assoSlug);
+  return listVisibleSubventionsForAsso(structure.assoId, "historical");
 }

@@ -34,17 +34,27 @@ export function isSubventionStale(campaignDate: Date, now: Date): boolean {
 }
 
 /**
+ * Coupure de la fenêtre de financement (cf. isSubventionWithinFundingWindow),
+ * exposée pour filtrer côté requête (lib/subventions/visible-subventions.ts)
+ * plutôt que de charger l'historique complet pour le re-filtrer en mémoire.
+ */
+export function fundingWindowCutoff(now: Date): Date {
+  return subtractYears(now, 2);
+}
+
+/**
  * Fenêtre au-delà de laquelle une Subvention disparaît complètement du
  * panneau de sélection lors de l'ajout d'une Ligne (au-delà d'un an et
  * jusqu'à deux ans, elle reste sélectionnable mais flaguée via
- * isSubventionStale). Ne s'applique qu'à ce panneau, pas à la page de
- * consultation dédiée des Subventions (T7), qui reste un historique complet.
+ * isSubventionStale). Sert aussi de coupure "actuelle / historique" sur la
+ * page de consultation dédiée des Subventions (T7) : l'historique au-delà de
+ * cette fenêtre n'est chargé qu'à la demande, cf. listHistoricalSubventions.
  */
 export function isSubventionWithinFundingWindow(
   campaignDate: Date,
   now: Date,
 ): boolean {
-  return campaignDate >= subtractYears(now, 2);
+  return campaignDate >= fundingWindowCutoff(now);
 }
 
 /**
