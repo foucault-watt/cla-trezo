@@ -6,7 +6,7 @@ import {
   createSubventionCampaignAction,
   type CreateSubventionCampaignState,
 } from "@/lib/admin/subvention-campaign-actions";
-import { CampaignNameFields } from "../../_components/campaign-name-fields";
+import { CampaignNameFields } from "./campaign-name-fields";
 
 const initialState: CreateSubventionCampaignState = { ok: false };
 

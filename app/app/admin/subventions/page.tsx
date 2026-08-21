@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { ViewToggle } from "@/components/nav/view-toggle";
 import { listSubventionCampaigns } from "@/lib/admin/subvention-campaigns";
 import { CampaignsListView } from "./_components/campaigns-list-view";
 import { CampaignsGridView } from "./_components/campaigns-grid-view";
+import { NewCampaignModalButton } from "./_components/new-campaign-modal-button";
 
 export default async function AdminSubventionsPage({
   searchParams,
@@ -24,12 +24,7 @@ export default async function AdminSubventionsPage({
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle current={current} />
-          <Link
-            href="/app/admin/subventions/nouvelle"
-            className="btn btn-primary"
-          >
-            Nouvelle campagne
-          </Link>
+          <NewCampaignModalButton />
         </div>
       </div>
 

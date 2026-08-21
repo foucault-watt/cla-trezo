@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ViewToggle } from "@/components/nav/view-toggle";
 import { listExpenseReports } from "@/lib/expense-reports/expense-reports";
 import { StatsBar } from "./_components/stats-bar";
 import { ListView } from "./_components/list-view";
 import { GridView } from "./_components/grid-view";
 import { ExpenseReportGuide } from "./_components/expense-report-guide";
+import { NewExpenseReportModalButton } from "./_components/new-expense-report-modal-button";
 
 export default async function NotesDeFraisPage({
   params,
@@ -29,12 +29,7 @@ export default async function NotesDeFraisPage({
         </div>
         <div className="flex items-center gap-2">
           {reports.length > 0 && <ViewToggle current={current} />}
-          <Link
-            href={`/app/${assoSlug}/notes-de-frais/nouvelle`}
-            className="btn btn-primary"
-          >
-            Nouvelle Note de frais
-          </Link>
+          <NewExpenseReportModalButton assoSlug={assoSlug} />
         </div>
       </div>
 
