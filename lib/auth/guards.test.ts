@@ -1,19 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SessionUser } from "@/lib/session";
 
-const { getSessionMock, findUniqueMock, redirectMock, notFoundMock } =
-  vi.hoisted(() => ({
-    getSessionMock: vi.fn(),
-    findUniqueMock: vi.fn(),
-    redirectMock: vi.fn(() => {
-      throw new Error("REDIRECT");
-    }),
-    notFoundMock: vi.fn(() => {
-      throw new Error("NOT_FOUND");
-    }),
-  }));
+const {
+  getSessionMock,
+  getDemoSessionMock,
+  findUniqueMock,
+  redirectMock,
+  notFoundMock,
+} = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+  getDemoSessionMock: vi.fn(),
+  findUniqueMock: vi.fn(),
+  redirectMock: vi.fn(() => {
+    throw new Error("REDIRECT");
+  }),
+  notFoundMock: vi.fn(() => {
+    throw new Error("NOT_FOUND");
+  }),
+}));
 
-vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
+vi.mock("@/lib/session", () => ({
+  getSession: getSessionMock,
+  getDemoSession: getDemoSessionMock,
+}));
 vi.mock("@/lib/prisma", () => ({
   prisma: { asso: { findUnique: findUniqueMock } },
 }));
@@ -45,8 +54,21 @@ const admin: SessionUser = {
   structures: [],
 };
 
+const demoUser: SessionUser = {
+  id: "user-demo",
+  username: "demo-tresorier",
+  firstname: "Camille",
+  lastname: "Trésorière",
+  isAdmin: false,
+  isDemo: true,
+  structures: [
+    { assoId: "asso-demo", slug: "club-demo", name: "Club Démo", role: "Trésorier·ère" },
+  ],
+};
+
 beforeEach(() => {
   getSessionMock.mockReset();
+  getDemoSessionMock.mockReset();
   findUniqueMock.mockReset();
   redirectMock.mockClear();
   notFoundMock.mockClear();
@@ -124,6 +146,46 @@ describe("requireStructureAccess", () => {
     );
 
     expect(notFoundMock).toHaveBeenCalled();
+  });
+});
+
+describe("requireStructureAccess — Asso démo", () => {
+  it("résout via la session démo même si une vraie session existe", async () => {
+    getDemoSessionMock.mockResolvedValue({ user: demoUser });
+
+    const result = await requireStructureAccess("club-demo");
+
+    expect(result).toEqual({
+      structure: {
+        assoId: "asso-demo",
+        slug: "club-demo",
+        name: "Club Démo",
+        role: "Trésorier·ère",
+      },
+      user: demoUser,
+    });
+    expect(getSessionMock).not.toHaveBeenCalled();
+    expect(findUniqueMock).not.toHaveBeenCalled();
+  });
+
+  it("redirige vers l'accueil si aucune session démo n'existe", async () => {
+    getDemoSessionMock.mockResolvedValue({ user: undefined });
+
+    await expect(requireStructureAccess("club-demo")).rejects.toThrow(
+      "REDIRECT",
+    );
+
+    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(notFoundMock).not.toHaveBeenCalled();
+  });
+
+  it("ignore la session démo pour une Asso qui n'est pas la démo", async () => {
+    getSessionMock.mockResolvedValue({ user: member });
+
+    const result = await requireStructureAccess("cla");
+
+    expect(result.user).toBe(member);
+    expect(getDemoSessionMock).not.toHaveBeenCalled();
   });
 });
 

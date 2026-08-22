@@ -1,6 +1,17 @@
 import Link from "next/link";
-import { ArrowLeftRight, LayoutDashboard, Receipt, HandCoins, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeftRight,
+  LayoutDashboard,
+  LogOut,
+  Receipt,
+  HandCoins,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { DemoLoginButton } from "@/components/demo/demo-login-button";
+import { DemoLogoutButton } from "@/components/demo/demo-logout-button";
+import { DemoModeBanner } from "@/components/demo/demo-mode-banner";
 import { LastStructureTracker } from "@/components/nav/last-structure-tracker";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
@@ -39,25 +50,49 @@ export default async function MemberLayout({
       <p className="px-2 pb-2 text-sm font-medium">
         {user.firstname} {user.lastname}
       </p>
-      {user.structures.length > 1 && (
-        <Link href="/app" className="btn btn-ghost btn-sm w-full justify-start gap-2">
+      {!user.isDemo && user.structures.length > 1 && (
+        <Link
+          href="/app"
+          className="btn btn-ghost btn-sm w-full justify-start gap-2"
+        >
           <ArrowLeftRight size={18} />
           Changer d&apos;Asso
         </Link>
       )}
-      {user.isAdmin && (
-        <Link href="/app/admin" className="btn btn-ghost btn-sm w-full justify-start gap-2">
+      {!user.isDemo && user.isAdmin && (
+        <Link
+          href="/app/admin"
+          className="btn btn-ghost btn-sm w-full justify-start gap-2"
+        >
           <ShieldCheck size={18} />
           Vue admin
         </Link>
       )}
-      <LogoutButton />
+      {user.isDemo ? (
+        <DemoLogoutButton
+          className="btn btn-ghost btn-sm w-full justify-start gap-2"
+          icon={<LogOut size={18} />}
+        />
+      ) : (
+        <>
+          <DemoLoginButton
+            className="btn btn-ghost btn-sm w-full justify-start gap-2"
+            icon={<Sparkles size={18} />}
+          />
+          <LogoutButton />
+        </>
+      )}
     </div>
   );
 
   return (
-    <SidebarDrawer navItems={navItems} rootLabel={structure.name} footerSlot={footerSlot}>
-      <LastStructureTracker assoSlug={assoSlug} />
+    <SidebarDrawer
+      navItems={navItems}
+      rootLabel={structure.name}
+      footerSlot={footerSlot}
+    >
+      {!user.isDemo && <LastStructureTracker assoSlug={assoSlug} />}
+      {user.isDemo && <DemoModeBanner />}
       <SectionBreadcrumbs root={structure.name} items={navItems} />
       {children}
     </SidebarDrawer>

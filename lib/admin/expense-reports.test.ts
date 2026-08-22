@@ -29,7 +29,10 @@ const {
 vi.mock("@/lib/auth/guards", () => ({ requireAdmin: requireAdminMock }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    expenseReport: { findMany: reportFindManyMock, findUnique: reportFindUniqueMock },
+    expenseReport: {
+      findMany: reportFindManyMock,
+      findUnique: reportFindUniqueMock,
+    },
     expenseReportLine: { findMany: lineFindManyMock },
     subvention: { findUnique: subventionFindUniqueMock },
     financialMovement: { findMany: financialMovementFindManyMock },
@@ -76,14 +79,17 @@ describe("listExpenseReportsForAdmin", () => {
     expect(requireAdminMock).toHaveBeenCalled();
   });
 
-  it("ne récupère que les Notes Soumises ou Prises en charge, toutes Structures confondues", async () => {
+  it("ne récupère que les Notes Soumises ou Prises en charge, toutes Structures confondues, hors Asso démo", async () => {
     reportFindManyMock.mockResolvedValue([]);
 
     await listExpenseReportsForAdmin();
 
     expect(reportFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { status: { in: ["SUBMITTED", "TAKEN_OVER"] } },
+        where: {
+          status: { in: ["SUBMITTED", "TAKEN_OVER"] },
+          asso: { isDemo: false },
+        },
       }),
     );
   });
@@ -149,9 +155,9 @@ describe("getExpenseReportDetailForAdmin", () => {
   it("renvoie 404 si la Note de frais n'existe pas", async () => {
     reportFindUniqueMock.mockResolvedValue(null);
 
-    await expect(
-      getExpenseReportDetailForAdmin("report-1"),
-    ).rejects.toThrow("NOT_FOUND");
+    await expect(getExpenseReportDetailForAdmin("report-1")).rejects.toThrow(
+      "NOT_FOUND",
+    );
   });
 
   it("charge le type de la Structure, les Types de dépense et les Subventions visibles, scopés par l'assoId de la Note (#18)", async () => {

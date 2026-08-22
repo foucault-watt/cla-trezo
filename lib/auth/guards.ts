@@ -3,8 +3,9 @@ import {
   resolveStructureAccess,
   type StructureAccess,
 } from "@/lib/auth/access";
+import { DEMO_ASSO_SLUG } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
-import { getSession, type SessionUser } from "@/lib/session";
+import { getDemoSession, getSession, type SessionUser } from "@/lib/session";
 
 async function lookupAssoBySlug(slug: string) {
   return prisma.asso.findUnique({
@@ -22,6 +23,25 @@ async function lookupAssoBySlug(slug: string) {
 export async function requireStructureAccess(
   assoSlug: string,
 ): Promise<{ structure: StructureAccess; user: SessionUser }> {
+  // L'Asso démo vit sur son propre cookie de session (cf. lib/session.ts) et
+  // n'est jamais résolue via la vraie session, même Admin — coexistence
+  // simple, sans précédence à arbitrer entre les deux cookies.
+  if (assoSlug === DEMO_ASSO_SLUG) {
+    const demoSession = await getDemoSession();
+    const result = await resolveStructureAccess(
+      demoSession.user,
+      assoSlug,
+      lookupAssoBySlug,
+    );
+
+    if (!result.ok) {
+      redirect("/");
+    }
+
+    const { ok: _ok, ...structure } = result;
+    return { structure, user: demoSession.user! };
+  }
+
   const session = await getSession();
   const result = await resolveStructureAccess(
     session.user,

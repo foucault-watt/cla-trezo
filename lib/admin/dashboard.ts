@@ -1,3 +1,8 @@
+import {
+  EXCLUDE_DEMO_ASSO,
+  EXCLUDE_DEMO_ASSO_RELATION,
+  EXCLUDE_DEMO_CAMPAIGN,
+} from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
 import { getCampaignStatus } from "@/lib/subventions/status";
 
@@ -67,34 +72,41 @@ export function selectCampaignInfo(
   );
   if (pending.length > 0) {
     const withDate = pending.filter(
-      (c): c is { name: string; publicationDate: Date } => c.publicationDate !== null,
+      (c): c is { name: string; publicationDate: Date } =>
+        c.publicationDate !== null,
     );
     const next = withDate.sort(
       (a, b) => a.publicationDate.getTime() - b.publicationDate.getTime(),
     )[0];
     const chosen = next ?? pending[0];
-    return { kind: "pending", name: chosen.name, publicationDate: chosen.publicationDate };
+    return {
+      kind: "pending",
+      name: chosen.name,
+      publicationDate: chosen.publicationDate,
+    };
   }
 
   const published = campaigns.filter(
     (c): c is { name: string; publicationDate: Date } =>
-      c.publicationDate !== null && getCampaignStatus(c.publicationDate, now) === "PUBLIEE",
+      c.publicationDate !== null &&
+      getCampaignStatus(c.publicationDate, now) === "PUBLIEE",
   );
   if (published.length > 0) {
     const last = published.sort(
       (a, b) => b.publicationDate.getTime() - a.publicationDate.getTime(),
     )[0];
-    return { kind: "published", name: last.name, publicationDate: last.publicationDate };
+    return {
+      kind: "published",
+      name: last.name,
+      publicationDate: last.publicationDate,
+    };
   }
 
   return null;
 }
 
 export type ActivityEventType =
-  | "note_finalisee"
-  | "note_soumise"
-  | "subvention_creee"
-  | "mouvement";
+  "note_finalisee" | "note_soumise" | "subvention_creee" | "mouvement";
 
 export type ActivityEvent = {
   id: string;
@@ -109,7 +121,9 @@ export function buildActivityFeed(
   events: ActivityEvent[],
   limit: number,
 ): ActivityEvent[] {
-  return [...events].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, limit);
+  return [...events]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, limit);
 }
 
 type ReportForActivity = {
@@ -126,7 +140,12 @@ type ReportForActivity = {
  */
 function reportActivity(
   report: ReportForActivity,
-  options: { idPrefix: string; type: ActivityEventType; label: string; date: Date | null },
+  options: {
+    idPrefix: string;
+    type: ActivityEventType;
+    label: string;
+    date: Date | null;
+  },
 ): ActivityEvent {
   return {
     id: `${options.idPrefix}-${report.id}`,
@@ -183,18 +202,30 @@ export async function getDashboardData(
     subventionsForActivity,
     manualMovements,
   ] = await Promise.all([
-    prisma.asso.count({ where: { status: "ACTIVE" } }),
+    prisma.asso.count({ where: { status: "ACTIVE", ...EXCLUDE_DEMO_ASSO } }),
     prisma.subvention.findMany({
-      where: { createdAt: { gte: window.previousStart } },
+      where: {
+        createdAt: { gte: window.previousStart },
+        ...EXCLUDE_DEMO_ASSO_RELATION,
+      },
       select: { amountCents: true, createdAt: true },
     }),
     prisma.financialMovement.findMany({
-      where: { origin: "EXPENSE_REPORT", createdAt: { gte: window.previousStart } },
+      where: {
+        origin: "EXPENSE_REPORT",
+        createdAt: { gte: window.previousStart },
+        ...EXCLUDE_DEMO_ASSO_RELATION,
+      },
       select: { amountCents: true, createdAt: true },
     }),
-    prisma.expenseReport.count({ where: { takenAt: { gte: monthStart } } }),
+    prisma.expenseReport.count({
+      where: { takenAt: { gte: monthStart }, ...EXCLUDE_DEMO_ASSO_RELATION },
+    }),
     prisma.expenseReport.findMany({
-      where: { status: { in: ["SUBMITTED", "TAKEN_OVER"] } },
+      where: {
+        status: { in: ["SUBMITTED", "TAKEN_OVER"] },
+        ...EXCLUDE_DEMO_ASSO_RELATION,
+      },
       orderBy: { submittedAt: "asc" },
       take: 8,
       select: {
@@ -207,12 +238,15 @@ export async function getDashboardData(
       },
     }),
     prisma.subventionCampaign.findMany({
+      where: EXCLUDE_DEMO_CAMPAIGN,
       orderBy: { date: "desc" },
       take: 20,
       select: { name: true, publicationDate: true },
     }),
     prisma.expenseReport.findMany({
-      where: { finalizedAt: { not: null } },
+      // Jamais FINALIZED côté démo (cf. lib/auth/demo.ts) : pas besoin du
+      // filtre isDemo ici, mais gardé si un jour la démo génère ce statut.
+      where: { finalizedAt: { not: null }, ...EXCLUDE_DEMO_ASSO_RELATION },
       orderBy: { finalizedAt: "desc" },
       take: 5,
       select: {
@@ -224,7 +258,7 @@ export async function getDashboardData(
       },
     }),
     prisma.expenseReport.findMany({
-      where: { submittedAt: { not: null } },
+      where: { submittedAt: { not: null }, ...EXCLUDE_DEMO_ASSO_RELATION },
       orderBy: { submittedAt: "desc" },
       take: 5,
       select: {
@@ -236,6 +270,7 @@ export async function getDashboardData(
       },
     }),
     prisma.subvention.findMany({
+      where: EXCLUDE_DEMO_ASSO_RELATION,
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -247,7 +282,7 @@ export async function getDashboardData(
       },
     }),
     prisma.financialMovement.findMany({
-      where: { origin: "MANUAL" },
+      where: { origin: "MANUAL", ...EXCLUDE_DEMO_ASSO_RELATION },
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -291,29 +326,25 @@ export async function getDashboardData(
           date: report.submittedAt,
         }),
       ),
-      ...subventionsForActivity.map(
-        (subvention): ActivityEvent => ({
-          id: `subvention-${subvention.id}`,
-          type: "subvention_creee",
-          assoName: subvention.asso.name,
-          label: `Subvention accordée — ${subvention.reason}`,
-          amountCents: subvention.amountCents,
-          date: subvention.createdAt,
-        }),
-      ),
-      ...manualMovements.map(
-        (movement): ActivityEvent => ({
-          id: `movement-${movement.id}`,
-          type: "mouvement",
-          assoName: movement.asso.name,
-          label:
-            movement.movementType === "CREDIT"
-              ? "Entrée manuelle sur le solde"
-              : "Sortie manuelle sur le solde",
-          amountCents: movement.amountCents,
-          date: movement.createdAt,
-        }),
-      ),
+      ...subventionsForActivity.map((subvention): ActivityEvent => ({
+        id: `subvention-${subvention.id}`,
+        type: "subvention_creee",
+        assoName: subvention.asso.name,
+        label: `Subvention accordée — ${subvention.reason}`,
+        amountCents: subvention.amountCents,
+        date: subvention.createdAt,
+      })),
+      ...manualMovements.map((movement): ActivityEvent => ({
+        id: `movement-${movement.id}`,
+        type: "mouvement",
+        assoName: movement.asso.name,
+        label:
+          movement.movementType === "CREDIT"
+            ? "Entrée manuelle sur le solde"
+            : "Sortie manuelle sur le solde",
+        amountCents: movement.amountCents,
+        date: movement.createdAt,
+      })),
     ],
     6,
   );

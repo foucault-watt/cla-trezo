@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isDevAuthBypassEnabled } from "@/lib/auth/dev-config";
-import { getSession } from "@/lib/session";
+import { DEMO_ASSO_SLUG } from "@/lib/auth/demo-config";
+import { getDemoSession, getSession } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/", "/login", "/mentions-legales"];
+const DEMO_PATH_PREFIX = `/app/${DEMO_ASSO_SLUG}`;
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
+  }
+
+  // L'Asso démo tourne sur un cookie séparé (cf. lib/session.ts) : elle ne
+  // passe jamais par le contrôle de session réelle ci-dessous, même pour un
+  // Admin déjà connecté sans cookie démo.
+  if (pathname === DEMO_PATH_PREFIX || pathname.startsWith(`${DEMO_PATH_PREFIX}/`)) {
+    const demoSession = await getDemoSession();
+    if (demoSession.user) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   const session = await getSession();

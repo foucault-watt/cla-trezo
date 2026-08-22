@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
 import type { SubventionType } from "@/app/generated/prisma/enums";
+import {
+  EXCLUDE_DEMO_ASSO,
+  EXCLUDE_DEMO_CAMPAIGN,
+} from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
 import {
   getCampaignStatus,
@@ -57,6 +61,7 @@ export async function listSubventionCampaigns(): Promise<
   SubventionCampaignOverview[]
 > {
   const campaigns = await prisma.subventionCampaign.findMany({
+    where: EXCLUDE_DEMO_CAMPAIGN,
     orderBy: { date: "desc" },
     include: { subventions: { select: { amountCents: true } } },
   });
@@ -109,6 +114,7 @@ export async function listAssosForSelect(): Promise<
   { id: string; name: string }[]
 > {
   return prisma.asso.findMany({
+    where: EXCLUDE_DEMO_ASSO,
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });

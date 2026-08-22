@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
+import { EXCLUDE_DEMO_ASSO_RELATION } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
 import { mapExpenseReportToDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import type {
@@ -38,7 +39,10 @@ export async function listExpenseReportsForAdmin(): Promise<
   await requireAdmin();
 
   const reports = await prisma.expenseReport.findMany({
-    where: { status: { in: ["SUBMITTED", "TAKEN_OVER"] } },
+    where: {
+      status: { in: ["SUBMITTED", "TAKEN_OVER"] },
+      ...EXCLUDE_DEMO_ASSO_RELATION,
+    },
     orderBy: { submittedAt: "asc" },
     include: {
       asso: { select: { name: true } },

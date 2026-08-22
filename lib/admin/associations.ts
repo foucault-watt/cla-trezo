@@ -1,4 +1,5 @@
 import type { AssoStatus, AssoType } from "@/app/generated/prisma/enums";
+import { EXCLUDE_DEMO_ASSO } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
 import { computeSolde, type SoldeView } from "@/lib/solde/solde";
 
@@ -74,6 +75,7 @@ function toOverview(asso: {
 
 export async function listAssociations(): Promise<AssoOverview[]> {
   const assos = await prisma.asso.findMany({
+    where: EXCLUDE_DEMO_ASSO,
     orderBy: { name: "asc" },
     include: overviewInclude(new Date()),
   });

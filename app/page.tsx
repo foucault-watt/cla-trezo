@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HandCoins, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { DemoLoginButton } from "@/components/demo/demo-login-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const features = [
@@ -48,10 +49,11 @@ export default function Home() {
               L&apos;application de CLA pour les Clubs, Commissions et Associations
               loi 1901 : soldes, subventions et notes de frais au même endroit.
             </p>
-            <div className="flex justify-center lg:justify-start">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link href="/login" className="btn btn-primary w-full max-w-xs h-10">
                 Se connecter
               </Link>
+              <DemoLoginButton />
             </div>
           </div>
 
