@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-22T13:32:54.796Z",
+  "title": "Design System: Trézo",
+  "extensions": {
+    "colorMeta": {
+      "jaune-bourdon": {
+        "role": "primary",
+        "displayName": "Jaune Bourdon",
+        "canonical": "oklch(85% 0.199 91.936)",
+        "tonalRamp": [
+          "oklch(15% 0.06 91.936)",
+          "oklch(28% 0.10 91.936)",
+          "oklch(42% 0.14 91.936)",
+          "oklch(56% 0.17 91.936)",
+          "oklch(68% 0.19 91.936)",
+          "oklch(78% 0.20 91.936)",
+          "oklch(88% 0.18 91.936)",
+          "oklch(95% 0.09 91.936)"
+        ]
+      },
+      "terracotta": {
+        "role": "secondary",
+        "displayName": "Terracotta",
+        "canonical": "oklch(75% 0.183 55.934)",
+        "tonalRamp": [
+          "oklch(15% 0.06 55.934)",
+          "oklch(28% 0.10 55.934)",
+          "oklch(40% 0.13 55.934)",
+          "oklch(52% 0.16 55.934)",
+          "oklch(63% 0.18 55.934)",
+          "oklch(75% 0.183 55.934)",
+          "oklch(85% 0.14 55.934)",
+          "oklch(95% 0.06 55.934)"
+        ]
+      },
+      "noir-absolu": {
+        "role": "accent",
+        "displayName": "Noir Absolu",
+        "canonical": "oklch(0% 0 0)",
+        "tonalRamp": [
+          "oklch(0% 0 0)",
+          "oklch(15% 0 0)",
+          "oklch(28% 0 0)",
+          "oklch(42% 0 0)",
+          "oklch(56% 0 0)",
+          "oklch(68% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "neutre-chaud": {
+        "role": "neutral",
+        "displayName": "Neutre Chaud",
+        "canonical": "oklch(37% 0.01 67.558)",
+        "tonalRamp": [
+          "oklch(15% 0.01 67.558)",
+          "oklch(24% 0.01 67.558)",
+          "oklch(37% 0.01 67.558)",
+          "oklch(48% 0.01 67.558)",
+          "oklch(60% 0.01 67.558)",
+          "oklch(72% 0.01 67.558)",
+          "oklch(84% 0.005 67.558)",
+          "oklch(95% 0.002 67.558)"
+        ]
+      },
+      "papier-blanc": {
+        "role": "neutral",
+        "displayName": "Papier Blanc",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(20% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(65% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(92% 0 0)",
+          "oklch(97% 0 0)",
+          "oklch(100% 0 0)"
+        ]
+      },
+      "gris-perle": {
+        "role": "neutral",
+        "displayName": "Gris Perle",
+        "canonical": "oklch(97% 0 0)",
+        "tonalRamp": [
+          "oklch(20% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(65% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(90% 0 0)",
+          "oklch(97% 0 0)",
+          "oklch(99% 0 0)"
+        ]
+      },
+      "gris-bordure": {
+        "role": "neutral",
+        "displayName": "Gris Bordure",
+        "canonical": "oklch(92% 0 0)",
+        "tonalRamp": [
+          "oklch(20% 0 0)",
+          "oklch(35% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(65% 0 0)",
+          "oklch(78% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(92% 0 0)",
+          "oklch(97% 0 0)"
+        ]
+      },
+      "encre": {
+        "role": "neutral",
+        "displayName": "Encre",
+        "canonical": "oklch(20% 0 0)",
+        "tonalRamp": [
+          "oklch(10% 0 0)",
+          "oklch(20% 0 0)",
+          "oklch(32% 0 0)",
+          "oklch(45% 0 0)",
+          "oklch(58% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "bleu-info": {
+        "role": "info",
+        "displayName": "Bleu Info",
+        "canonical": "oklch(74% 0.16 232.661)",
+        "tonalRamp": [
+          "oklch(18% 0.06 232.661)",
+          "oklch(30% 0.09 232.661)",
+          "oklch(42% 0.12 232.661)",
+          "oklch(54% 0.14 232.661)",
+          "oklch(64% 0.15 232.661)",
+          "oklch(74% 0.16 232.661)",
+          "oklch(85% 0.10 232.661)",
+          "oklch(95% 0.04 232.661)"
+        ]
+      },
+      "vert-succes": {
+        "role": "success",
+        "displayName": "Vert Succès",
+        "canonical": "oklch(76% 0.177 163.223)",
+        "tonalRamp": [
+          "oklch(18% 0.06 163.223)",
+          "oklch(30% 0.10 163.223)",
+          "oklch(42% 0.13 163.223)",
+          "oklch(55% 0.15 163.223)",
+          "oklch(66% 0.17 163.223)",
+          "oklch(76% 0.177 163.223)",
+          "oklch(86% 0.12 163.223)",
+          "oklch(95% 0.05 163.223)"
+        ]
+      },
+      "orange-avertissement": {
+        "role": "warning",
+        "displayName": "Orange Avertissement",
+        "canonical": "oklch(82% 0.189 84.429)",
+        "tonalRamp": [
+          "oklch(20% 0.06 84.429)",
+          "oklch(32% 0.10 84.429)",
+          "oklch(45% 0.14 84.429)",
+          "oklch(58% 0.17 84.429)",
+          "oklch(70% 0.185 84.429)",
+          "oklch(82% 0.189 84.429)",
+          "oklch(90% 0.14 84.429)",
+          "oklch(96% 0.06 84.429)"
+        ]
+      },
+      "rouge-erreur": {
+        "role": "error",
+        "displayName": "Rouge Erreur",
+        "canonical": "oklch(70% 0.191 22.216)",
+        "tonalRamp": [
+          "oklch(16% 0.07 22.216)",
+          "oklch(28% 0.11 22.216)",
+          "oklch(40% 0.14 22.216)",
+          "oklch(52% 0.17 22.216)",
+          "oklch(62% 0.185 22.216)",
+          "oklch(70% 0.191 22.216)",
+          "oklch(82% 0.13 22.216)",
+          "oklch(93% 0.05 22.216)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titre de page (h1), toujours suivi d'un sous-titre en base-content/70."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Titre de carte (card-title DaisyUI)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texte courant, libellés de formulaire, contenu de liste."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Métadonnées et texte secondaire (dates, descriptions, stat-title)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-sm",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Cartes secondaires, badges de rappel de contexte (shadow-sm)."
+      },
+      {
+        "name": "card-md",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "purpose": "Carte principale d'une page — valeur par défaut du système (shadow-md)."
+      },
+      {
+        "name": "popover-lg",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Éléments flottants ponctuels, ex. popover du sélecteur de date (shadow-lg)."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton Primary",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Action principale d'un écran (ex. soumettre une Note de frais).",
+      "html": "<button class=\"ds-btn-primary\">Soumettre</button>",
+      "css": ".ds-btn-primary { background: oklch(85% 0.199 91.936); color: oklch(42% 0.095 57.708); font-weight: 600; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; transition: background 0.15s ease, transform 0.1s ease; } .ds-btn-primary:hover { background: oklch(80% 0.19 91.936); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(42% 0.095 57.708); outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Bouton Outline",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Action secondaire (ex. « Charger plus », fermer une modale).",
+      "html": "<button class=\"ds-btn-outline\">Annuler</button>",
+      "css": ".ds-btn-outline { background: transparent; color: oklch(20% 0 0); font-weight: 600; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1.5px solid oklch(92% 0 0); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; } .ds-btn-outline:hover { background: oklch(97% 0 0); border-color: oklch(85% 0 0); } .ds-btn-outline:focus-visible { outline: 2px solid oklch(20% 0 0); outline-offset: 2px; }"
+    },
+    {
+      "name": "Carte",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Conteneur de base — bordure fine + ombre douce, jamais l'une sans l'autre (Bordered-Lift Rule).",
+      "html": "<div class=\"ds-card\"><h2 class=\"ds-card-title\">Solde</h2><p class=\"ds-card-value\">1 248,50 €</p></div>",
+      "css": ".ds-card { background: oklch(100% 0 0); border: 1.5px solid oklch(92% 0 0); border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 1.5rem; } .ds-card-title { font-size: 1.125rem; font-weight: 700; margin: 0 0 0.5rem; color: oklch(20% 0 0); } .ds-card-value { font-size: 1.5rem; font-weight: 600; margin: 0; color: oklch(20% 0 0); }"
+    },
+    {
+      "name": "Badge de statut (Validée)",
+      "kind": "chip",
+      "refersTo": "badge-status-outline",
+      "description": "Un exemple des cinq états de Note de frais (Status Color Contract Rule) — ici « Validée », en Vert Succès.",
+      "html": "<span class=\"ds-badge-success\">Validée</span>",
+      "css": ".ds-badge-success { display: inline-flex; align-items: center; background: oklch(76% 0.177 163.223 / 0.16); color: oklch(37% 0.077 168.94); font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.625rem; border-radius: 2rem; }"
+    },
+    {
+      "name": "Alerte douce",
+      "kind": "custom",
+      "refersTo": "alert-soft",
+      "description": "Message informatif non bloquant (ex. solde non initialisé) — jamais utilisée pour une erreur bloquante.",
+      "html": "<div class=\"ds-alert-soft\" role=\"alert\"><span>Le solde de ce Club n'a pas encore été initialisé.</span></div>",
+      "css": ".ds-alert-soft { display: flex; align-items: center; gap: 0.5rem; background: oklch(74% 0.16 232.661 / 0.12); color: oklch(39% 0.09 240.876); font-size: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.5rem; }"
+    },
+    {
+      "name": "Champ (déclencheur de date)",
+      "kind": "input",
+      "refersTo": "date-picker-trigger",
+      "description": "Déclencheur du sélecteur de date maison (composant DatePicker sur cally) — remplace l'input natif du navigateur partout dans le produit.",
+      "html": "<button type=\"button\" class=\"ds-date-input\"><span>Choisir une date</span><svg class=\"ds-date-icon\" viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg></button>",
+      "css": ".ds-date-input { display: flex; align-items: center; justify-content: space-between; width: 100%; background: oklch(100% 0 0); border: 1.5px solid oklch(92% 0 0); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: oklch(20% 0 0); cursor: pointer; } .ds-date-input:hover { border-color: oklch(85% 0 0); } .ds-date-input:focus-visible { outline: 2px solid oklch(85% 0.199 91.936); outline-offset: 1px; } .ds-date-icon { opacity: 0.6; flex-shrink: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le Grand Livre Doré",
+    "overview": "Trézo est le registre de trésorerie d'une fédération d'associations étudiantes : un dégradé de miel et d'or (hérité du thème DaisyUI « bumblebee ») pose une identité chaleureuse et digne de confiance sur un fond quasiment blanc, pour un outil qui traite des sujets sérieux (soldes, subventions, justificatifs) sans jamais se donner des airs de logiciel comptable austère. Les responsables de club qui l'utilisent changent chaque année et n'ont souvent aucune formation financière : chaque écran privilégie donc la clarté et la prévisibilité — net et rassurant, sans fioritures — plutôt que l'expressivité visuelle. La cartes légèrement soulevées (bordure fine + ombre douce), les statuts codés par couleur sémantique et la continuité du doré chaud entre thème clair et sombre forment un langage cohérent que même un nouvel utilisateur reconnaît instantanément.",
+    "keyCharacteristics": [
+      "Fond quasiment neutre (blanc/gris très clairs) qui laisse le Jaune Bourdon jouer son rôle de signal, jamais de fond.",
+      "Cartes sobres, délimitées par une bordure fine et une ombre douce plutôt que par des aplats de couleur.",
+      "Un unique système de couleur pour coder l'état d'une Note de frais, réutilisé partout (badge, pastille, liste).",
+      "Le doré/miel de l'identité claire est délibérément reconduit en thème sombre plutôt que remplacé par la palette « dim » standard de DaisyUI."
+    ],
+    "rules": [
+      {
+        "name": "The Status Color Contract Rule",
+        "body": "Chaque statut de Note de frais a une couleur et une seule, appliquée identiquement à son badge et à sa pastille, dans tout le produit : Brouillon = neutre, Soumise = Bleu Info, Prise en charge = Orange Avertissement, Validée = Vert Succès, Rejetée = Rouge Erreur.",
+        "section": "colors"
+      },
+      {
+        "name": "The Honey Continuity Rule",
+        "body": "Le thème sombre ne reprend pas la palette DaisyUI standard : Primary et Warning y sont retravaillés vers la même famille de teinte chaude que le thème clair, pour que l'identité Jaune Bourdon survive au changement de thème.",
+        "section": "colors"
+      },
+      {
+        "name": "The Bordered-Lift Rule",
+        "body": "Chaque carte combine systématiquement une bordure fine et une ombre douce — jamais l'une sans l'autre, jamais d'ombre profonde ni de superposition tonale seule.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do garder la table Statut → Couleur identique partout (Status Color Contract Rule) ; toute nouvelle vue de Note de frais doit la réutiliser telle quelle, sans redéfinir localement une couleur de statut.",
+      "Do toujours coupler bordure fine et ombre douce sur une carte (Bordered-Lift Rule) ; ne jamais utiliser l'une sans l'autre.",
+      "Do dériver le texte secondaire/tertiaire de base-content par opacité (/70, /60, /50) plutôt que d'introduire un gris indépendant.",
+      "Do faire porter au thème sombre la même famille de teinte chaude que le thème clair pour Primary/Warning (Honey Continuity Rule).",
+      "Do utiliser le composant DatePicker (cally) pour toute saisie de date, jamais l'input type=date natif."
+    ],
+    "donts": [
+      "Don't empiler les ombres profondes ou les effets de profondeur marqués — Trézo est un outil de gestion sobre (Operate), pas une vitrine.",
+      "Don't introduire une nouvelle couleur d'accent hors de la famille Jaune Bourdon / Terracotta / Noir Absolu-Violet Profond sans raison fonctionnelle documentée.",
+      "Don't réserver les couleurs sémantiques (info/succès/avertissement/erreur) à autre chose qu'un signal d'état réel — elles ne sont jamais décoratives.",
+      "Don't fabriquer une modale maison : passer par l'élément dialog natif comme le fait déjà Modal."
+    ]
+  }
+}
