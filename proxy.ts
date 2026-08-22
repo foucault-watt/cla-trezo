@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isDevAuthBypassEnabled } from "@/lib/auth/dev-config";
 import { getSession } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/", "/login", "/mentions-legales"];
@@ -17,6 +18,16 @@ export async function proxy(request: NextRequest) {
     if (isPublic) {
       return NextResponse.next();
     }
+
+    if (isDevAuthBypassEnabled()) {
+      const devLoginUrl = new URL("/api/auth/dev-login", request.url);
+      devLoginUrl.searchParams.set(
+        "redirect",
+        `${pathname}${request.nextUrl.search}`,
+      );
+      return NextResponse.redirect(devLoginUrl);
+    }
+
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

@@ -48,6 +48,7 @@ next-env.d.ts
 !/output/pdf/.gitkeep
 /tmp/pdfs/*
 !/tmp/pdfs/.gitkeep
+/tmp/screenshots/*
 
 # uploaded invoice/receipt files (local disk storage)
 /uploads/*
