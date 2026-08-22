@@ -1,122 +1,20 @@
-import Link from "next/link";
-import { listActiveAssoMembers } from "@/lib/asso/members";
-import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
+import { redirect } from "next/navigation";
 import {
-  addExpenseReportLineAction,
-  updateExpenseReportLineAction,
-} from "@/lib/expense-reports/expense-report-actions";
-import { getClubSolde } from "@/lib/solde/actions";
-import {
-  assertExpenseReportMutable,
-  ExpenseReportLifecycleError,
-} from "@/lib/expense-reports/expense-report-lifecycle";
-import { ExpenseReportDetailHeader } from "@/components/expense-reports/expense-report-detail-view";
-import { FundingSourcesPanel } from "@/components/expense-reports/funding-sources-panel";
-import { PersonGroupsBoard } from "@/components/expense-reports/person-groups-board";
-import { SubventionSelectionProvider } from "@/components/expense-reports/subvention-selection-context";
-import { EditExpenseReportForm } from "./_components/edit-expense-report-form";
-import { SubmitExpenseReportForm } from "./_components/submit-expense-report-form";
-import { SupportingDocumentsPanel } from "./_components/supporting-documents-panel";
+  expenseReportStepHref,
+  firstIncompleteExpenseReportStep,
+  loadExpenseReportWizard,
+} from "@/lib/expense-reports/expense-report-wizard";
 
-export default async function ExpenseReportDetailPage({
+export default async function ExpenseReportEntryPage({
   params,
 }: {
   params: Promise<{ assoSlug: string; reportId: string }>;
 }) {
   const { assoSlug, reportId } = await params;
-  const detail = await getExpenseReportDetail(assoSlug, reportId);
-  const { report, assoId, assoType, typeDepenses, visibleSubventions } = detail;
-  const [soldeView, members] = await Promise.all([
-    getClubSolde(assoSlug),
-    listActiveAssoMembers(assoId),
-  ]);
-
-  let editable = true;
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "STRUCTURE", assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    editable = false;
-  }
-
-  return (
-    <div>
-      <Link
-        href={`/app/${assoSlug}/notes-de-frais`}
-        className="link link-hover text-sm text-base-content/70"
-      >
-        ← Toutes les Notes de frais
-      </Link>
-
-      <ExpenseReportDetailHeader report={report} />
-
-      <div className="mt-6">
-        <SupportingDocumentsPanel
-          assoSlug={assoSlug}
-          reportId={report.id}
-          documents={report.supportingDocuments}
-          editable={editable}
-        />
-      </div>
-
-      <SubventionSelectionProvider>
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex flex-col gap-6">
-            <PersonGroupsBoard
-              addAction={addExpenseReportLineAction}
-              updateAction={updateExpenseReportLineAction}
-              assoSlug={assoSlug}
-              expenseReportId={report.id}
-              lines={report.lines}
-              members={members}
-              assoType={assoType}
-              typeDepenses={typeDepenses}
-              visibleSubventions={visibleSubventions}
-              editable={editable}
-            />
-
-            <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
-              <input type="checkbox" />
-              <div className="collapse-title font-medium">
-                Mes sources de financement
-              </div>
-              <div className="collapse-content">
-                <FundingSourcesPanel
-                  assoType={assoType}
-                  soldeView={soldeView}
-                  visibleSubventions={visibleSubventions}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
-            <FundingSourcesPanel
-              assoType={assoType}
-              soldeView={soldeView}
-              visibleSubventions={visibleSubventions}
-            />
-          </div>
-        </div>
-      </SubventionSelectionProvider>
-
-      {editable && (
-        <EditExpenseReportForm
-          assoSlug={assoSlug}
-          reportId={report.id}
-          title={report.title}
-          description={report.description}
-        />
-      )}
-
-      {report.status === "DRAFT" && (
-        <div className="mt-6">
-          <SubmitExpenseReportForm assoSlug={assoSlug} reportId={report.id} />
-        </div>
-      )}
-    </div>
-  );
+  const context = await loadExpenseReportWizard(assoSlug, reportId);
+  const step =
+    context.editable && !context.legacyMultiBeneficiary
+      ? firstIncompleteExpenseReportStep(context.completion)
+      : "recapitulatif";
+  redirect(expenseReportStepHref(assoSlug, reportId, step));
 }

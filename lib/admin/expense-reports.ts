@@ -12,7 +12,10 @@ import { listVisibleSubventionsForAdmin } from "@/lib/subventions/visible-subven
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import { getClubSoldeForAdmin } from "@/lib/solde/actions";
 import type { SoldeView } from "@/lib/solde/solde";
-import type { AssoType, ExpenseReportStatus } from "@/app/generated/prisma/enums";
+import type {
+  AssoType,
+  ExpenseReportStatus,
+} from "@/app/generated/prisma/enums";
 export type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 
 export type ExpenseReportOverviewForAdmin = {
@@ -63,6 +66,11 @@ export type ExpenseReportDetailForAdmin = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  beneficiaryUserId: string | null;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
+  beneficiaryIban: string | null;
+  beneficiaryIbanLast4: string | null;
   assoId: string;
   assoName: string;
   assoSlug: string;
@@ -117,7 +125,12 @@ export async function getExpenseReportDetailForAdmin(
 
   return {
     ...detail,
-    lines: await attachLineWarnings(report.assoId, detail.status, detail.lines),
+    lines: await attachLineWarnings(
+      report.assoId,
+      detail.id,
+      detail.status,
+      detail.lines,
+    ),
     assoId: report.assoId,
     assoName: report.asso.name,
     assoSlug: report.asso.slug,

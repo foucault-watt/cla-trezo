@@ -64,7 +64,23 @@ export function parseSubmitExpenseReportForm(formData: FormData) {
   });
 }
 
-const ibanSchema = z
+export const deleteExpenseReportFormSchema = z.object({
+  id: z.string().uuid(),
+  assoSlug: z.string().min(1),
+});
+
+export type DeleteExpenseReportFormInput = z.infer<
+  typeof deleteExpenseReportFormSchema
+>;
+
+export function parseDeleteExpenseReportForm(formData: FormData) {
+  return deleteExpenseReportFormSchema.safeParse({
+    id: formData.get("id"),
+    assoSlug: formData.get("assoSlug"),
+  });
+}
+
+export const ibanSchema = z
   .string()
   .transform((value) => value.replace(/\s+/g, "").toUpperCase())
   .pipe(
@@ -119,78 +135,131 @@ export const expenseReportLineBaseSchema = z.object({
   subventionId: nullableUuid(),
 });
 
-export function refineExpenseReportLine<T extends z.infer<typeof expenseReportLineBaseSchema>>(
-  schema: z.ZodType<T>,
-) {
+const expenseDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "La date de la dépense est obligatoire.")
+  .transform((value) => new Date(`${value}T00:00:00.000Z`));
+
+/** Nouveau contrat d'un Remboursement : l'identité est portée par la Note. */
+export const reimbursementBaseSchema = expenseReportLineBaseSchema
+  .omit({
+    beneficiaryFirstname: true,
+    beneficiaryLastname: true,
+    iban: true,
+  })
+  .extend({ expenseDate: expenseDateSchema });
+
+export const addReimbursementFormSchema = refineExpenseReportLine(
+  reimbursementBaseSchema.extend({
+    expenseReportId: z.string().uuid(),
+    assoSlug: z.string().min(1),
+  }),
+);
+
+export const updateReimbursementFormSchema = refineExpenseReportLine(
+  reimbursementBaseSchema.extend({
+    id: z.string().uuid(),
+    assoSlug: z.string().min(1),
+  }),
+);
+
+export function reimbursementFormValues(formData: FormData) {
+  return {
+    expenseDate: formData.get("expenseDate"),
+    amount: formData.get("amount"),
+    expenseName: formData.get("expenseName"),
+    typeDepenseId: formData.get("typeDepenseId"),
+    customLabel: formData.get("customLabel"),
+    fundingSource: formData.get("fundingSource"),
+    subventionId: formData.get("subventionId"),
+  };
+}
+
+export function parseAddReimbursementForm(formData: FormData) {
+  return addReimbursementFormSchema.safeParse({
+    expenseReportId: formData.get("expenseReportId"),
+    assoSlug: formData.get("assoSlug"),
+    ...reimbursementFormValues(formData),
+  });
+}
+
+export function parseUpdateReimbursementForm(formData: FormData) {
+  return updateReimbursementFormSchema.safeParse({
+    id: formData.get("id"),
+    assoSlug: formData.get("assoSlug"),
+    ...reimbursementFormValues(formData),
+  });
+}
+
+export const updateExpenseReportBeneficiaryFormSchema = z
+  .object({
+    id: z.string().uuid(),
+    assoSlug: z.string().min(1),
+    beneficiaryKind: z.enum(["MEMBER", "CUSTOM"]),
+    beneficiaryUserId: nullableUuid(),
+    beneficiaryFirstname: z
+      .string()
+      .trim()
+      .min(1, "Le prénom est obligatoire.")
+      .max(100),
+    beneficiaryLastname: z
+      .string()
+      .trim()
+      .min(1, "Le nom est obligatoire.")
+      .max(100),
+    beneficiaryIban: z.union([ibanSchema, z.literal("")]),
+  })
+  .refine(
+    (data) =>
+      data.beneficiaryKind === "MEMBER"
+        ? Boolean(data.beneficiaryUserId)
+        : data.beneficiaryUserId === null,
+    { message: "Choisissez un membre valide.", path: ["beneficiaryUserId"] },
+  );
+
+export function parseUpdateExpenseReportBeneficiaryForm(formData: FormData) {
+  return updateExpenseReportBeneficiaryFormSchema.safeParse({
+    id: formData.get("id"),
+    assoSlug: formData.get("assoSlug"),
+    beneficiaryKind: formData.get("beneficiaryKind"),
+    beneficiaryUserId: formData.get("beneficiaryUserId"),
+    beneficiaryFirstname: formData.get("beneficiaryFirstname"),
+    beneficiaryLastname: formData.get("beneficiaryLastname"),
+    beneficiaryIban: formData.get("beneficiaryIban"),
+  });
+}
+
+type ExpenseReportFundingFields = {
+  typeDepenseId: string | null;
+  customLabel: string | null;
+  fundingSource: "CLUB_BALANCE" | "SUBVENTION";
+  subventionId: string | null;
+};
+
+export function refineExpenseReportLine<T extends z.ZodTypeAny>(schema: T) {
   return schema
-    .refine((data) => Boolean(data.typeDepenseId) !== Boolean(data.customLabel), {
-      message:
-        "Choisissez un Type de dépense dans la liste, ou saisissez un libellé personnalisé, jamais les deux.",
-      path: ["typeDepenseId"],
-    })
     .refine(
-      (data) =>
-        data.fundingSource === "SUBVENTION"
-          ? Boolean(data.subventionId)
-          : !data.subventionId,
+      (data) => {
+        const funding = data as ExpenseReportFundingFields;
+        return Boolean(funding.typeDepenseId) !== Boolean(funding.customLabel);
+      },
+      {
+        message:
+          "Choisissez un Type de dépense dans la liste, ou saisissez un libellé personnalisé, jamais les deux.",
+        path: ["typeDepenseId"],
+      },
+    )
+    .refine(
+      (data) => {
+        const funding = data as ExpenseReportFundingFields;
+        return funding.fundingSource === "SUBVENTION"
+          ? Boolean(funding.subventionId)
+          : !funding.subventionId;
+      },
       {
         message:
           "Une Subvention doit être choisie comme source, ou aucune si la source est le Solde.",
         path: ["subventionId"],
       },
     );
-}
-
-export const addExpenseReportLineFormSchema = refineExpenseReportLine(
-  expenseReportLineBaseSchema.extend({
-    expenseReportId: z.string().uuid(),
-    assoSlug: z.string().min(1),
-  }),
-);
-
-export type AddExpenseReportLineFormInput = z.infer<
-  typeof addExpenseReportLineFormSchema
->;
-
-export function parseAddExpenseReportLineForm(formData: FormData) {
-  return addExpenseReportLineFormSchema.safeParse({
-    expenseReportId: formData.get("expenseReportId"),
-    assoSlug: formData.get("assoSlug"),
-    beneficiaryFirstname: formData.get("beneficiaryFirstname"),
-    beneficiaryLastname: formData.get("beneficiaryLastname"),
-    iban: formData.get("iban"),
-    amount: formData.get("amount"),
-    expenseName: formData.get("expenseName"),
-    typeDepenseId: formData.get("typeDepenseId"),
-    customLabel: formData.get("customLabel"),
-    fundingSource: formData.get("fundingSource"),
-    subventionId: formData.get("subventionId"),
-  });
-}
-
-export const updateExpenseReportLineFormSchema = refineExpenseReportLine(
-  expenseReportLineBaseSchema.extend({
-    id: z.string().uuid(),
-    assoSlug: z.string().min(1),
-  }),
-);
-
-export type UpdateExpenseReportLineFormInput = z.infer<
-  typeof updateExpenseReportLineFormSchema
->;
-
-export function parseUpdateExpenseReportLineForm(formData: FormData) {
-  return updateExpenseReportLineFormSchema.safeParse({
-    id: formData.get("id"),
-    assoSlug: formData.get("assoSlug"),
-    beneficiaryFirstname: formData.get("beneficiaryFirstname"),
-    beneficiaryLastname: formData.get("beneficiaryLastname"),
-    iban: formData.get("iban"),
-    amount: formData.get("amount"),
-    expenseName: formData.get("expenseName"),
-    typeDepenseId: formData.get("typeDepenseId"),
-    customLabel: formData.get("customLabel"),
-    fundingSource: formData.get("fundingSource"),
-    subventionId: formData.get("subventionId"),
-  });
 }

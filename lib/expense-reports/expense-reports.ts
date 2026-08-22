@@ -113,7 +113,9 @@ export async function getExpenseReportDetail(
     notFound();
   }
 
-  const detail = mapExpenseReportToDetail(report, { includeAdminFields: false });
+  const detail = mapExpenseReportToDetail(report, {
+    includeAdminFields: false,
+  });
   const now = new Date();
 
   return {
@@ -121,6 +123,7 @@ export async function getExpenseReportDetail(
       ...detail,
       lines: await attachLineWarnings(
         structure.assoId,
+        detail.id,
         detail.status,
         detail.lines,
       ),

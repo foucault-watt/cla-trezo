@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   addManualMovementAction,
   type AddManualMovementState,
@@ -20,6 +21,7 @@ export function ManualMovementForm({
     initialState,
   );
   const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
 
   return (
     <div className="card border border-base-300 bg-base-100 shadow-md">
@@ -61,13 +63,7 @@ export function ManualMovementForm({
 
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Date du mouvement</legend>
-            <input
-              type="date"
-              name="date"
-              className="input w-full"
-              defaultValue={today}
-              required
-            />
+            <DatePicker name="date" value={date} onChange={setDate} />
           </fieldset>
 
           <fieldset className="fieldset">

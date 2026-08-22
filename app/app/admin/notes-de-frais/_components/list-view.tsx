@@ -33,7 +33,7 @@ export function ListView({
             </div>
           </div>
           <div className="hidden w-24 shrink-0 text-right text-sm text-base-content/70 sm:block">
-            {report.linesCount} ligne(s)
+            {report.linesCount} remboursement(s)
           </div>
           <div className="w-28 shrink-0 text-right text-sm text-base-content/70">
             {formatCents(report.totalAmountCents)}

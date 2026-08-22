@@ -1,8 +1,29 @@
 import { z } from "zod";
 import {
   expenseReportLineBaseSchema,
+  ibanSchema,
+  reimbursementBaseSchema,
+  reimbursementFormValues,
   refineExpenseReportLine,
 } from "@/lib/expense-reports/expense-report-input";
+
+export const updateExpenseReportBeneficiaryAsAdminFormSchema = z.object({
+  id: z.string().uuid(),
+  beneficiaryFirstname: z.string().trim().min(1).max(100),
+  beneficiaryLastname: z.string().trim().min(1).max(100),
+  beneficiaryIban: ibanSchema,
+});
+
+export function parseUpdateExpenseReportBeneficiaryAsAdminForm(
+  formData: FormData,
+) {
+  return updateExpenseReportBeneficiaryAsAdminFormSchema.safeParse({
+    id: formData.get("id"),
+    beneficiaryFirstname: formData.get("beneficiaryFirstname"),
+    beneficiaryLastname: formData.get("beneficiaryLastname"),
+    beneficiaryIban: formData.get("beneficiaryIban"),
+  });
+}
 
 export const takeOverExpenseReportFormSchema = z.object({
   id: z.string().uuid(),
@@ -47,12 +68,11 @@ export function parseAddExpenseReportLineAsAdminForm(formData: FormData) {
   });
 }
 
-export const updateExpenseReportLineAsAdminFormSchema =
-  refineExpenseReportLine(
-    expenseReportLineBaseSchema.extend({
-      id: z.string().uuid(),
-    }),
-  );
+export const updateExpenseReportLineAsAdminFormSchema = refineExpenseReportLine(
+  expenseReportLineBaseSchema.extend({
+    id: z.string().uuid(),
+  }),
+);
 
 export type UpdateExpenseReportLineAsAdminFormInput = z.infer<
   typeof updateExpenseReportLineAsAdminFormSchema
@@ -84,5 +104,27 @@ export type DeleteExpenseReportLineAsAdminFormInput = z.infer<
 export function parseDeleteExpenseReportLineAsAdminForm(formData: FormData) {
   return deleteExpenseReportLineAsAdminFormSchema.safeParse({
     id: formData.get("id"),
+  });
+}
+
+export const addReimbursementAsAdminFormSchema = refineExpenseReportLine(
+  reimbursementBaseSchema.extend({ expenseReportId: z.string().uuid() }),
+);
+
+export const updateReimbursementAsAdminFormSchema = refineExpenseReportLine(
+  reimbursementBaseSchema.extend({ id: z.string().uuid() }),
+);
+
+export function parseAddReimbursementAsAdminForm(formData: FormData) {
+  return addReimbursementAsAdminFormSchema.safeParse({
+    expenseReportId: formData.get("expenseReportId"),
+    ...reimbursementFormValues(formData),
+  });
+}
+
+export function parseUpdateReimbursementAsAdminForm(formData: FormData) {
+  return updateReimbursementAsAdminFormSchema.safeParse({
+    id: formData.get("id"),
+    ...reimbursementFormValues(formData),
   });
 }

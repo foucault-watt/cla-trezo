@@ -52,6 +52,7 @@ export async function loadFundingSourceEligibility({
 }
 
 export type ExpenseReportLineFormValues = {
+  expenseDate?: string;
   beneficiaryFirstname: string;
   beneficiaryLastname: string;
   iban: string;
@@ -72,6 +73,7 @@ export function rawLineFormValues(
   formData: FormData,
 ): ExpenseReportLineFormValues {
   return {
+    expenseDate: String(formData.get("expenseDate") ?? ""),
     beneficiaryFirstname: String(formData.get("beneficiaryFirstname") ?? ""),
     beneficiaryLastname: String(formData.get("beneficiaryLastname") ?? ""),
     iban: String(formData.get("iban") ?? ""),

@@ -4,18 +4,21 @@ import { listActiveAssoMembers } from "@/lib/asso/members";
 import { getExpenseReportDetailForAdmin } from "@/lib/admin/expense-reports";
 import {
   addExpenseReportLineAsAdminAction,
+  addReimbursementAsAdminAction,
   deleteExpenseReportLineAsAdminAction,
+  deleteReimbursementAsAdminAction,
   updateExpenseReportLineAsAdminAction,
+  updateReimbursementAsAdminAction,
 } from "@/lib/admin/expense-report-actions";
 import {
   assertExpenseReportMutable,
   ExpenseReportLifecycleError,
 } from "@/lib/expense-reports/expense-report-lifecycle";
 import { ExpenseReportDetailHeader } from "@/components/expense-reports/expense-report-detail-view";
-import { FundingSourcesPanel } from "@/components/expense-reports/funding-sources-panel";
 import { PersonGroupsBoard } from "@/components/expense-reports/person-groups-board";
-import { SubventionSelectionProvider } from "@/components/expense-reports/subvention-selection-context";
+import { ReimbursementsTable } from "@/app/app/[assoSlug]/notes-de-frais/[reportId]/_components/reimbursements-table";
 import { TakeOverButton } from "./_components/take-over-button";
+import { AdminBeneficiaryModal } from "./_components/beneficiary-modal";
 
 function documentUrl(reportId: string, documentId: string) {
   return `/app/admin/notes-de-frais/${reportId}/justificatifs/${documentId}`;
@@ -29,6 +32,9 @@ export default async function AdminExpenseReportDetailPage({
   const { reportId } = await params;
   const report = await getExpenseReportDetailForAdmin(reportId);
   const members = await listActiveAssoMembers(report.assoId);
+  const hasUniqueBeneficiary = Boolean(
+    report.beneficiaryFirstname && report.beneficiaryLastname,
+  );
 
   let editable = true;
   try {
@@ -53,53 +59,72 @@ export default async function AdminExpenseReportDetailPage({
       <ExpenseReportDetailHeader
         report={report}
         subtitle={
-          <p className="mt-1 text-sm text-base-content/70">
-            {report.assoName}
-          </p>
+          <p className="mt-1 text-sm text-base-content/70">{report.assoName}</p>
         }
       />
 
-      <SubventionSelectionProvider>
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex flex-col gap-6">
-            <PersonGroupsBoard
-              addAction={addExpenseReportLineAsAdminAction}
-              updateAction={updateExpenseReportLineAsAdminAction}
-              deleteAction={deleteExpenseReportLineAsAdminAction}
-              expenseReportId={report.id}
-              lines={report.lines}
-              members={members}
-              assoType={report.assoType}
-              typeDepenses={report.typeDepenses}
-              visibleSubventions={report.visibleSubventions}
-              editable={editable}
-              showIbanColumn
-            />
-
-            <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md lg:hidden">
-              <input type="checkbox" />
-              <div className="collapse-title font-medium">
-                Sources de financement de l&apos;Asso
-              </div>
-              <div className="collapse-content">
-                <FundingSourcesPanel
-                  assoType={report.assoType}
-                  soldeView={report.soldeView}
-                  visibleSubventions={report.visibleSubventions}
-                />
-              </div>
+      <section className="card mt-6 border border-base-300 bg-base-100 shadow-md">
+        <div className="card-body gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="card-title">Bénéficiaire</h2>
+            {editable && hasUniqueBeneficiary && report.beneficiaryIban && (
+              <AdminBeneficiaryModal
+                reportId={report.id}
+                firstname={report.beneficiaryFirstname as string}
+                lastname={report.beneficiaryLastname as string}
+                iban={report.beneficiaryIban}
+              />
+            )}
+          </div>
+          {hasUniqueBeneficiary ? (
+            <>
+              <p className="font-medium">
+                {report.beneficiaryFirstname} {report.beneficiaryLastname}
+              </p>
+              <p className="font-mono text-sm text-base-content/70">
+                {report.beneficiaryIban ?? "IBAN supprimé après finalisation"}
+              </p>
+            </>
+          ) : (
+            <div className="alert alert-warning alert-soft">
+              Cette ancienne Note contient plusieurs bénéficiaires et reste
+              consultable dans son format historique.
             </div>
-          </div>
-
-          <div className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
-            <FundingSourcesPanel
-              assoType={report.assoType}
-              soldeView={report.soldeView}
-              visibleSubventions={report.visibleSubventions}
-            />
-          </div>
+          )}
         </div>
-      </SubventionSelectionProvider>
+      </section>
+
+      <div className="mt-6">
+        {hasUniqueBeneficiary ? (
+          <ReimbursementsTable
+            assoSlug={report.assoSlug}
+            expenseReportId={report.id}
+            lines={report.lines}
+            assoType={report.assoType}
+            typeDepenses={report.typeDepenses}
+            visibleSubventions={report.visibleSubventions}
+            soldeView={report.soldeView}
+            editable={editable}
+            addAction={addReimbursementAsAdminAction}
+            updateAction={updateReimbursementAsAdminAction}
+            deleteAction={deleteReimbursementAsAdminAction}
+          />
+        ) : (
+          <PersonGroupsBoard
+            addAction={addExpenseReportLineAsAdminAction}
+            updateAction={updateExpenseReportLineAsAdminAction}
+            deleteAction={deleteExpenseReportLineAsAdminAction}
+            expenseReportId={report.id}
+            lines={report.lines}
+            members={members}
+            assoType={report.assoType}
+            typeDepenses={report.typeDepenses}
+            visibleSubventions={report.visibleSubventions}
+            editable={false}
+            showIbanColumn
+          />
+        )}
+      </div>
 
       <div className="card mt-6 border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">

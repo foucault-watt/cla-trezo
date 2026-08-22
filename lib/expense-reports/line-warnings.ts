@@ -6,14 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { PENDING_EXPENSE_REPORT_STATUSES } from "./expense-report-lifecycle";
 
 export type LineWarningCode =
-  | "NEGATIVE_BALANCE"
-  | "SUBVENTION_OVERAGE"
-  | "STALE_SUBVENTION";
+  "NEGATIVE_BALANCE" | "SUBVENTION_OVERAGE" | "STALE_SUBVENTION";
 
 export const LINE_WARNING_MESSAGES: Record<LineWarningCode, string> = {
-  NEGATIVE_BALANCE: "Cette Ligne crée ou aggrave un solde négatif.",
+  NEGATIVE_BALANCE: "Ce Remboursement crée ou aggrave un solde négatif.",
   SUBVENTION_OVERAGE:
-    "Cette Ligne dépasse le montant restant de la Subvention.",
+    "Ce Remboursement dépasse le montant restant de la Subvention.",
   STALE_SUBVENTION:
     "La Subvention utilisée date de plus d'un an ; elle sera probablement refusée.",
 };
@@ -58,8 +56,12 @@ export function isSubventionWithinFundingWindow(
 }
 
 /**
- * Règle T13 : le Solde projeté (confirmé moins les Lignes en attente de
- * Validation sur ce même Solde, moins cette Ligne) devient négatif.
+ * Règle T13 : le Solde projeté devient négatif — confirmé, moins les autres
+ * Lignes non Validées de la Note en cours financées par ce Solde, moins
+ * cette Ligne. Volontairement borné à la Note sur laquelle on travaille : ne
+ * compte pas les Lignes en attente d'autres Notes (Brouillons oubliés,
+ * autres bénéficiaires en cours de saisie...), qui ne représentent pas
+ * encore un engagement certain sur le Solde réel.
  */
 export function checkNegativeBalanceWarning(input: {
   confirmedBalanceCents: number;
@@ -150,7 +152,15 @@ export type FundingSourceWarningTotals =
  * source de financement exacte (le Solde d'une Structure, ou une Subvention
  * précise — jamais mélangées entre elles) : le confirmé (FinancialMovement,
  * mouvements Validés uniquement) et la somme des Lignes en attente de
- * Validation sur cette même source (cf. PENDING_EXPENSE_REPORT_STATUSES).
+ * Validation sur cette même source.
+ *
+ * Pour le Solde (T13), cette somme est bornée à `expenseReportId` — la Note
+ * sur laquelle on travaille, cf. commentaire de checkNegativeBalanceWarning
+ * — jamais aux autres Notes en attente de la Structure. Pour une Subvention
+ * (T14), l'enveloppe est bien partagée entre toutes les Notes qui y puisent
+ * : la somme reste donc scopée par `subventionId` uniquement (cf.
+ * PENDING_EXPENSE_REPORT_STATUSES), sans filtrer par `expenseReportId`.
+ *
  * `excludeLineId` retire une Ligne précise de cette somme (édition d'une
  * Ligne déjà en base) ; pour un usage groupé sur plusieurs Lignes (lecture
  * seule), omettre `excludeLineId` et retrancher `lineAmountCents` de
@@ -158,11 +168,13 @@ export type FundingSourceWarningTotals =
  */
 export async function loadFundingSourceWarningTotals({
   assoId,
+  expenseReportId,
   fundingSource,
   subventionId,
   excludeLineId,
 }: {
   assoId: string;
+  expenseReportId: string;
   fundingSource: FundingSourceType;
   subventionId: string | null;
   excludeLineId?: string;
@@ -176,11 +188,8 @@ export async function loadFundingSourceWarningTotals({
       prisma.expenseReportLine.findMany({
         where: {
           fundingSource: "CLUB_BALANCE",
+          expenseReportId,
           ...(excludeLineId && { id: { not: excludeLineId } }),
-          expenseReport: {
-            assoId,
-            status: { in: PENDING_EXPENSE_REPORT_STATUSES },
-          },
         },
         select: { amountCents: true },
       }),
@@ -283,12 +292,14 @@ function computeWarningsFromTotals(
  */
 export async function loadExpenseLineWarnings({
   assoId,
+  expenseReportId,
   fundingSource,
   subventionId,
   lineAmountCents,
   excludeLineId,
 }: {
   assoId: string;
+  expenseReportId: string;
   fundingSource: FundingSourceType;
   subventionId: string | null;
   lineAmountCents: number;
@@ -296,6 +307,7 @@ export async function loadExpenseLineWarnings({
 }): Promise<string[]> {
   const totals = await loadFundingSourceWarningTotals({
     assoId,
+    expenseReportId,
     fundingSource,
     subventionId,
     excludeLineId,
@@ -317,6 +329,7 @@ export async function loadExpenseLineWarnings({
  */
 export async function loadLineWarningsByLineId(
   assoId: string,
+  expenseReportId: string,
   lines: {
     id: string;
     fundingSource: FundingSourceType;
@@ -327,9 +340,7 @@ export async function loadLineWarningsByLineId(
   const now = new Date();
   const result = new Map<string, string[]>();
 
-  const usesClubBalance = lines.some(
-    (l) => l.fundingSource === "CLUB_BALANCE",
-  );
+  const usesClubBalance = lines.some((l) => l.fundingSource === "CLUB_BALANCE");
   const subventionIds = [
     ...new Set(
       lines
@@ -342,6 +353,7 @@ export async function loadLineWarningsByLineId(
     usesClubBalance
       ? loadFundingSourceWarningTotals({
           assoId,
+          expenseReportId,
           fundingSource: "CLUB_BALANCE",
           subventionId: null,
         })
@@ -353,6 +365,7 @@ export async function loadLineWarningsByLineId(
             subventionId,
             await loadFundingSourceWarningTotals({
               assoId,
+              expenseReportId,
               fundingSource: "SUBVENTION",
               subventionId,
             }),
@@ -401,9 +414,14 @@ export async function attachLineWarnings<
     amountCents: number;
     warnings: string[];
   },
->(assoId: string, status: ExpenseReportStatus, lines: T[]): Promise<T[]> {
+>(
+  assoId: string,
+  expenseReportId: string,
+  status: ExpenseReportStatus,
+  lines: T[],
+): Promise<T[]> {
   const warningsByLineId = PENDING_EXPENSE_REPORT_STATUSES.includes(status)
-    ? await loadLineWarningsByLineId(assoId, lines)
+    ? await loadLineWarningsByLineId(assoId, expenseReportId, lines)
     : new Map<string, string[]>();
 
   return lines.map((line) => ({

@@ -10,6 +10,7 @@ export type ExpenseReportLineDetail = {
   beneficiaryLastname: string;
   iban: string | null;
   amountCents: number;
+  expenseDate?: Date | null;
   expenseName: string;
   typeDepenseId: string | null;
   typeDepenseLabel: string | null;
@@ -35,6 +36,12 @@ export type ExpenseReportDetail = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  beneficiaryUserId: string | null;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
+  /** Réservé à l'Admin ; la Structure ne reçoit que les quatre derniers caractères. */
+  beneficiaryIban: string | null;
+  beneficiaryIbanLast4: string | null;
   lines: ExpenseReportLineDetail[];
   supportingDocuments: SupportingDocumentDetail[];
 };
@@ -45,6 +52,7 @@ type ExpenseReportLineRow = {
   beneficiaryLastname: string;
   iban: string | null;
   amountCents: number;
+  expenseDate?: Date | null;
   expenseName: string;
   typeDepenseId: string | null;
   typeDepense: { label: string } | null;
@@ -68,6 +76,10 @@ export type ExpenseReportRow = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  beneficiaryUserId?: string | null;
+  beneficiaryFirstname?: string | null;
+  beneficiaryLastname?: string | null;
+  beneficiaryIban?: string | null;
   lines: ExpenseReportLineRow[];
   supportingDocuments: SupportingDocumentRow[];
 };
@@ -93,6 +105,13 @@ export function mapExpenseReportToDetail(
     description: report.description,
     status: report.status,
     createdAt: report.createdAt,
+    beneficiaryUserId: report.beneficiaryUserId ?? null,
+    beneficiaryFirstname: report.beneficiaryFirstname ?? null,
+    beneficiaryLastname: report.beneficiaryLastname ?? null,
+    beneficiaryIban: options.includeAdminFields
+      ? (report.beneficiaryIban ?? null)
+      : null,
+    beneficiaryIbanLast4: report.beneficiaryIban?.slice(-4) ?? null,
     lines: report.lines.map((line) =>
       mapLineToDetail(line, options.includeAdminFields),
     ),
@@ -112,6 +131,7 @@ function mapLineToDetail(
     beneficiaryLastname: line.beneficiaryLastname,
     iban: includeAdminFields ? line.iban : null,
     amountCents: line.amountCents,
+    expenseDate: line.expenseDate ?? null,
     expenseName: line.expenseName,
     typeDepenseId: line.typeDepenseId,
     typeDepenseLabel: line.typeDepense?.label ?? null,

@@ -75,6 +75,7 @@ model User {
   logs                      UserLog[]
   createdExpenseReports     ExpenseReport[]     @relation("CreatedBy")
   takenExpenseReports       ExpenseReport[]     @relation("TakenByAdmin")
+  beneficiaryExpenseReports ExpenseReport[]     @relation("Beneficiary")
   createdFinancialMovements FinancialMovement[]
 
   @@map("user")
@@ -171,23 +172,28 @@ model ConventionPdfSettings {
 }
 
 model ExpenseReport {
-  id             String              @id @default(uuid()) @db.Uuid
-  assoId         String              @map("asso_id") @db.Uuid
-  createdBy      String              @map("created_by") @db.Uuid
-  title          String
-  description    String?
-  status         ExpenseReportStatus @default(DRAFT)
-  takenByAdminId String?             @map("taken_by_admin_id") @db.Uuid
-  takenAt        DateTime?           @map("taken_at")
-  submittedAt    DateTime?           @map("submitted_at")
-  finalizedAt    DateTime?           @map("finalized_at")
-  finalPdfPath   String?             @map("final_pdf_path")
-  createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @updatedAt @map("updated_at")
+  id                   String              @id @default(uuid()) @db.Uuid
+  assoId               String              @map("asso_id") @db.Uuid
+  createdBy            String              @map("created_by") @db.Uuid
+  title                String
+  description          String?
+  status               ExpenseReportStatus @default(DRAFT)
+  takenByAdminId       String?             @map("taken_by_admin_id") @db.Uuid
+  takenAt              DateTime?           @map("taken_at")
+  submittedAt          DateTime?           @map("submitted_at")
+  finalizedAt          DateTime?           @map("finalized_at")
+  finalPdfPath         String?             @map("final_pdf_path")
+  beneficiaryUserId    String?             @map("beneficiary_user_id") @db.Uuid
+  beneficiaryFirstname String?             @map("beneficiary_firstname")
+  beneficiaryLastname  String?             @map("beneficiary_lastname")
+  beneficiaryIban      String?             @map("beneficiary_iban")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
 
   asso                Asso                 @relation(fields: [assoId], references: [id])
   creator             User                 @relation("CreatedBy", fields: [createdBy], references: [id])
   takenByAdmin        User?                @relation("TakenByAdmin", fields: [takenByAdminId], references: [id])
+  beneficiaryUser     User?                @relation("Beneficiary", fields: [beneficiaryUserId], references: [id], onDelete: SetNull)
   lines               ExpenseReportLine[]
   supportingDocuments SupportingDocument[]
 
@@ -211,6 +217,7 @@ model ExpenseReportLine {
   beneficiaryLastname  String            @map("beneficiary_lastname")
   iban                 String?
   amountCents          Int               @map("amount_cents")
+  expenseDate          DateTime?         @map("expense_date") @db.Date
   expenseName          String            @map("expense_name")
   typeDepenseId        String?           @map("type_depense_id") @db.Uuid
   customLabel          String?           @map("custom_label")

@@ -291,7 +291,7 @@ describe("addExpenseReportLineAsAdminAction", () => {
     expect(lineCreateMock).toHaveBeenCalled();
     expect(result).toEqual({
       ok: true,
-      warnings: ["Cette Ligne crée ou aggrave un solde négatif."],
+      warnings: ["Ce Remboursement crée ou aggrave un solde négatif."],
     });
   });
 });
@@ -328,7 +328,10 @@ describe("updateExpenseReportLineAsAdminAction", () => {
     );
 
     expect(result).toEqual(
-      expect.objectContaining({ ok: false, error: "Ligne introuvable." }),
+      expect.objectContaining({
+        ok: false,
+        error: "Remboursement introuvable.",
+      }),
     );
     expect(lineUpdateMock).not.toHaveBeenCalled();
   });
@@ -439,7 +442,9 @@ describe("updateExpenseReportLineAsAdminAction", () => {
     expect(lineUpdateMock).toHaveBeenCalled();
     expect(result).toEqual({
       ok: true,
-      warnings: ["Cette Ligne dépasse le montant restant de la Subvention."],
+      warnings: [
+        "Ce Remboursement dépasse le montant restant de la Subvention.",
+      ],
     });
   });
 
@@ -524,7 +529,7 @@ describe("deleteExpenseReportLineAsAdminAction", () => {
       formData(valid),
     );
 
-    expect(result).toEqual({ ok: false, error: "Ligne introuvable." });
+    expect(result).toEqual({ ok: false, error: "Remboursement introuvable." });
     expect(lineDeleteMock).not.toHaveBeenCalled();
   });
 

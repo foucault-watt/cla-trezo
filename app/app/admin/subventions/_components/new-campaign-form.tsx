@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   createSubventionCampaignAction,
   type CreateSubventionCampaignState,
@@ -17,6 +18,8 @@ export function NewCampaignForm() {
     initialState,
   );
   const today = new Date().toISOString().slice(0, 10);
+  const [campaignDate, setCampaignDate] = useState(today);
+  const [publicationDate, setPublicationDate] = useState(today);
 
   useEffect(() => {
     if (state.ok && state.campaignId) {
@@ -30,22 +33,21 @@ export function NewCampaignForm() {
 
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Date</legend>
-        <input
-          type="date"
+        <DatePicker
           name="date"
-          className="input w-full"
-          defaultValue={today}
-          required
+          value={campaignDate}
+          onChange={setCampaignDate}
         />
       </fieldset>
 
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Date de publication</legend>
-        <input
-          type="date"
+        <DatePicker
           name="publicationDate"
-          className="input w-full"
-          defaultValue={today}
+          value={publicationDate}
+          onChange={setPublicationDate}
+          clearable
+          placeholder="Non publiée"
         />
         <p className="mt-1 text-xs whitespace-normal text-base-content/70">
           Publiée dès aujourd&apos;hui par défaut. Choisissez une date future
@@ -60,7 +62,11 @@ export function NewCampaignForm() {
         </div>
       )}
 
-      <button type="submit" className="btn btn-primary" disabled={pending}>
+      <button
+        type="submit"
+        className="btn btn-primary"
+        disabled={pending || !campaignDate}
+      >
         {pending ? (
           <span className="loading loading-spinner loading-sm" />
         ) : (

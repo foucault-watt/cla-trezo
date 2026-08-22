@@ -190,6 +190,7 @@ describe("getExpenseReportDetail", () => {
         beneficiaryLastname: "Dupont",
         iban: null,
         amountCents: 4250,
+        expenseDate: null,
         expenseName: "Billets de train",
         typeDepenseId: "type-1",
         typeDepenseLabel: "Transport",
@@ -257,9 +258,7 @@ describe("getExpenseReportDetail", () => {
 
     const result = await getExpenseReportDetail("club-info", "report-1");
 
-    expect(result.visibleSubventions.map((s) => s.id)).toEqual([
-      "sub-recent",
-    ]);
+    expect(result.visibleSubventions.map((s) => s.id)).toEqual(["sub-recent"]);
   });
 
   it("ne renvoie jamais l'IBAN à la Structure, même si la Ligne en a un en base", async () => {

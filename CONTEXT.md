@@ -34,8 +34,18 @@ Classification fixe d'une Campagne de subvention (et donc, par transitivité, de
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de dépense)
 
 **Type de dépense**:
-Classification d'une Ligne de note de frais (ex: nourriture, transport, matériel). Liste pré-remplie en base de données mais extensible/personnalisable, contrairement au Type de subvention.
+Classification d'un Remboursement (ex: nourriture, transport, matériel). Liste pré-remplie en base de données mais extensible/personnalisable, contrairement au Type de subvention.
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de subvention)
+
+**Note de frais**:
+Demande portée par une Structure et dédiée à un bénéficiaire unique. Elle regroupe un ou plusieurs Remboursements et leurs Justificatifs.
+
+**Bénéficiaire**:
+Personne unique à laquelle tous les Remboursements d'une Note de frais sont destinés. Il peut s'agir d'un membre actif de la Structure ou d'une personne personnalisée.
+
+**Remboursement**:
+Unité d'une Note de frais correspondant à une dépense datée, un montant et une source de financement unique — soit le Solde, soit une Subvention. Un remboursement partagé entre plusieurs sources devient plusieurs Remboursements.
+_Avoid_: ligne (terme technique, à ne pas employer dans l'interface)
 
 ## Statuts d'une Note de frais
 
@@ -71,9 +81,6 @@ Mouvement ajouté par l'Admin qui augmente le Solde d'un Club. Concerne uniqueme
 
 **Sortie manuelle**:
 Mouvement ajouté par l'Admin qui diminue le Solde d'un Club. Ne peut jamais être liée à une Subvention — les Subventions ne se consomment que via les Notes de frais.
-
-**Ligne de note de frais**:
-Unité d'une Note de frais correspondant à un bénéficiaire, un montant, et une source de financement *unique* — soit le Solde, soit une Subvention. Jamais de ventilation interne à une ligne : un remboursement partagé entre plusieurs sources devient plusieurs lignes.
 
 **Convention**:
 Document PDF officiel généré à partir d'une Subvention. Correspond toujours à une seule Subvention.

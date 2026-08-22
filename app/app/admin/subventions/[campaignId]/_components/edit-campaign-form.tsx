@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   updateSubventionCampaignAction,
   type UpdateSubventionCampaignState,
@@ -31,6 +32,10 @@ export function EditCampaignForm({
     updateSubventionCampaignAction,
     initialState,
   );
+  const [campaignDate, setCampaignDate] = useState(toDateInputValue(date));
+  const [publicationDateValue, setPublicationDateValue] = useState(
+    toDateInputValue(publicationDate),
+  );
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -40,22 +45,21 @@ export function EditCampaignForm({
 
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Date</legend>
-        <input
-          type="date"
+        <DatePicker
           name="date"
-          className="input w-full"
-          defaultValue={toDateInputValue(date)}
-          required
+          value={campaignDate}
+          onChange={setCampaignDate}
         />
       </fieldset>
 
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Date de publication</legend>
-        <input
-          type="date"
+        <DatePicker
           name="publicationDate"
-          className="input w-full"
-          defaultValue={toDateInputValue(publicationDate)}
+          value={publicationDateValue}
+          onChange={setPublicationDateValue}
+          clearable
+          placeholder="Non publiée"
         />
         <p className="mt-1 text-xs whitespace-normal text-base-content/70">
           Videz le champ pour repasser la campagne en Programmée. Une date
@@ -74,7 +78,11 @@ export function EditCampaignForm({
         </div>
       )}
 
-      <button type="submit" className="btn btn-primary" disabled={pending}>
+      <button
+        type="submit"
+        className="btn btn-primary"
+        disabled={pending || !campaignDate}
+      >
         {pending ? (
           <span className="loading loading-spinner loading-sm" />
         ) : (

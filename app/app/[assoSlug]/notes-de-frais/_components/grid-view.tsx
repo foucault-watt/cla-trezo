@@ -36,7 +36,7 @@ export function GridView({
             )}
             <p className="text-2xl">{formatCents(report.totalAmountCents)}</p>
             <p className="text-sm text-base-content/70">
-              {report.linesCount} ligne(s)
+              {report.linesCount} remboursement(s)
             </p>
             <div className="card-actions justify-end">
               <Link

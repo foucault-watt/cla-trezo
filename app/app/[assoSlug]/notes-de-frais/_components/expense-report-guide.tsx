@@ -11,7 +11,7 @@ const STEPS: Step[] = [
   {
     kind: "text",
     label: "Compléter",
-    detail: "Justificatifs et lignes de dépense.",
+    detail: "Justificatifs et Remboursements.",
   },
   {
     kind: "text",
@@ -76,7 +76,9 @@ export function ExpenseReportGuide() {
                 {step.kind === "text" ? (
                   <>
                     <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <StepBadge tone={step.highlight ? "highlight" : "default"}>
+                      <StepBadge
+                        tone={step.highlight ? "highlight" : "default"}
+                      >
                         {i + 1}
                       </StepBadge>
                       {step.label}

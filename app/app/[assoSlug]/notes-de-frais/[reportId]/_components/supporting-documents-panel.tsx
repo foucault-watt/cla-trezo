@@ -1,7 +1,20 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { FileText, Trash2, UploadCloud } from "lucide-react";
+import {
+  CircleHelp,
+  FileText,
+  Receipt,
+  ShieldCheck,
+  Trash2,
+  UploadCloud,
+  X,
+} from "lucide-react";
+import {
+  Modal,
+  useModalAutoClose,
+  type ModalHandle,
+} from "@/components/ui/modal";
 import {
   addSupportingDocumentsAction,
   removeSupportingDocumentAction,
@@ -16,19 +29,14 @@ const initialRemoveState: RemoveSupportingDocumentState = { ok: false };
 
 const ACCEPTED_FILE_TYPES = "application/pdf,image/jpeg,image/png,image/webp";
 
-const documentTypeCopy: Record<
-  SupportingDocumentType,
-  { title: string; description: string }
-> = {
-  RECEIPT: {
-    title: "Facture",
-    description:
-      "Facture, ticket de caisse ou tout document prouvant la dépense. Plusieurs fichiers possibles.",
-  },
-  HONOR_STATEMENT: {
-    title: "Attestation sur l'honneur",
-    description: "À utiliser uniquement si vous n'avez pas de Facture.",
-  },
+const dropZoneCopy: Record<SupportingDocumentType, string> = {
+  RECEIPT: "Déposez vos factures ici, ou cliquez pour parcourir",
+  HONOR_STATEMENT: "Déposez votre attestation ici, ou cliquez pour parcourir",
+};
+
+const documentTypeLabel: Record<SupportingDocumentType, string> = {
+  RECEIPT: "Facture",
+  HONOR_STATEMENT: "Attestation sur l'honneur",
 };
 
 function documentUrl(assoSlug: string, reportId: string, documentId: string) {
@@ -38,35 +46,60 @@ function documentUrl(assoSlug: string, reportId: string, documentId: string) {
 function RemoveDocumentButton({
   assoSlug,
   documentId,
+  filename,
 }: {
   assoSlug: string;
   documentId: string;
+  filename: string;
 }) {
-  const [, formAction, pending] = useActionState(
+  const modalRef = useRef<ModalHandle>(null);
+  const [state, formAction, pending] = useActionState(
     removeSupportingDocumentAction,
     initialRemoveState,
   );
+  useModalAutoClose(modalRef, state.ok);
 
   return (
-    <form
-      action={formAction}
-      onSubmit={(event) => {
-        if (!confirm("Supprimer ce fichier ?")) {
-          event.preventDefault();
-        }
-      }}
-    >
-      <input type="hidden" name="id" value={documentId} />
-      <input type="hidden" name="assoSlug" value={assoSlug} />
+    <>
       <button
-        type="submit"
+        type="button"
         className="btn btn-ghost btn-xs text-error"
-        disabled={pending}
+        onClick={() => modalRef.current?.open()}
         aria-label="Supprimer ce Justificatif"
       >
         <Trash2 className="size-4" />
       </button>
-    </form>
+      <Modal ref={modalRef} title="Supprimer ce justificatif ?">
+        <p className="text-sm text-base-content/80">
+          Le fichier « <span className="font-medium">{filename}</span> » sera
+          définitivement supprimé.
+        </p>
+        <form action={formAction}>
+          <input type="hidden" name="id" value={documentId} />
+          <input type="hidden" name="assoSlug" value={assoSlug} />
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => modalRef.current?.close()}
+            >
+              <X size={16} />
+              Annuler
+            </button>
+            <button type="submit" className="btn btn-error" disabled={pending}>
+              {pending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Supprimer
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -101,7 +134,11 @@ function DocumentRow({
         <span className="truncate text-sm">{document.originalFilename}</span>
       </a>
       {editable && (
-        <RemoveDocumentButton assoSlug={assoSlug} documentId={document.id} />
+        <RemoveDocumentButton
+          assoSlug={assoSlug}
+          documentId={document.id}
+          filename={document.originalFilename}
+        />
       )}
     </li>
   );
@@ -115,9 +152,11 @@ function DocumentRow({
 function FileDropZone({
   multiple,
   pending,
+  label,
 }: {
   multiple: boolean;
   pending: boolean;
+  label: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -157,7 +196,7 @@ function FileDropZone({
         setIsDragOver(false);
         if (!pending) applyFiles(event.dataTransfer.files);
       }}
-      className={`flex flex-col items-center gap-2 rounded-box border-2 border-dashed p-6 text-center transition-colors ${
+      className={`flex flex-col items-center gap-3 rounded-box border-2 border-dashed p-10 text-center transition-colors ${
         pending
           ? "cursor-wait border-base-300 opacity-60"
           : isDragOver
@@ -166,9 +205,9 @@ function FileDropZone({
       }`}
     >
       {pending ? (
-        <span className="loading loading-spinner loading-md text-primary" />
+        <span className="loading loading-spinner loading-lg text-primary" />
       ) : (
-        <UploadCloud className="size-6 text-base-content/50" />
+        <UploadCloud className="size-9 text-base-content/50" />
       )}
       {fileNames.length > 0 ? (
         <ul className="text-sm">
@@ -178,7 +217,7 @@ function FileDropZone({
         </ul>
       ) : (
         <p className="text-sm text-base-content/70">
-          Glissez vos fichiers ici, ou cliquez pour parcourir
+          {label}
           <br />
           <span className="text-xs">
             PDF, JPEG, PNG ou WEBP — 10 Mo max par fichier — envoi automatique
@@ -233,7 +272,12 @@ function UploadForm({
       <input type="hidden" name="assoSlug" value={assoSlug} />
       <input type="hidden" name="documentType" value={documentType} />
 
-      <FileDropZone key={dropZoneKey} multiple={multiple} pending={pending} />
+      <FileDropZone
+        key={dropZoneKey}
+        multiple={multiple}
+        pending={pending}
+        label={dropZoneCopy[documentType]}
+      />
 
       {!state.ok && state.error && (
         <div role="alert" className="alert alert-error alert-soft">
@@ -259,9 +303,9 @@ export function SupportingDocumentsPanel({
   const honorStatements = documents.filter(
     (doc) => doc.type === "HONOR_STATEMENT",
   );
-  // Type déjà engagé sur cette Note : l'autre carte est désactivée tant que
-  // ces documents n'ont pas été supprimés (règle d'exclusivité, appliquée
-  // côté serveur — ceci n'en est que le reflet visuel).
+  // Type déjà engagé sur cette Note : on ne peut plus basculer vers l'autre
+  // type tant que ces documents n'ont pas été supprimés (règle d'exclusivité,
+  // appliquée côté serveur — ceci n'en est que le reflet visuel).
   const lockedType: SupportingDocumentType | null =
     receipts.length > 0
       ? "RECEIPT"
@@ -269,98 +313,130 @@ export function SupportingDocumentsPanel({
         ? "HONOR_STATEMENT"
         : null;
 
-  const [selectedType, setSelectedType] =
-    useState<SupportingDocumentType | null>(lockedType);
+  const [chosenType, setChosenType] =
+    useState<SupportingDocumentType>("RECEIPT");
+  // Le toggle Facture / Attestation ne s'affiche qu'une fois que la personne
+  // a explicitement quitté le choix par défaut (Facture) via la modale
+  // d'avertissement — pas dès l'arrivée sur la page.
+  const [showTypeToggle, setShowTypeToggle] = useState(false);
   const [lastLockedType, setLastLockedType] = useState(lockedType);
   if (lockedType !== lastLockedType) {
     setLastLockedType(lockedType);
     if (lockedType) {
-      setSelectedType(lockedType);
+      setChosenType(lockedType);
     }
   }
+  const activeType = lockedType ?? chosenType;
+
+  const honorStatementModalRef = useRef<ModalHandle>(null);
 
   return (
-    <div className="card border border-base-300 bg-base-100 shadow-md">
-      <div className="card-body">
-        <h2 className="card-title">Justificatifs</h2>
-
-        {documents.length === 0 && (
-          <p className="text-sm text-base-content/70">
-            Aucun Justificatif pour l&apos;instant.
-          </p>
-        )}
-
-        {documents.length > 0 && (
-          <ul className="flex flex-col gap-2">
-            {[...receipts, ...honorStatements].map((doc) => (
-              <DocumentRow
-                key={doc.id}
-                assoSlug={assoSlug}
-                reportId={reportId}
-                document={doc}
-                editable={editable}
-              />
-            ))}
-          </ul>
-        )}
-
-        {editable && (
-          <>
-            <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {(Object.keys(documentTypeCopy) as SupportingDocumentType[]).map(
-                (type) => {
-                  const disabled = lockedType !== null && lockedType !== type;
-                  const checked = selectedType === type;
-                  return (
-                    <label
-                      key={type}
-                      className={`card border-2 transition-all duration-150 ${
-                        checked
-                          ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-                          : disabled
-                            ? "cursor-not-allowed border-base-300 bg-base-200/60 opacity-50 grayscale-[0.4]"
-                            : "cursor-pointer border-base-300 hover:border-primary/50 hover:bg-base-200/40"
-                      }`}
-                    >
-                      <div className="card-body gap-1 p-4">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm checkbox-primary"
-                            checked={checked}
-                            disabled={disabled}
-                            onChange={() =>
-                              setSelectedType((current) =>
-                                current === type ? null : type,
-                              )
-                            }
-                          />
-                          <span className="card-title text-sm">
-                            {documentTypeCopy[type].title}
-                          </span>
-                        </div>
-                        <p className="text-xs text-base-content/70">
-                          {documentTypeCopy[type].description}
-                        </p>
-                      </div>
-                    </label>
-                  );
-                },
-              )}
-            </div>
-
-            {selectedType && (
-              <UploadForm
-                key={selectedType}
-                assoSlug={assoSlug}
-                reportId={reportId}
-                documentType={selectedType}
-                multiple={selectedType === "RECEIPT"}
-              />
+    <div className="flex flex-col gap-4">
+      {editable && (
+        <div className="card border border-base-300 bg-base-100">
+          <div className="card-body gap-3">
+            {lockedType === null && showTypeToggle && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(
+                  Object.keys(documentTypeLabel) as SupportingDocumentType[]
+                ).map((type) => (
+                  <label
+                    key={type}
+                    className={`card cursor-pointer border-2 p-4 ${
+                      chosenType === type
+                        ? "border-primary bg-primary/5"
+                        : "border-base-300"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <input
+                        className="radio radio-primary"
+                        type="radio"
+                        checked={chosenType === type}
+                        onChange={() => setChosenType(type)}
+                      />
+                      {type === "RECEIPT" ? (
+                        <Receipt size={16} />
+                      ) : (
+                        <ShieldCheck size={16} />
+                      )}
+                      {documentTypeLabel[type]}
+                    </span>
+                  </label>
+                ))}
+              </div>
             )}
-          </>
-        )}
-      </div>
+
+            <UploadForm
+              key={activeType}
+              assoSlug={assoSlug}
+              reportId={reportId}
+              documentType={activeType}
+              multiple={activeType === "RECEIPT"}
+            />
+            {lockedType === null && !showTypeToggle && (
+              <button
+                type="button"
+                className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
+                onClick={() => honorStatementModalRef.current?.open()}
+              >
+                <CircleHelp size={13} />
+                Je n&apos;ai pas de facture
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {documents.length === 0 && !editable && (
+        <p className="text-sm text-base-content/70">
+          Aucun Justificatif pour l&apos;instant.
+        </p>
+      )}
+
+      {documents.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {[...receipts, ...honorStatements].map((doc) => (
+            <DocumentRow
+              key={doc.id}
+              assoSlug={assoSlug}
+              reportId={reportId}
+              document={doc}
+              editable={editable}
+            />
+          ))}
+        </ul>
+      )}
+
+      <Modal ref={honorStatementModalRef} title="Attestation sur l'honneur">
+        <p className="text-sm text-base-content/80">
+          L&apos;attestation sur l&apos;honneur ne doit être utilisée qu&apos;en
+          dernier recours, si vous n&apos;avez vraiment aucune facture ni ticket
+          de caisse pour justifier cette dépense.
+        </p>
+        <div className="modal-action">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => honorStatementModalRef.current?.close()}
+          >
+            <X size={16} />
+            Annuler
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              setChosenType("HONOR_STATEMENT");
+              setShowTypeToggle(true);
+              honorStatementModalRef.current?.close();
+            }}
+          >
+            <ShieldCheck size={16} />
+            Je n&apos;ai pas de facture
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
