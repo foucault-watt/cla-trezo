@@ -1,0 +1,556 @@
+import {
+  Archive,
+  CalendarDays,
+  CircleCheck,
+  Clock3,
+  History,
+  Info,
+  TriangleAlert,
+} from "lucide-react";
+import { formatCents } from "@/lib/money";
+import { subventionTypeLabel } from "@/lib/subventions/labels";
+import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
+
+type AgeBand = "recent" | "old" | "history";
+
+type Campaign = {
+  id: string;
+  name: string;
+  type: VisibleSubvention["type"];
+  publicationDate: Date;
+  subventions: VisibleSubvention[];
+  totalAmountCents: number;
+  usedAmountCents: number;
+  remainingAmountCents: number;
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function getAgeBand(publicationDate: Date, now: Date): AgeBand {
+  const ageInDays = (now.getTime() - publicationDate.getTime()) / DAY_MS;
+  if (ageInDays <= 365) return "recent";
+  if (ageInDays <= 730) return "old";
+  return "history";
+}
+
+function groupByCampaign(subventions: VisibleSubvention[]): Campaign[] {
+  const groups = new Map<string, Campaign>();
+
+  for (const subvention of subventions) {
+    const existing = groups.get(subvention.campaignId);
+    if (existing) {
+      existing.subventions.push(subvention);
+      existing.totalAmountCents += subvention.totalAmountCents;
+      existing.usedAmountCents += subvention.usedAmountCents;
+      existing.remainingAmountCents += subvention.remainingAmountCents;
+      continue;
+    }
+
+    groups.set(subvention.campaignId, {
+      id: subvention.campaignId,
+      name: subvention.campaignName,
+      type: subvention.type,
+      publicationDate: subvention.publicationDate,
+      subventions: [subvention],
+      totalAmountCents: subvention.totalAmountCents,
+      usedAmountCents: subvention.usedAmountCents,
+      remainingAmountCents: subvention.remainingAmountCents,
+    });
+  }
+
+  return Array.from(groups.values()).sort(
+    (a, b) => b.publicationDate.getTime() - a.publicationDate.getTime(),
+  );
+}
+
+function splitCampaigns(subventions: VisibleSubvention[]) {
+  const now = new Date();
+  const result: Record<AgeBand, Campaign[]> = {
+    recent: [],
+    old: [],
+    history: [],
+  };
+
+  for (const campaign of groupByCampaign(subventions)) {
+    result[getAgeBand(campaign.publicationDate, now)].push(campaign);
+  }
+  return result;
+}
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function pluralizeCampaign(count: number) {
+  return `${count} campagne${count > 1 ? "s" : ""}`;
+}
+
+function progressValue(campaign: Campaign) {
+  if (campaign.totalAmountCents <= 0) return 0;
+  return Math.min(
+    100,
+    Math.max(0, (campaign.usedAmountCents / campaign.totalAmountCents) * 100),
+  );
+}
+
+function PageHeading({ isDemo = false }: { isDemo?: boolean }) {
+  return (
+    <header className="max-w-3xl">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-semibold text-balance">
+          Suivi des subventions
+        </h1>
+        {isDemo && (
+          <span className="badge badge-outline badge-sm">
+            Scénario de démonstration
+          </span>
+        )}
+      </div>
+      <p className="mt-2 max-w-2xl text-sm text-base-content/70">
+        Suivez ce qui a déjà été utilisé et ce qui reste disponible. Les
+        montants tiennent compte des notes de frais validées.
+      </p>
+    </header>
+  );
+}
+
+function CampaignIdentity({ campaign }: { campaign: Campaign }) {
+  return (
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="badge badge-primary badge-sm">
+          {subventionTypeLabel[campaign.type]}
+        </span>
+        <h3 className="text-base font-semibold text-balance">
+          {campaign.name}
+        </h3>
+      </div>
+      <span className="mt-2 flex items-center gap-1 text-xs text-base-content/60">
+        <CalendarDays aria-hidden="true" size={13} />
+        Publiée le {formatDate(campaign.publicationDate)}
+      </span>
+    </div>
+  );
+}
+
+function DesktopCampaignList({
+  campaigns,
+  old = false,
+}: {
+  campaigns: Campaign[];
+  old?: boolean;
+}) {
+  if (campaigns.length === 0) {
+    return (
+      <p className="hidden rounded-box border border-dashed border-base-300 bg-base-100 px-5 py-8 text-center text-sm text-base-content/60 md:block">
+        Aucune campagne dans cette période.
+      </p>
+    );
+  }
+
+  return (
+    <div className="hidden space-y-4 md:block">
+      {campaigns.map((campaign) => (
+        <article
+          className={`overflow-hidden rounded-box border bg-base-100 shadow-sm ${
+            old ? "border-warning/40" : "border-base-300"
+          }`}
+          key={campaign.id}
+        >
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(15rem,25rem)] items-center gap-8 px-5 py-4">
+            <CampaignIdentity campaign={campaign} />
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-4 text-xs tabular-nums">
+                <span className="text-base-content/60">
+                  Utilisé : {formatCents(campaign.usedAmountCents)} sur{" "}
+                  {formatCents(campaign.totalAmountCents)}
+                </span>
+                <span
+                  className={`shrink-0 font-medium ${
+                    old ? "text-warning-content" : "text-success"
+                  }`}
+                >
+                  Restant : {formatCents(campaign.remainingAmountCents)}
+                </span>
+              </div>
+              <progress
+                className={`progress h-2 w-full ${
+                  old ? "progress-warning" : "progress-success"
+                }`}
+                value={progressValue(campaign)}
+                max={100}
+                aria-label={`${Math.round(progressValue(campaign))} % utilisés pour ${campaign.name}`}
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto border-t border-base-300">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-base-content/50">
+                  <th className="py-2 pr-5 pl-9 text-left font-medium">
+                    Subvention
+                  </th>
+                  <th className="px-5 py-2 text-right font-medium">Accordé</th>
+                  <th className="px-5 py-2 text-right font-medium">Utilisé</th>
+                  <th className="px-5 py-2 text-right font-medium">Restant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaign.subventions.map((subvention) => (
+                  <tr
+                    className="border-t border-base-300/70"
+                    key={subvention.id}
+                  >
+                    <td className="py-2 pr-5 pl-9">
+                      <span className="font-medium text-base-content/75">
+                        {subvention.reason}
+                      </span>
+                      {subvention.commentary && (
+                        <span className="ml-2 text-xs text-base-content/50">
+                          {subvention.commentary}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-2 text-right tabular-nums text-base-content/70">
+                      {formatCents(subvention.totalAmountCents)}
+                    </td>
+                    <td className="px-5 py-2 text-right tabular-nums text-base-content/70">
+                      {formatCents(subvention.usedAmountCents)}
+                    </td>
+                    <td
+                      className={`px-5 py-2 text-right font-medium tabular-nums ${
+                        old ? "text-warning-content" : "text-success"
+                      }`}
+                    >
+                      {formatCents(subvention.remainingAmountCents)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function CompactSubventionLines({
+  campaign,
+  old = false,
+}: {
+  campaign: Campaign;
+  old?: boolean;
+}) {
+  return (
+    <div className="border-t border-base-300 bg-base-100">
+      <div className="grid grid-cols-3 gap-3 px-5 pt-2 text-right text-[0.6875rem] text-base-content/45">
+        <span>Accordé</span>
+        <span>Utilisé</span>
+        <span>Restant</span>
+      </div>
+      {campaign.subventions.map((subvention) => (
+        <div
+          className="border-t border-base-300/70 px-5 py-2 first:border-t-0"
+          key={subvention.id}
+        >
+          <p className="truncate text-sm font-medium text-base-content/75">
+            {subvention.reason}
+            {subvention.commentary && (
+              <span className="ml-2 text-xs font-normal text-base-content/50">
+                {subvention.commentary}
+              </span>
+            )}
+          </p>
+          <div className="mt-1 grid grid-cols-3 gap-3 text-right text-xs">
+            <span className="tabular-nums text-base-content/70">
+              {formatCents(subvention.totalAmountCents)}
+            </span>
+            <span className="tabular-nums text-base-content/70">
+              {formatCents(subvention.usedAmountCents)}
+            </span>
+            <span
+              className={`font-medium tabular-nums ${
+                old ? "text-warning-content" : "text-success"
+              }`}
+            >
+              {formatCents(subvention.remainingAmountCents)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MobileCampaignList({
+  campaigns,
+  old = false,
+}: {
+  campaigns: Campaign[];
+  old?: boolean;
+}) {
+  return (
+    <div className="space-y-4 md:hidden">
+      {campaigns.length === 0 ? (
+        <p className="px-5 py-6 text-sm text-base-content/60">
+          Aucune campagne dans cette période.
+        </p>
+      ) : (
+        campaigns.map((campaign) => (
+          <article
+            className="overflow-hidden rounded-box border border-base-300 bg-base-100"
+            key={campaign.id}
+          >
+            <div className="px-5 py-4">
+              <CampaignIdentity campaign={campaign} />
+              <div className="mt-4 flex items-center justify-between gap-3 text-xs tabular-nums">
+                <span className="text-base-content/60">
+                  Utilisé : {formatCents(campaign.usedAmountCents)} sur{" "}
+                  {formatCents(campaign.totalAmountCents)}
+                </span>
+                <span
+                  className={`shrink-0 font-medium ${
+                    old ? "text-warning-content" : "text-success"
+                  }`}
+                >
+                  Restant : {formatCents(campaign.remainingAmountCents)}
+                </span>
+              </div>
+              <progress
+                className={`progress mt-2 h-2 w-full ${
+                  old ? "progress-warning" : "progress-success"
+                }`}
+                value={progressValue(campaign)}
+                max={100}
+                aria-label={`${Math.round(progressValue(campaign))} % utilisés pour ${campaign.name}`}
+              />
+            </div>
+            <CompactSubventionLines campaign={campaign} old={old} />
+          </article>
+        ))
+      )}
+    </div>
+  );
+}
+
+function LedgerContent({
+  bands,
+  isDemo,
+}: {
+  bands: Record<AgeBand, Campaign[]>;
+  isDemo: boolean;
+}) {
+  const totalGranted = bands.recent.reduce(
+    (total, campaign) => total + campaign.totalAmountCents,
+    0,
+  );
+  const totalUsed = bands.recent.reduce(
+    (total, campaign) => total + campaign.usedAmountCents,
+    0,
+  );
+
+  return (
+    <div className="max-w-7xl pb-24">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start">
+        <div>
+          <PageHeading isDemo={isDemo} />
+
+          <section className="mt-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold">Campagnes récentes</h2>
+                  <span className="badge badge-success badge-sm">
+                    365 jours
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-base-content/60">
+                  Les montants qui peuvent être engagés normalement.
+                </p>
+              </div>
+              <div className="flex gap-6 text-sm">
+                <div>
+                  <p className="text-xs text-base-content/50">Accordé</p>
+                  <p className="mt-1 font-medium tabular-nums">
+                    {formatCents(totalGranted)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-base-content/50">
+                    Montant disponible
+                  </p>
+                  <p className="mt-1 font-semibold tabular-nums text-success">
+                    {formatCents(totalGranted - totalUsed)}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <DesktopCampaignList campaigns={bands.recent} />
+              <MobileCampaignList campaigns={bands.recent} />
+            </div>
+          </section>
+
+          <section className="mt-8">
+            <div className="flex items-start gap-3 rounded-box border border-warning/50 bg-warning/10 px-5 py-4">
+              <TriangleAlert
+                aria-hidden="true"
+                className="mt-0.5 shrink-0 text-warning-content"
+                size={18}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center justify-between gap-2 font-semibold">
+                  <span>Subventions anciennes</span>
+                  <span className="text-xs font-medium text-warning-content">
+                    {pluralizeCampaign(bands.old.length)} · 1 à 2 ans
+                  </span>
+                </span>
+                <span className="mt-1 block text-sm font-normal text-base-content/60">
+                  Toujours possibles, mais à utiliser seulement en dernier
+                  recours.
+                </span>
+              </span>
+            </div>
+            <div className="mt-4">
+              <DesktopCampaignList campaigns={bands.old} old />
+              <MobileCampaignList campaigns={bands.old} old />
+            </div>
+          </section>
+        </div>
+
+        <aside className="xl:sticky xl:top-6">
+          <div className="rounded-box border border-base-300 bg-base-100 p-5 shadow-sm">
+            <h2 className="font-bold">Règle d’usage</h2>
+            <ol className="mt-4 space-y-4 text-sm">
+              <li className="flex gap-3">
+                <CircleCheck
+                  aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-success"
+                  size={17}
+                />
+                <div>
+                  <p className="font-medium">Moins de 365 jours</p>
+                  <p className="mt-0.5 text-xs text-base-content/60">
+                    Utilisation normale
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <Clock3
+                  aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-warning-content"
+                  size={17}
+                />
+                <div>
+                  <p className="font-medium">Entre 1 et 2 ans</p>
+                  <p className="mt-0.5 text-xs text-base-content/60">
+                    À éviter, risque de refus
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <Archive
+                  aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-base-content/50"
+                  size={17}
+                />
+                <div>
+                  <p className="font-medium">Plus de 2 ans</p>
+                  <p className="mt-0.5 text-xs text-base-content/60">
+                    Consultation uniquement
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <HistorySection campaigns={bands.history} />
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function HistoryList({ campaigns }: { campaigns: Campaign[] }) {
+  if (campaigns.length === 0) {
+    return (
+      <p className="py-4 text-sm text-base-content/60">
+        Aucune subvention archivée.
+      </p>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-base-300">
+      {campaigns.map((campaign) => (
+        <div className="py-3.5" key={campaign.id}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="font-medium">{campaign.name}</p>
+              <p className="mt-0.5 text-xs text-base-content/50">
+                {subventionTypeLabel[campaign.type]} · publiée le{" "}
+                {formatDate(campaign.publicationDate)}
+              </p>
+            </div>
+            <div className="w-full shrink-0 sm:w-40">
+              <div className="mb-1 flex justify-between gap-2 text-[0.6875rem] tabular-nums text-base-content/60">
+                <span>{formatCents(campaign.usedAmountCents)} utilisés</span>
+                <span>
+                  {formatCents(campaign.remainingAmountCents)} restants
+                </span>
+              </div>
+              <progress
+                className="progress h-2 w-full"
+                value={progressValue(campaign)}
+                max={100}
+                aria-label={`${Math.round(progressValue(campaign))} % utilisés pour ${campaign.name}`}
+              />
+            </div>
+          </div>
+          <div className="-mx-5 mt-3">
+            <CompactSubventionLines campaign={campaign} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HistorySection({ campaigns }: { campaigns: Campaign[] }) {
+  return (
+    <section className="mt-4 rounded-box border border-base-300 bg-base-100 shadow-sm">
+      <div className="px-5 py-4">
+        <span className="flex items-center gap-2 font-semibold">
+          <History aria-hidden="true" size={17} />
+          Historique
+        </span>
+        <span className="mt-1 block text-xs font-normal text-base-content/60">
+          {pluralizeCampaign(campaigns.length)} de plus de 2 ans
+        </span>
+      </div>
+      <div className="border-t border-base-300 px-5">
+        <p className="flex items-start gap-2 pt-4 text-xs text-base-content/60">
+          <Info aria-hidden="true" className="mt-0.5 shrink-0" size={14} />À ne
+          plus utiliser pour une nouvelle dépense.
+        </p>
+        <HistoryList campaigns={campaigns} />
+      </div>
+    </section>
+  );
+}
+
+export function SubventionsLedger({
+  subventions,
+  isDemo = false,
+}: {
+  subventions: VisibleSubvention[];
+  isDemo?: boolean;
+}) {
+  const bands = splitCampaigns(subventions);
+  return <LedgerContent bands={bands} isDemo={isDemo} />;
+}
