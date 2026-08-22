@@ -9,6 +9,7 @@ const {
   lineCreateMock,
   lineFindUniqueMock,
   lineUpdateMock,
+  lineUpdateManyMock,
   lineCountMock,
   lineFindManyMock,
   lineDeleteManyMock,
@@ -17,6 +18,7 @@ const {
   assoFindUniqueMock,
   subventionFindUniqueMock,
   financialMovementFindManyMock,
+  refAssoUserFindFirstMock,
   transactionMock,
   revalidatePathMock,
   deleteStoredFileMock,
@@ -29,6 +31,7 @@ const {
   lineCreateMock: vi.fn(),
   lineFindUniqueMock: vi.fn(),
   lineUpdateMock: vi.fn(),
+  lineUpdateManyMock: vi.fn(),
   lineCountMock: vi.fn(),
   lineFindManyMock: vi.fn(),
   lineDeleteManyMock: vi.fn(),
@@ -37,6 +40,7 @@ const {
   assoFindUniqueMock: vi.fn(),
   subventionFindUniqueMock: vi.fn(),
   financialMovementFindManyMock: vi.fn(),
+  refAssoUserFindFirstMock: vi.fn(),
   transactionMock: vi.fn(),
   revalidatePathMock: vi.fn(),
   deleteStoredFileMock: vi.fn(),
@@ -57,6 +61,7 @@ vi.mock("@/lib/prisma", () => ({
       create: lineCreateMock,
       findUnique: lineFindUniqueMock,
       update: lineUpdateMock,
+      updateMany: lineUpdateManyMock,
       count: lineCountMock,
       findMany: lineFindManyMock,
       deleteMany: lineDeleteManyMock,
@@ -68,6 +73,7 @@ vi.mock("@/lib/prisma", () => ({
     asso: { findUnique: assoFindUniqueMock },
     subvention: { findUnique: subventionFindUniqueMock },
     financialMovement: { findMany: financialMovementFindManyMock },
+    refAssoUser: { findFirst: refAssoUserFindFirstMock },
     $transaction: transactionMock,
   },
 }));
@@ -80,7 +86,9 @@ const {
   createExpenseReportAction,
   updateExpenseReportAction,
   submitExpenseReportAction,
+  submitExpenseReportWithBeneficiaryAction,
   deleteExpenseReportAction,
+  updateExpenseReportBeneficiaryAction,
 } = await import("./expense-report-actions");
 
 function formData(entries: Record<string, string>): FormData {
@@ -105,6 +113,7 @@ beforeEach(() => {
   lineCreateMock.mockReset();
   lineFindUniqueMock.mockReset();
   lineUpdateMock.mockReset();
+  lineUpdateManyMock.mockReset();
   lineCountMock.mockReset();
   lineFindManyMock.mockReset();
   lineDeleteManyMock.mockReset();
@@ -113,6 +122,7 @@ beforeEach(() => {
   assoFindUniqueMock.mockReset();
   subventionFindUniqueMock.mockReset();
   financialMovementFindManyMock.mockReset();
+  refAssoUserFindFirstMock.mockReset();
   transactionMock.mockReset();
   revalidatePathMock.mockReset();
   deleteStoredFileMock.mockReset();
@@ -297,7 +307,7 @@ describe("submitExpenseReportAction", () => {
 
     expect(result).toEqual({
       ok: false,
-      error: "Ajoutez au moins un Remboursement daté avant de soumettre.",
+      error: "Ajoutez au moins une Dépense datée avant de soumettre.",
     });
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
@@ -351,6 +361,153 @@ describe("submitExpenseReportAction", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/club-info/notes-de-frais/${valid.id}`,
     );
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("updateExpenseReportBeneficiaryAction", () => {
+  const reportId = "88888888-8888-4888-8888-888888888888";
+  const oldUserId = "11111111-1111-4111-8111-111111111111";
+  const newUserId = "22222222-2222-4222-8222-222222222222";
+  const storedIban = "FR7630006000011234567890189";
+
+  function beneficiaryData(overrides: Partial<Record<string, string>> = {}) {
+    return formData({
+      id: reportId,
+      assoSlug: "club-info",
+      beneficiaryKind: "MEMBER",
+      beneficiaryUserId: newUserId,
+      beneficiaryFirstname: "Nouvelle",
+      beneficiaryLastname: "Personne",
+      beneficiaryIban: "",
+      ...overrides,
+    });
+  }
+
+  it("ne réutilise jamais l'IBAN de l'ancien bénéficiaire pour un nouveau membre", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: reportId,
+      assoId: "asso-1",
+      status: "DRAFT",
+      beneficiaryUserId: oldUserId,
+      beneficiaryFirstname: "Ancienne",
+      beneficiaryLastname: "Personne",
+      beneficiaryIban: storedIban,
+    });
+    refAssoUserFindFirstMock.mockResolvedValue({
+      userId: newUserId,
+      user: { firstname: "Nouvelle", lastname: "Personne" },
+    });
+
+    const result = await updateExpenseReportBeneficiaryAction(
+      { ok: false },
+      beneficiaryData(),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Renseignez l'IBAN du nouveau bénéficiaire.",
+    });
+    expect(transactionMock).not.toHaveBeenCalled();
+  });
+
+  it("conserve l'IBAN existant quand l'identité du membre ne change pas", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: reportId,
+      assoId: "asso-1",
+      status: "DRAFT",
+      beneficiaryUserId: oldUserId,
+      beneficiaryFirstname: "Même",
+      beneficiaryLastname: "Personne",
+      beneficiaryIban: storedIban,
+    });
+    refAssoUserFindFirstMock.mockResolvedValue({
+      userId: oldUserId,
+      user: { firstname: "Même", lastname: "Personne" },
+    });
+
+    const result = await updateExpenseReportBeneficiaryAction(
+      { ok: false },
+      beneficiaryData({ beneficiaryUserId: oldUserId }),
+    );
+
+    expect(reportUpdateMock).toHaveBeenCalledWith({
+      where: { id: reportId },
+      data: {
+        beneficiaryUserId: oldUserId,
+        beneficiaryFirstname: "Même",
+        beneficiaryLastname: "Personne",
+        beneficiaryIban: storedIban,
+      },
+    });
+    expect(lineUpdateManyMock).toHaveBeenCalledWith({
+      where: { expenseReportId: reportId },
+      data: {
+        beneficiaryFirstname: "Même",
+        beneficiaryLastname: "Personne",
+        iban: storedIban,
+      },
+    });
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("submitExpenseReportWithBeneficiaryAction", () => {
+  const reportId = "99999999-9999-4999-8999-999999999999";
+  const oldUserId = "11111111-1111-4111-8111-111111111111";
+  const newUserId = "22222222-2222-4222-8222-222222222222";
+  const newIban = "FR1420041010050500013M02606";
+
+  it("enregistre le bénéficiaire visible et soumet la Note dans une seule transaction", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: reportId,
+      assoId: "asso-1",
+      status: "DRAFT",
+      beneficiaryUserId: oldUserId,
+      beneficiaryFirstname: "Ancienne",
+      beneficiaryLastname: "Personne",
+      beneficiaryIban: "FR7630006000011234567890189",
+    });
+    refAssoUserFindFirstMock.mockResolvedValue({
+      userId: newUserId,
+      user: { firstname: "Nouvelle", lastname: "Personne" },
+    });
+    lineCountMock.mockResolvedValue(1);
+    documentCountMock.mockResolvedValue(1);
+
+    const result = await submitExpenseReportWithBeneficiaryAction(
+      { ok: false },
+      formData({
+        id: reportId,
+        assoSlug: "club-info",
+        beneficiaryKind: "MEMBER",
+        beneficiaryUserId: newUserId,
+        beneficiaryFirstname: "Valeur ignorée",
+        beneficiaryLastname: "Valeur ignorée",
+        beneficiaryIban: newIban,
+      }),
+    );
+
+    expect(reportUpdateMock).toHaveBeenCalledWith({
+      where: { id: reportId },
+      data: {
+        beneficiaryUserId: newUserId,
+        beneficiaryFirstname: "Nouvelle",
+        beneficiaryLastname: "Personne",
+        beneficiaryIban: newIban,
+        status: "SUBMITTED",
+        submittedAt: expect.any(Date),
+      },
+    });
+    expect(lineUpdateManyMock).toHaveBeenCalledWith({
+      where: { expenseReportId: reportId },
+      data: {
+        beneficiaryFirstname: "Nouvelle",
+        beneficiaryLastname: "Personne",
+        iban: newIban,
+      },
+    });
+    expect(transactionMock).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ ok: true });
   });
 });

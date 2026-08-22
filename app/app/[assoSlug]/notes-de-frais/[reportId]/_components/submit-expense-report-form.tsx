@@ -58,7 +58,7 @@ export function SubmitExpenseReportForm({
         <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 text-sm">
           <dt className="text-base-content/70">Bénéficiaire</dt>
           <dd className="font-medium">{beneficiaryName}</dd>
-          <dt className="text-base-content/70">Remboursements</dt>
+          <dt className="text-base-content/70">Dépenses</dt>
           <dd className="font-medium">{reimbursementsCount}</dd>
           <dt className="text-base-content/70">Montant total</dt>
           <dd className="font-medium">{formatCents(totalAmountCents)}</dd>

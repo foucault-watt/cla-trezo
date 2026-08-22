@@ -1,19 +1,12 @@
-export const EXPENSE_REPORT_STEPS = [
-  "remboursements",
-  "justificatifs",
-  "beneficiaire",
-  "recapitulatif",
-] as const;
+export const EXPENSE_REPORT_STEPS = ["remboursements", "beneficiaire"] as const;
 
 export type ExpenseReportStep = (typeof EXPENSE_REPORT_STEPS)[number];
 
 export type ExpenseReportStepCompletion = Record<ExpenseReportStep, boolean>;
 
 export const EXPENSE_REPORT_STEP_LABELS: Record<ExpenseReportStep, string> = {
-  remboursements: "Remboursements",
-  justificatifs: "Justificatifs",
-  beneficiaire: "Bénéficiaire",
-  recapitulatif: "Récapitulatif",
+  remboursements: "Dépenses & justificatifs",
+  beneficiaire: "Bénéficiaire & envoi",
 };
 
 export function expenseReportStepHref(
@@ -24,12 +17,14 @@ export function expenseReportStepHref(
   return `/app/${assoSlug}/notes-de-frais/${reportId}/${step}`;
 }
 
+export function expenseReportSummaryHref(assoSlug: string, reportId: string) {
+  return `/app/${assoSlug}/notes-de-frais/${reportId}/recapitulatif`;
+}
+
 export function firstIncompleteExpenseReportStep(
   completion: ExpenseReportStepCompletion,
 ): ExpenseReportStep {
   return (
-    EXPENSE_REPORT_STEPS.find(
-      (step) => step !== "recapitulatif" && !completion[step],
-    ) ?? "recapitulatif"
+    EXPENSE_REPORT_STEPS.find((step) => !completion[step]) ?? "beneficiaire"
   );
 }

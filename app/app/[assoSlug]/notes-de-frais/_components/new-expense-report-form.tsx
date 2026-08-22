@@ -27,7 +27,7 @@ export function NewExpenseReportForm({ assoSlug }: { assoSlug: string }) {
       <input type="hidden" name="assoSlug" value={assoSlug} />
 
       <fieldset className="fieldset">
-        <legend className="fieldset-legend">Titre</legend>
+        <legend className="fieldset-legend">Nom de la Note de frais</legend>
         <input
           type="text"
           name="title"

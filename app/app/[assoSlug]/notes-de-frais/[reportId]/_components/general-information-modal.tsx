@@ -35,7 +35,7 @@ export function GeneralInformationModal({
     <>
       <button
         type="button"
-        className="btn btn-ghost btn-sm"
+        className="btn btn-neutral btn-soft btn-sm"
         onClick={() => modalRef.current?.open()}
       >
         <Pencil size={15} />

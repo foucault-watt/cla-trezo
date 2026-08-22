@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import {
   expenseReportStepHref,
+  expenseReportSummaryHref,
   firstIncompleteExpenseReportStep,
   loadExpenseReportWizard,
 } from "@/lib/expense-reports/expense-report-wizard";
@@ -15,6 +16,10 @@ export default async function ExpenseReportEntryPage({
   const step =
     context.editable && !context.legacyMultiBeneficiary
       ? firstIncompleteExpenseReportStep(context.completion)
-      : "recapitulatif";
-  redirect(expenseReportStepHref(assoSlug, reportId, step));
+      : null;
+  redirect(
+    step
+      ? expenseReportStepHref(assoSlug, reportId, step)
+      : expenseReportSummaryHref(assoSlug, reportId),
+  );
 }

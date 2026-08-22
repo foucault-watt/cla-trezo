@@ -291,7 +291,7 @@ describe("addExpenseReportLineAsAdminAction", () => {
     expect(lineCreateMock).toHaveBeenCalled();
     expect(result).toEqual({
       ok: true,
-      warnings: ["Ce Remboursement crée ou aggrave un solde négatif."],
+      warnings: ["Cette Dépense crée ou aggrave un solde négatif."],
     });
   });
 });
@@ -442,9 +442,7 @@ describe("updateExpenseReportLineAsAdminAction", () => {
     expect(lineUpdateMock).toHaveBeenCalled();
     expect(result).toEqual({
       ok: true,
-      warnings: [
-        "Ce Remboursement dépasse le montant restant de la Subvention.",
-      ],
+      warnings: ["Cette Dépense dépasse le montant restant de la Subvention."],
     });
   });
 

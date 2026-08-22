@@ -11,7 +11,7 @@ const STEPS: Step[] = [
   {
     kind: "text",
     label: "Compléter",
-    detail: "Justificatifs et Remboursements.",
+    detail: "Dépenses et justificatifs.",
   },
   {
     kind: "text",

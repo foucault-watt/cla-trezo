@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getExpenseReportDetail } from "./expense-reports";
 import {
   EXPENSE_REPORT_STEPS,
+  expenseReportSummaryHref,
   expenseReportStepHref,
   firstIncompleteExpenseReportStep,
   type ExpenseReportStep,
@@ -26,10 +27,8 @@ export function computeExpenseReportStepCompletion(report: {
     report.beneficiaryIbanLast4,
   );
   return {
-    remboursements: reimbursements,
-    justificatifs: supportingDocuments,
+    remboursements: reimbursements && supportingDocuments,
     beneficiaire: beneficiary,
-    recapitulatif: reimbursements && supportingDocuments && beneficiary,
   };
 }
 
@@ -64,13 +63,9 @@ export function guardExpenseReportWizardStep(
   assoSlug: string,
   reportId: string,
 ) {
-  if (
-    step !== "recapitulatif" &&
-    (!context.editable || context.legacyMultiBeneficiary)
-  ) {
-    redirect(expenseReportStepHref(assoSlug, reportId, "recapitulatif"));
+  if (!context.editable || context.legacyMultiBeneficiary) {
+    redirect(expenseReportSummaryHref(assoSlug, reportId));
   }
-  if (step === "recapitulatif" && context.legacyMultiBeneficiary) return;
 
   const firstIncomplete = firstIncompleteExpenseReportStep(context.completion);
   if (
@@ -80,4 +75,19 @@ export function guardExpenseReportWizardStep(
   ) {
     redirect(expenseReportStepHref(assoSlug, reportId, firstIncomplete));
   }
+}
+
+export function guardExpenseReportSummary(
+  context: Awaited<ReturnType<typeof loadExpenseReportWizard>>,
+  assoSlug: string,
+  reportId: string,
+) {
+  if (!context.editable || context.legacyMultiBeneficiary) return;
+  redirect(
+    expenseReportStepHref(
+      assoSlug,
+      reportId,
+      firstIncompleteExpenseReportStep(context.completion),
+    ),
+  );
 }

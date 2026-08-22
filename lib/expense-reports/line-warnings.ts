@@ -9,9 +9,9 @@ export type LineWarningCode =
   "NEGATIVE_BALANCE" | "SUBVENTION_OVERAGE" | "STALE_SUBVENTION";
 
 export const LINE_WARNING_MESSAGES: Record<LineWarningCode, string> = {
-  NEGATIVE_BALANCE: "Ce Remboursement crée ou aggrave un solde négatif.",
+  NEGATIVE_BALANCE: "Cette Dépense crée ou aggrave un solde négatif.",
   SUBVENTION_OVERAGE:
-    "Ce Remboursement dépasse le montant restant de la Subvention.",
+    "Cette Dépense dépasse le montant restant de la Subvention.",
   STALE_SUBVENTION:
     "La Subvention utilisée date de plus d'un an ; elle sera probablement refusée.",
 };

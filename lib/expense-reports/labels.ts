@@ -34,7 +34,7 @@ export const expenseReportStatusBadgeClass: Record<
   ExpenseReportStatus,
   string
 > = {
-  DRAFT: "badge-ghost",
+  DRAFT: "badge-neutral",
   SUBMITTED: "badge-info",
   TAKEN_OVER: "badge-warning",
   FINALIZED: "badge-success",
@@ -43,7 +43,7 @@ export const expenseReportStatusBadgeClass: Record<
 
 export const expenseReportStatusDotClass: Record<ExpenseReportStatus, string> =
   {
-    DRAFT: "bg-base-content/40",
+    DRAFT: "bg-neutral",
     SUBMITTED: "bg-info",
     TAKEN_OVER: "bg-warning",
     FINALIZED: "bg-success",

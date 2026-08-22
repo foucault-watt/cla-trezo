@@ -78,6 +78,99 @@ export async function createExpenseReportAction(
 
 export type UpdateExpenseReportState = { ok: boolean; error?: string };
 
+type BeneficiaryFormValues = {
+  beneficiaryKind: "MEMBER" | "CUSTOM";
+  beneficiaryUserId: string | null;
+  beneficiaryFirstname: string;
+  beneficiaryLastname: string;
+  beneficiaryIban: string;
+};
+
+type ExistingBeneficiary = {
+  beneficiaryUserId: string | null;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
+  beneficiaryIban: string | null;
+};
+
+type ResolvedBeneficiary =
+  | {
+      ok: true;
+      beneficiary: {
+        userId: string | null;
+        firstname: string;
+        lastname: string;
+        iban: string;
+      };
+    }
+  | { ok: false; error: string };
+
+function normalizedIdentityPart(value: string | null) {
+  return value?.trim().toLocaleLowerCase("fr-FR") ?? "";
+}
+
+/**
+ * Résout personne + IBAN comme un seul invariant. Un IBAN existant ne peut
+ * être réutilisé que si l'identité n'a pas changé ; cela évite d'associer le
+ * compte bancaire d'un ancien bénéficiaire au nom d'un nouveau.
+ */
+async function resolveExpenseReportBeneficiary({
+  input,
+  assoId,
+  existing,
+}: {
+  input: BeneficiaryFormValues;
+  assoId: string;
+  existing: ExistingBeneficiary;
+}): Promise<ResolvedBeneficiary> {
+  let userId: string | null = null;
+  let firstname = input.beneficiaryFirstname;
+  let lastname = input.beneficiaryLastname;
+  let sameIdentity = false;
+
+  if (input.beneficiaryKind === "MEMBER") {
+    const membership = await prisma.refAssoUser.findFirst({
+      where: {
+        assoId,
+        userId: input.beneficiaryUserId as string,
+        isActive: true,
+      },
+      select: {
+        userId: true,
+        user: { select: { firstname: true, lastname: true } },
+      },
+    });
+    if (!membership) {
+      return { ok: false, error: "Membre introuvable ou inactif." };
+    }
+    userId = membership.userId;
+    firstname = membership.user.firstname;
+    lastname = membership.user.lastname;
+    sameIdentity = existing.beneficiaryUserId === membership.userId;
+  } else {
+    sameIdentity =
+      existing.beneficiaryUserId === null &&
+      normalizedIdentityPart(existing.beneficiaryFirstname) ===
+        normalizedIdentityPart(firstname) &&
+      normalizedIdentityPart(existing.beneficiaryLastname) ===
+        normalizedIdentityPart(lastname);
+  }
+
+  const iban =
+    input.beneficiaryIban || (sameIdentity ? existing.beneficiaryIban : null);
+  if (!iban) {
+    return {
+      ok: false,
+      error: "Renseignez l'IBAN du nouveau bénéficiaire.",
+    };
+  }
+
+  return {
+    ok: true,
+    beneficiary: { userId, firstname, lastname, iban },
+  };
+}
+
 export async function updateExpenseReportAction(
   _prevState: UpdateExpenseReportState,
   formData: FormData,
@@ -187,7 +280,7 @@ export async function submitExpenseReportAction(
   if (lineCount === 0 || lineCount !== allLineCount) {
     return {
       ok: false,
-      error: "Ajoutez au moins un Remboursement daté avant de soumettre.",
+      error: "Ajoutez au moins une Dépense datée avant de soumettre.",
     };
   }
 
@@ -209,6 +302,114 @@ export async function submitExpenseReportAction(
 
   revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
 
+  return { ok: true };
+}
+
+/**
+ * Soumet la Note avec le bénéficiaire actuellement affiché dans le formulaire.
+ * L'identité, l'IBAN, les colonnes historiques des lignes et le statut sont
+ * écrits dans une seule transaction : la soumission ne peut donc jamais partir
+ * avec un bénéficiaire plus ancien resté en base.
+ */
+export async function submitExpenseReportWithBeneficiaryAction(
+  _prevState: SubmitExpenseReportState,
+  formData: FormData,
+): Promise<SubmitExpenseReportState> {
+  const parsed = parseUpdateExpenseReportBeneficiaryForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const report = await prisma.expenseReport.findUnique({
+    where: { id: parsed.data.id },
+    select: {
+      id: true,
+      assoId: true,
+      status: true,
+      beneficiaryUserId: true,
+      beneficiaryFirstname: true,
+      beneficiaryLastname: true,
+      beneficiaryIban: true,
+    },
+  });
+  if (!report || report.assoId !== structure.assoId) {
+    return { ok: false, error: "Note de frais introuvable." };
+  }
+
+  try {
+    assertExpenseReportTransition({
+      from: report.status,
+      to: "SUBMITTED",
+      actor: { type: "STRUCTURE", assoId: structure.assoId },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
+    return {
+      ok: false,
+      error: "Cette Note de frais n'est plus en Brouillon.",
+    };
+  }
+
+  const resolved = await resolveExpenseReportBeneficiary({
+    input: parsed.data,
+    assoId: structure.assoId,
+    existing: report,
+  });
+  if (!resolved.ok) return resolved;
+
+  const [datedLineCount, allLineCount, documentCount] = await Promise.all([
+    prisma.expenseReportLine.count({
+      where: { expenseReportId: report.id, expenseDate: { not: null } },
+    }),
+    prisma.expenseReportLine.count({
+      where: { expenseReportId: report.id },
+    }),
+    prisma.supportingDocument.count({
+      where: { expenseReportId: report.id },
+    }),
+  ]);
+  if (datedLineCount === 0 || datedLineCount !== allLineCount) {
+    return {
+      ok: false,
+      error: "Ajoutez au moins une Dépense datée avant de soumettre.",
+    };
+  }
+  if (documentCount === 0) {
+    return {
+      ok: false,
+      error:
+        "Ajoutez au moins un Justificatif ou une Attestation sur l'honneur avant de soumettre.",
+    };
+  }
+
+  const { beneficiary } = resolved;
+  await prisma.$transaction([
+    prisma.expenseReport.update({
+      where: { id: report.id },
+      data: {
+        beneficiaryUserId: beneficiary.userId,
+        beneficiaryFirstname: beneficiary.firstname,
+        beneficiaryLastname: beneficiary.lastname,
+        beneficiaryIban: beneficiary.iban,
+        status: "SUBMITTED",
+        submittedAt: new Date(),
+      },
+    }),
+    prisma.expenseReportLine.updateMany({
+      where: { expenseReportId: report.id },
+      data: {
+        beneficiaryFirstname: beneficiary.firstname,
+        beneficiaryLastname: beneficiary.lastname,
+        iban: beneficiary.iban,
+      },
+    }),
+  ]);
+
+  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
   return { ok: true };
 }
 
@@ -387,7 +588,7 @@ export async function updateReimbursementAction(
     },
   });
   if (!line || line.expenseReport.assoId !== structure.assoId) {
-    return { ok: false, error: "Remboursement introuvable.", values };
+    return { ok: false, error: "Dépense introuvable.", values };
   }
   try {
     assertExpenseReportMutable({
@@ -458,7 +659,7 @@ export async function deleteReimbursementAction(
     },
   });
   if (!line || line.expenseReport.assoId !== structure.assoId) {
-    return { ok: false, error: "Remboursement introuvable." };
+    return { ok: false, error: "Dépense introuvable." };
   }
   try {
     assertExpenseReportMutable({
@@ -493,7 +694,15 @@ export async function updateExpenseReportBeneficiaryAction(
   const { structure } = await requireStructureAccess(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
-    select: { id: true, assoId: true, status: true, beneficiaryIban: true },
+    select: {
+      id: true,
+      assoId: true,
+      status: true,
+      beneficiaryUserId: true,
+      beneficiaryFirstname: true,
+      beneficiaryLastname: true,
+      beneficiaryIban: true,
+    },
   });
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
@@ -508,46 +717,30 @@ export async function updateExpenseReportBeneficiaryAction(
     return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
   }
 
-  let beneficiaryUserId: string | null = null;
-  let firstname = parsed.data.beneficiaryFirstname;
-  let lastname = parsed.data.beneficiaryLastname;
-  if (parsed.data.beneficiaryKind === "MEMBER") {
-    const membership = await prisma.refAssoUser.findFirst({
-      where: {
-        assoId: structure.assoId,
-        userId: parsed.data.beneficiaryUserId as string,
-        isActive: true,
-      },
-      select: {
-        userId: true,
-        user: { select: { firstname: true, lastname: true } },
-      },
-    });
-    if (!membership)
-      return { ok: false, error: "Membre introuvable ou inactif." };
-    beneficiaryUserId = membership.userId;
-    firstname = membership.user.firstname;
-    lastname = membership.user.lastname;
-  }
-  const iban = parsed.data.beneficiaryIban || report.beneficiaryIban;
-  if (!iban) return { ok: false, error: "L'IBAN est obligatoire." };
+  const resolved = await resolveExpenseReportBeneficiary({
+    input: parsed.data,
+    assoId: structure.assoId,
+    existing: report,
+  });
+  if (!resolved.ok) return resolved;
+  const { beneficiary } = resolved;
 
   await prisma.$transaction([
     prisma.expenseReport.update({
       where: { id: report.id },
       data: {
-        beneficiaryUserId,
-        beneficiaryFirstname: firstname,
-        beneficiaryLastname: lastname,
-        beneficiaryIban: iban,
+        beneficiaryUserId: beneficiary.userId,
+        beneficiaryFirstname: beneficiary.firstname,
+        beneficiaryLastname: beneficiary.lastname,
+        beneficiaryIban: beneficiary.iban,
       },
     }),
     prisma.expenseReportLine.updateMany({
       where: { expenseReportId: report.id },
       data: {
-        beneficiaryFirstname: firstname,
-        beneficiaryLastname: lastname,
-        iban,
+        beneficiaryFirstname: beneficiary.firstname,
+        beneficiaryLastname: beneficiary.lastname,
+        iban: beneficiary.iban,
       },
     }),
   ]);

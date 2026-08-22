@@ -9,7 +9,7 @@ import {
 import { formatCents } from "@/lib/money";
 import {
   expenseReportStepHref,
-  guardExpenseReportWizardStep,
+  guardExpenseReportSummary,
   loadExpenseReportWizard,
 } from "@/lib/expense-reports/expense-report-wizard";
 import { DeleteExpenseReportButton } from "../_components/delete-expense-report-button";
@@ -25,7 +25,7 @@ export default async function ExpenseReportSummaryPage({
 }) {
   const { assoSlug, reportId } = await params;
   const context = await loadExpenseReportWizard(assoSlug, reportId);
-  guardExpenseReportWizardStep(context, "recapitulatif", assoSlug, reportId);
+  guardExpenseReportSummary(context, assoSlug, reportId);
   const { report } = context;
   const total = report.lines.reduce((sum, line) => sum + line.amountCents, 0);
   const warnings = [...new Set(report.lines.flatMap((line) => line.warnings))];
@@ -112,7 +112,7 @@ export default async function ExpenseReportSummaryPage({
       </SummarySection>
 
       <SummarySection
-        title="Remboursements"
+        title="Dépenses"
         action={
           context.editable &&
           !context.legacyMultiBeneficiary && (
@@ -190,7 +190,7 @@ export default async function ExpenseReportSummaryPage({
           !context.legacyMultiBeneficiary && (
             <Link
               className="btn btn-ghost btn-sm"
-              href={expenseReportStepHref(assoSlug, reportId, "justificatifs")}
+              href={expenseReportStepHref(assoSlug, reportId, "remboursements")}
             >
               <Pencil size={15} />
               Modifier
@@ -221,7 +221,8 @@ export default async function ExpenseReportSummaryPage({
             reportId={reportId}
             title={report.title}
           />
-          {context.completion.recapitulatif &&
+          {context.completion.remboursements &&
+            context.completion.beneficiaire &&
             !context.legacyMultiBeneficiary && (
               <SubmitExpenseReportForm
                 assoSlug={assoSlug}

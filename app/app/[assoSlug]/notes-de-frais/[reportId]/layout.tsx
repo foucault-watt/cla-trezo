@@ -5,6 +5,7 @@ import {
 } from "@/lib/expense-reports/labels";
 import { loadExpenseReportWizard } from "@/lib/expense-reports/expense-report-wizard";
 import { ExpenseReportStepper } from "./_components/expense-report-stepper";
+import { GeneralInformationModal } from "./_components/general-information-modal";
 
 export default async function ExpenseReportWizardLayout({
   children,
@@ -34,11 +35,21 @@ export default async function ExpenseReportWizardLayout({
             </p>
           )}
         </div>
-        <span
-          className={`badge ${expenseReportStatusBadgeClass[report.status]}`}
-        >
-          {expenseReportStatusLabel[report.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          {context.editable && !context.legacyMultiBeneficiary && (
+            <GeneralInformationModal
+              assoSlug={assoSlug}
+              reportId={reportId}
+              title={report.title}
+              description={report.description}
+            />
+          )}
+          <span
+            className={`badge ${expenseReportStatusBadgeClass[report.status]}`}
+          >
+            {expenseReportStatusLabel[report.status]}
+          </span>
+        </div>
       </div>
       {!context.editable && report.status === "TAKEN_OVER" && (
         <div role="status" className="alert alert-info alert-soft mt-5">
@@ -46,12 +57,14 @@ export default async function ExpenseReportWizardLayout({
           disponible en lecture seule.
         </div>
       )}
-      <ExpenseReportStepper
-        assoSlug={assoSlug}
-        reportId={reportId}
-        completion={context.completion}
-        editable={context.editable}
-      />
+      {context.editable && !context.legacyMultiBeneficiary && (
+        <ExpenseReportStepper
+          assoSlug={assoSlug}
+          reportId={reportId}
+          completion={context.completion}
+          editable={context.editable}
+        />
+      )}
       <div className="mt-5">{children}</div>
     </div>
   );

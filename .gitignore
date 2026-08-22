@@ -49,6 +49,8 @@ next-env.d.ts
 /tmp/pdfs/*
 !/tmp/pdfs/.gitkeep
 /tmp/screenshots/*
+/.impeccable/review/
+/tmp/next-dev-*.log
 
 # uploaded invoice/receipt files (local disk storage)
 /uploads/*

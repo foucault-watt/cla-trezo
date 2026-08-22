@@ -1,17 +1,19 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
 import {
-  Check,
-  ChevronDown,
-  Coins,
-  HandCoins,
-  History,
-  Pencil,
+  startTransition,
+  useActionState,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+import {
+  CheckCircle2,
+  CircleAlert,
   Plus,
   Trash2,
   TriangleAlert,
-  Wallet,
   X,
 } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -47,6 +49,8 @@ type EditorValues = {
   fundingChoice: string;
 };
 
+type ReimbursementAction = typeof addReimbursementAction;
+
 function toDateInput(date: Date | null) {
   return date ? date.toISOString().slice(0, 10) : "";
 }
@@ -65,193 +69,93 @@ function initialValues(line?: ExpenseReportLineDetail): EditorValues {
   };
 }
 
-function SubventionOption({
-  subvention,
-  selected,
-  onSelect,
-}: {
-  subvention: VisibleSubvention;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`rounded-box border-2 p-3 text-left transition-colors ${
-        selected
-          ? "border-primary bg-primary/5"
-          : "border-base-300 hover:border-primary/50"
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-sm font-medium">
-          <Coins size={14} className="shrink-0" />
-          {subvention.campaignName} · {subvention.reason}
-        </span>
-        {subvention.stale && (
-          <span className="badge badge-warning badge-sm shrink-0">
-            + d&apos;1 an
-          </span>
-        )}
-      </div>
-      <span className="text-xs text-base-content/60">
-        {formatCents(subvention.remainingAmountCents)} restants
-      </span>
-    </button>
+function editorValuesSignature(values: EditorValues) {
+  return JSON.stringify(values);
+}
+
+function editorValuesAreComplete(values: EditorValues) {
+  return Boolean(
+    values.expenseDate &&
+    values.expenseName.trim() &&
+    values.typeChoice &&
+    (values.typeChoice !== CUSTOM_TYPE || values.customLabel.trim()) &&
+    values.fundingChoice &&
+    Number(values.amount) > 0,
   );
 }
 
-/**
- * Sélecteur de source de financement (T11) : ouvre une modale plutôt que
- * d'imbriquer 2 gros boutons + une liste de Subventions dans la cellule
- * compacte de la ligne d'édition. Les Subventions de plus d'un an (`stale`,
- * cf. lib/expense-reports/line-warnings.ts) restent sélectionnables mais
- * repliées par défaut derrière "Voir les Subventions plus anciennes" — celles
- * de plus de 2 ans ont déjà disparu de `visibleSubventions` en amont.
- */
-function FundingSourceField({
+function FundingSourceSelect({
+  formId,
   value,
   onChange,
   assoType,
   visibleSubventions,
   soldeView,
 }: {
+  formId: string;
   value: string;
   onChange: (value: string) => void;
   assoType: AssoType | null;
   visibleSubventions: VisibleSubvention[];
   soldeView: SoldeView;
 }) {
-  const modalRef = useRef<ModalHandle>(null);
-  const [panel, setPanel] = useState<FundingSourceType | null>(null);
-  const [showStale, setShowStale] = useState(false);
-
-  const selectedSubvention = value.startsWith("SUBVENTION:")
-    ? visibleSubventions.find((s) => s.id === value.slice("SUBVENTION:".length))
-    : undefined;
-
-  const label =
-    value === "CLUB_BALANCE"
-      ? fundingSourceLabel.CLUB_BALANCE
-      : selectedSubvention
-        ? `${selectedSubvention.campaignName} · ${selectedSubvention.reason}`
-        : "Choisir";
-
-  const freshSubventions = visibleSubventions.filter((s) => !s.stale);
-  const staleSubventions = visibleSubventions.filter((s) => s.stale);
-
-  function openModal() {
-    setPanel(
-      value === "CLUB_BALANCE"
-        ? null
-        : value.startsWith("SUBVENTION:") || assoType !== "CLUB"
-          ? "SUBVENTION"
-          : null,
-    );
-    setShowStale(Boolean(selectedSubvention?.stale));
-    modalRef.current?.open();
-  }
-
-  function selectSubvention(id: string) {
-    onChange(`SUBVENTION:${id}`);
-    modalRef.current?.close();
-  }
-
-  function selectClubBalance() {
-    onChange("CLUB_BALANCE");
-    modalRef.current?.close();
-  }
+  const freshSubventions = visibleSubventions.filter(
+    (subvention) => !subvention.stale,
+  );
+  const staleSubventions = visibleSubventions.filter(
+    (subvention) => subvention.stale,
+  );
 
   return (
-    <>
-      <button
-        type="button"
-        className="btn btn-outline btn-sm w-full justify-between font-normal"
-        onClick={openModal}
-      >
-        <span className="truncate">{label}</span>
-        <ChevronDown size={14} className="shrink-0 opacity-60" />
-      </button>
-      <Modal ref={modalRef} title="Source de financement">
-        <div className="flex flex-col gap-4">
-          {assoType === "CLUB" && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={selectClubBalance}
-                className={`card cursor-pointer border-2 p-4 text-left ${
-                  value === "CLUB_BALANCE"
-                    ? "border-primary bg-primary/5"
-                    : "border-base-300 hover:border-primary/50"
-                }`}
-              >
-                <span className="flex items-center gap-1.5 text-sm font-medium">
-                  <Wallet size={16} />
-                  {fundingSourceLabel.CLUB_BALANCE}
-                </span>
-                {soldeView.status === "ready" && (
-                  <span className="block text-xs text-base-content/60">
-                    {formatCents(soldeView.balanceCents)} disponibles
-                  </span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPanel("SUBVENTION")}
-                className={`card cursor-pointer border-2 p-4 text-left ${
-                  panel === "SUBVENTION"
-                    ? "border-primary bg-primary/5"
-                    : "border-base-300 hover:border-primary/50"
-                }`}
-              >
-                <span className="flex items-center gap-1.5 text-sm font-medium">
-                  <HandCoins size={16} />
-                  Subvention
-                </span>
-              </button>
-            </div>
-          )}
-
-          {panel === "SUBVENTION" && (
-            <div className="flex flex-col gap-2">
-              {freshSubventions.length === 0 &&
-                staleSubventions.length === 0 && (
-                  <p className="text-sm text-base-content/70">
-                    Aucune Subvention disponible.
-                  </p>
-                )}
-              {(showStale
-                ? [...freshSubventions, ...staleSubventions]
-                : freshSubventions
-              ).map((subvention) => (
-                <SubventionOption
-                  key={subvention.id}
-                  subvention={subvention}
-                  selected={value === `SUBVENTION:${subvention.id}`}
-                  onSelect={() => selectSubvention(subvention.id)}
-                />
-              ))}
-              {staleSubventions.length > 0 && !showStale && (
-                <button
-                  type="button"
-                  className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
-                  onClick={() => setShowStale(true)}
-                >
-                  <History size={13} />
-                  Voir {staleSubventions.length} Subvention
-                  {staleSubventions.length > 1 ? "s" : ""} de plus d&apos;un an
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </Modal>
-    </>
+    <select
+      form={formId}
+      className="select select-sm min-w-48 w-full"
+      required
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      aria-label="Source de financement"
+    >
+      <option value="" disabled>
+        Choisir
+      </option>
+      {assoType === "CLUB" && (
+        <option value="CLUB_BALANCE">
+          {fundingSourceLabel.CLUB_BALANCE}
+          {soldeView.status === "ready"
+            ? ` · ${formatCents(soldeView.balanceCents)} disponibles`
+            : ""}
+        </option>
+      )}
+      {freshSubventions.length > 0 && (
+        <optgroup label="Subventions">
+          {freshSubventions.map((subvention) => (
+            <option key={subvention.id} value={`SUBVENTION:${subvention.id}`}>
+              {subvention.campaignName} · {subvention.reason} ·{" "}
+              {formatCents(subvention.remainingAmountCents)} restants
+            </option>
+          ))}
+        </optgroup>
+      )}
+      {staleSubventions.length > 0 && (
+        <optgroup label="Subventions de plus d’un an">
+          {staleSubventions.map((subvention) => (
+            <option key={subvention.id} value={`SUBVENTION:${subvention.id}`}>
+              {subvention.campaignName} · {subvention.reason} ·{" "}
+              {formatCents(subvention.remainingAmountCents)} restants
+            </option>
+          ))}
+        </optgroup>
+      )}
+    </select>
   );
 }
 
-function ReimbursementEditor({
+/**
+ * Une ligne reste en permanence éditable : aucun mode « Modifier ». Chaque
+ * cellule est un vrai champ ; une saisie complète est enregistrée après un
+ * court délai, au changement de ligne ou immédiatement avec Entrée.
+ */
+function EditableReimbursementRow({
   action,
   assoSlug,
   expenseReportId,
@@ -260,9 +164,10 @@ function ReimbursementEditor({
   typeDepenses,
   visibleSubventions,
   soldeView,
-  onClose,
+  deleteAction,
+  onCreated,
 }: {
-  action: typeof addReimbursementAction;
+  action: ReimbursementAction;
   assoSlug: string;
   expenseReportId: string;
   line?: ExpenseReportLineDetail;
@@ -270,198 +175,406 @@ function ReimbursementEditor({
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
   soldeView: SoldeView;
-  onClose: () => void;
+  deleteAction: typeof deleteReimbursementAction;
+  onCreated?: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialFormState);
-  const [fields, setFields] = useState(() => initialValues(line));
-  const [lastHandledState, setLastHandledState] = useState(state);
-  if (state !== lastHandledState) {
-    setLastHandledState(state);
-    if (state.ok) onClose();
+  const formId = `reimbursement-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+  const initialFields = initialValues(line);
+  const initialSavedSignature = line
+    ? editorValuesSignature(initialFields)
+    : "";
+  const formRef = useRef<HTMLFormElement>(null);
+  const latestFieldsRef = useRef(initialFields);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveInFlightRef = useRef(false);
+  const saveQueuedRef = useRef(false);
+  const lastSavedSignatureRef = useRef(initialSavedSignature);
+  const [lastSavedSignature, setLastSavedSignature] = useState(
+    initialSavedSignature,
+  );
+  const [state, formAction, pending] = useActionState(
+    async (previousState: ReimbursementFormState, formData: FormData) => {
+      const submittedSignature = String(
+        formData.get("clientValuesSignature") ?? "",
+      );
+      const result = await action(previousState, formData);
+      saveInFlightRef.current = false;
+      if (result.ok) {
+        lastSavedSignatureRef.current = submittedSignature;
+        setLastSavedSignature(submittedSignature);
+        if (!line) {
+          onCreated?.();
+          return result;
+        }
+      }
+      const latestSignature = editorValuesSignature(latestFieldsRef.current);
+      if (
+        saveQueuedRef.current ||
+        (result.ok && latestSignature !== submittedSignature)
+      ) {
+        saveQueuedRef.current = false;
+        setTimeout(requestSave, 0);
+      }
+      return result;
+    },
+    initialFormState,
+  );
+  const [fields, setFields] = useState(initialFields);
+  const deleteModalRef = useRef<ModalHandle>(null);
+  const [deleteState, deleteFormAction, deletePending] = useActionState(
+    deleteAction,
+    initialFormState,
+  );
+  useModalAutoClose(deleteModalRef, deleteState.ok);
+
+  useEffect(
+    () => () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    },
+    [],
+  );
+
+  function requestSave() {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const current = latestFieldsRef.current;
+    const signature = editorValuesSignature(current);
+    if (
+      !editorValuesAreComplete(current) ||
+      signature === lastSavedSignatureRef.current
+    ) {
+      return;
+    }
+    if (saveInFlightRef.current) {
+      saveQueuedRef.current = true;
+      return;
+    }
+    submitCurrentForm();
+  }
+
+  function submitCurrentForm() {
+    const form = formRef.current;
+    if (!form) return;
+    saveInFlightRef.current = true;
+    startTransition(() => formAction(new FormData(form)));
+  }
+
+  function updateFields(next: EditorValues) {
+    latestFieldsRef.current = next;
+    setFields(next);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (editorValuesAreComplete(next)) {
+      saveTimerRef.current = setTimeout(requestSave, 650);
+    }
   }
 
   const [fundingSource, subventionId = ""] = fields.fundingChoice.split(
     ":",
   ) as [FundingSourceType | "", string?];
+  const currentSignature = editorValuesSignature(fields);
+  const complete = editorValuesAreComplete(fields);
+  const dirty = currentSignature !== lastSavedSignature;
 
   return (
-    <form
-      action={formAction}
-      className="grid gap-3 py-2 md:grid-cols-2 xl:grid-cols-[9rem_1fr_12rem_1fr_9rem_auto] xl:items-end"
-    >
-      {line ? (
-        <input type="hidden" name="id" value={line.id} />
-      ) : (
-        <input type="hidden" name="expenseReportId" value={expenseReportId} />
-      )}
-      <input type="hidden" name="assoSlug" value={assoSlug} />
-      <input type="hidden" name="fundingSource" value={fundingSource} />
-      <input type="hidden" name="subventionId" value={subventionId} />
-      {fields.typeChoice !== CUSTOM_TYPE && (
-        <input type="hidden" name="typeDepenseId" value={fields.typeChoice} />
-      )}
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Date</legend>
-        <DatePicker
-          size="sm"
-          name="expenseDate"
-          value={fields.expenseDate}
-          onChange={(expenseDate) => setFields({ ...fields, expenseDate })}
-        />
-      </fieldset>
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Dépense</legend>
-        <input
-          className="input input-sm w-full"
-          name="expenseName"
-          required
-          placeholder="Taxi gare Lille Flandres"
-          value={fields.expenseName}
-          onChange={(event) =>
-            setFields({ ...fields, expenseName: event.target.value })
+    <>
+      <tr
+        className={line ? "group" : "bg-primary/5"}
+        onBlurCapture={(event) => {
+          const nextTarget = event.relatedTarget as Node | null;
+          if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
+            requestSave();
           }
-        />
-      </fieldset>
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Type</legend>
-        <select
-          className="select select-sm w-full"
-          required
-          value={fields.typeChoice}
-          onChange={(event) =>
-            setFields({ ...fields, typeChoice: event.target.value })
-          }
-        >
-          <option value="" disabled>
-            Choisir
-          </option>
-          {typeDepenses.map((type) => (
-            <option key={type.id} value={type.id}>
-              {type.label}
-            </option>
-          ))}
-          <option value={CUSTOM_TYPE}>Autre</option>
-        </select>
-        {fields.typeChoice === CUSTOM_TYPE && (
+        }}
+      >
+        <td className="min-w-36 align-top">
+          <form
+            ref={formRef}
+            id={formId}
+            action={formAction}
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+              submitCurrentForm();
+            }}
+          >
+            {line ? (
+              <input type="hidden" name="id" value={line.id} />
+            ) : (
+              <input
+                type="hidden"
+                name="expenseReportId"
+                value={expenseReportId}
+              />
+            )}
+            <input type="hidden" name="assoSlug" value={assoSlug} />
+            <input type="hidden" name="fundingSource" value={fundingSource} />
+            <input type="hidden" name="subventionId" value={subventionId} />
+            <input
+              type="hidden"
+              name="clientValuesSignature"
+              value={currentSignature}
+            />
+            {fields.typeChoice !== CUSTOM_TYPE && (
+              <input
+                type="hidden"
+                name="typeDepenseId"
+                value={fields.typeChoice}
+              />
+            )}
+            <DatePicker
+              size="sm"
+              name="expenseDate"
+              value={fields.expenseDate}
+              onChange={(expenseDate) =>
+                updateFields({ ...latestFieldsRef.current, expenseDate })
+              }
+            />
+          </form>
+        </td>
+        <td className="min-w-52 align-top">
           <input
-            className="input input-sm mt-1 w-full"
-            name="customLabel"
+            form={formId}
+            className="input input-sm w-full"
+            name="expenseName"
             required
-            placeholder="Préciser"
-            value={fields.customLabel}
+            autoFocus={!line}
+            placeholder="Nouvelle dépense"
+            value={fields.expenseName}
             onChange={(event) =>
-              setFields({ ...fields, customLabel: event.target.value })
+              updateFields({
+                ...latestFieldsRef.current,
+                expenseName: event.target.value,
+              })
             }
           />
-        )}
-      </fieldset>
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Financement</legend>
-        <FundingSourceField
-          value={fields.fundingChoice}
-          onChange={(value) => setFields({ ...fields, fundingChoice: value })}
-          assoType={assoType}
-          visibleSubventions={visibleSubventions}
-          soldeView={soldeView}
-        />
-      </fieldset>
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Montant (€)</legend>
-        <input
-          className="input input-sm w-full"
-          type="number"
-          name="amount"
-          min="0.01"
-          step="0.01"
-          required
-          value={fields.amount}
-          onChange={(event) =>
-            setFields({ ...fields, amount: event.target.value })
-          }
-        />
-      </fieldset>
-      <div className="flex gap-1 pb-1">
-        <button
-          type="submit"
-          className="btn btn-ghost btn-square btn-sm text-success"
-          disabled={pending || !fields.fundingChoice || !fields.expenseDate}
-          aria-label="Enregistrer le Remboursement"
-        >
-          {pending ? (
-            <span className="loading loading-spinner loading-xs" />
-          ) : (
-            <Check size={17} />
+        </td>
+        <td className="min-w-44 align-top">
+          <select
+            form={formId}
+            className="select select-sm w-full"
+            required
+            aria-label="Type de dépense"
+            value={fields.typeChoice}
+            onChange={(event) =>
+              updateFields({
+                ...latestFieldsRef.current,
+                typeChoice: event.target.value,
+              })
+            }
+          >
+            <option value="" disabled>
+              Choisir
+            </option>
+            {typeDepenses.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.label}
+              </option>
+            ))}
+            <option value={CUSTOM_TYPE}>Autre (à préciser)</option>
+          </select>
+          {fields.typeChoice === CUSTOM_TYPE && (
+            <input
+              form={formId}
+              className="input input-sm mt-1 w-full"
+              name="customLabel"
+              required
+              placeholder="Préciser le type"
+              value={fields.customLabel}
+              onChange={(event) =>
+                updateFields({
+                  ...latestFieldsRef.current,
+                  customLabel: event.target.value,
+                })
+              }
+            />
           )}
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost btn-square btn-sm"
-          onClick={onClose}
-          aria-label="Annuler"
-        >
-          <X size={17} />
-        </button>
-      </div>
+        </td>
+        <td className="min-w-56 align-top">
+          <FundingSourceSelect
+            formId={formId}
+            value={fields.fundingChoice}
+            onChange={(fundingChoice) =>
+              updateFields({ ...latestFieldsRef.current, fundingChoice })
+            }
+            assoType={assoType}
+            visibleSubventions={visibleSubventions}
+            soldeView={soldeView}
+          />
+        </td>
+        <td className="min-w-28 align-top">
+          <label className="input input-sm flex w-full items-center gap-1">
+            <input
+              form={formId}
+              className="min-w-0 grow text-right tabular-nums outline-none"
+              type="number"
+              name="amount"
+              min="0.01"
+              step="0.01"
+              required
+              aria-label="Montant en euros"
+              value={fields.amount}
+              onChange={(event) =>
+                updateFields({
+                  ...latestFieldsRef.current,
+                  amount: event.target.value,
+                })
+              }
+            />
+            <span className="text-base-content/50">€</span>
+          </label>
+        </td>
+        <td className="min-w-20 align-top">
+          {line?.warnings.length ? (
+            <div
+              className="tooltip tooltip-left"
+              data-tip={line.warnings.join(" · ")}
+            >
+              <span
+                className="badge badge-warning gap-1"
+                aria-label={line.warnings.join(" ")}
+              >
+                <TriangleAlert size={12} />
+                {line.warnings.length}
+              </span>
+            </div>
+          ) : (
+            <span className="text-base-content/30">—</span>
+          )}
+        </td>
+        <td className="min-w-24 align-top">
+          <div className="flex items-center justify-end gap-1">
+            {line ? (
+              <button
+                type="button"
+                className="btn btn-ghost btn-square btn-sm text-error opacity-50 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                onClick={() => deleteModalRef.current?.open()}
+                aria-label={`Supprimer ${line.expenseName}`}
+              >
+                <Trash2 size={15} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost btn-square btn-sm"
+                onClick={onCreated}
+                aria-label="Annuler l’ajout"
+              >
+                <X size={17} />
+              </button>
+            )}
+            <span className="flex size-8 items-center justify-center">
+              {pending ? (
+                <span
+                  className="loading loading-spinner loading-xs text-info"
+                  role="status"
+                  aria-label="Enregistrement en cours"
+                />
+              ) : !state.ok && state.error ? (
+                <CircleAlert
+                  size={16}
+                  className="text-error"
+                  role="img"
+                  aria-label="Échec de l’enregistrement"
+                />
+              ) : !complete && dirty ? (
+                <TriangleAlert
+                  size={16}
+                  className="text-warning"
+                  role="img"
+                  aria-label="Ligne à compléter"
+                />
+              ) : !dirty && line ? (
+                <CheckCircle2
+                  size={16}
+                  className="text-success"
+                  role="img"
+                  aria-label="Ligne enregistrée"
+                />
+              ) : null}
+            </span>
+          </div>
+        </td>
+      </tr>
       {!state.ok && state.error && (
-        <div
-          role="alert"
-          className="alert alert-error alert-soft alert-sm md:col-span-2 xl:col-span-6"
-        >
-          {state.error}
-        </div>
+        <tr>
+          <td colSpan={7} className="pt-0">
+            <div role="alert" className="alert alert-error alert-soft py-2">
+              {state.error}
+            </div>
+          </td>
+        </tr>
       )}
-    </form>
+      {line && (
+        <Modal
+          ref={deleteModalRef}
+          title={`Supprimer la dépense « ${line.expenseName} » ?`}
+        >
+          <p className="text-sm text-base-content/80">
+            Cette action est définitive.
+          </p>
+          {!deleteState.ok && deleteState.error && (
+            <div role="alert" className="alert alert-error alert-soft mt-4">
+              {deleteState.error}
+            </div>
+          )}
+          <form action={deleteFormAction} className="modal-action">
+            <input type="hidden" name="id" value={line.id} />
+            <input type="hidden" name="assoSlug" value={assoSlug} />
+            <button
+              type="button"
+              className="btn"
+              onClick={() => deleteModalRef.current?.close()}
+            >
+              <X size={16} />
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="btn btn-error"
+              disabled={deletePending}
+            >
+              {deletePending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Supprimer
+                </>
+              )}
+            </button>
+          </form>
+        </Modal>
+      )}
+    </>
   );
 }
 
-function ReimbursementCells({ line }: { line: ExpenseReportLineDetail }) {
+function ReadOnlyReimbursementRow({ line }: { line: ExpenseReportLineDetail }) {
   return (
-    <>
-      <td className="flex justify-between gap-4 md:table-cell">
-        <span className="font-medium md:hidden">Date</span>
-        {line.expenseDate ? dateFormatter.format(line.expenseDate) : "—"}
+    <tr>
+      <td>{line.expenseDate ? dateFormatter.format(line.expenseDate) : "—"}</td>
+      <td className="font-medium">{line.expenseName}</td>
+      <td>{line.typeDepenseLabel ?? line.customLabel}</td>
+      <td>
+        {line.fundingSource === "SUBVENTION"
+          ? line.subventionReason
+          : fundingSourceLabel[line.fundingSource]}
       </td>
-      <td className="flex justify-between gap-4 md:table-cell">
-        <span className="font-medium md:hidden">Dépense</span>
-        <span className="text-right md:text-left">{line.expenseName}</span>
-      </td>
-      <td className="flex justify-between gap-4 md:table-cell">
-        <span className="font-medium md:hidden">Type</span>
-        {line.typeDepenseLabel ?? line.customLabel}
-      </td>
-      <td className="flex justify-between gap-4 md:table-cell">
-        <span className="font-medium md:hidden">Financement</span>
-        <span className="text-right">
-          {line.fundingSource === "SUBVENTION"
-            ? line.subventionReason
-            : fundingSourceLabel[line.fundingSource]}
-        </span>
-      </td>
-      <td className="flex justify-between gap-4 md:table-cell md:text-right">
-        <span className="font-medium md:hidden">Montant</span>
-        {formatCents(line.amountCents)}
-      </td>
-      <td className="flex justify-between gap-4 md:table-cell">
-        <span className="font-medium md:hidden">Alertes</span>
+      <td className="text-right">{formatCents(line.amountCents)}</td>
+      <td>
         {line.warnings.length ? (
-          <div
-            className="tooltip tooltip-left md:tooltip-top"
-            data-tip={line.warnings.join(" · ")}
+          <span
+            className="badge badge-warning gap-1"
+            aria-label={line.warnings.join(" ")}
           >
-            <span
-              className="badge badge-warning gap-1"
-              aria-label={line.warnings.join(" ")}
-            >
-              <TriangleAlert size={12} />
-              {line.warnings.length}
-            </span>
-          </div>
+            <TriangleAlert size={12} />
+            {line.warnings.length}
+          </span>
         ) : (
           "—"
         )}
       </td>
-    </>
+      <td />
+    </tr>
   );
 }
 
@@ -490,212 +603,113 @@ export function ReimbursementsTable({
   updateAction?: typeof updateReimbursementAction;
   deleteAction?: typeof deleteReimbursementAction;
 }) {
-  const [editingId, setEditingId] = useState<string | "new" | null>(null);
+  const [adding, setAdding] = useState(false);
   const total = lines.reduce((sum, line) => sum + line.amountCents, 0);
   const warningCount = lines.filter((line) => line.warnings.length > 0).length;
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto md:rounded-box md:border md:border-base-300">
-        <table className="table block md:table">
-          <thead className="hidden md:table-header-group">
-            <tr>
-              <th>Date</th>
-              <th>Dépense</th>
-              <th>Type</th>
-              <th>Financement</th>
-              <th className="text-right">Montant</th>
-              <th>Alertes</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody className="block space-y-3 md:table-row-group md:space-y-0">
-            {lines.length === 0 && editingId !== "new" && (
-              <tr className="block md:table-row">
-                <td
-                  colSpan={7}
-                  className="block text-base-content/60 md:table-cell"
-                >
-                  Aucun Remboursement pour l&apos;instant.
-                </td>
+      {lines.length === 0 && !adding ? (
+        <div className="flex flex-col gap-4 rounded-field bg-base-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold">Aucune dépense pour l&apos;instant</p>
+            <p className="mt-1 text-sm text-base-content/70">
+              Commencez par ajouter la première dépense de cette Note.
+            </p>
+          </div>
+          {editable && (
+            <button
+              type="button"
+              className="btn btn-primary shrink-0"
+              onClick={() => setAdding(true)}
+            >
+              <Plus size={16} />
+              Ajouter une dépense
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+          <table className="table min-w-[70rem]">
+            <thead className="bg-base-200/70">
+              <tr>
+                <th>Date</th>
+                <th>Dépense</th>
+                <th>Type</th>
+                <th>Financement</th>
+                <th className="text-right">Montant</th>
+                <th>Alertes</th>
+                <th />
               </tr>
-            )}
-            {lines.map((line) => (
-              <ReimbursementRow
-                key={line.id}
-                line={line}
-                editing={editingId === line.id}
-                setEditing={(editing) => setEditingId(editing ? line.id : null)}
-                assoSlug={assoSlug}
-                expenseReportId={expenseReportId}
-                assoType={assoType}
-                typeDepenses={typeDepenses}
-                visibleSubventions={visibleSubventions}
-                soldeView={soldeView}
-                editable={
-                  editable && (editingId === null || editingId === line.id)
-                }
-                updateAction={updateAction}
-                deleteAction={deleteAction}
-              />
-            ))}
-            {editingId === "new" && (
-              <tr className="block rounded-box border border-primary/30 bg-primary/5 md:table-row">
-                <td colSpan={7} className="block md:table-cell">
-                  <ReimbursementEditor
-                    action={addAction}
+            </thead>
+            <tbody>
+              {lines.map((line) =>
+                editable ? (
+                  <EditableReimbursementRow
+                    key={line.id}
+                    action={updateAction}
                     assoSlug={assoSlug}
                     expenseReportId={expenseReportId}
+                    line={line}
                     assoType={assoType}
                     typeDepenses={typeDepenses}
                     visibleSubventions={visibleSubventions}
                     soldeView={soldeView}
-                    onClose={() => setEditingId(null)}
+                    deleteAction={deleteAction}
                   />
-                </td>
+                ) : (
+                  <ReadOnlyReimbursementRow key={line.id} line={line} />
+                ),
+              )}
+              {editable && adding && (
+                <EditableReimbursementRow
+                  action={addAction}
+                  assoSlug={assoSlug}
+                  expenseReportId={expenseReportId}
+                  assoType={assoType}
+                  typeDepenses={typeDepenses}
+                  visibleSubventions={visibleSubventions}
+                  soldeView={soldeView}
+                  deleteAction={deleteAction}
+                  onCreated={() => setAdding(false)}
+                />
+              )}
+              {editable && !adding && (
+                <tr>
+                  <td colSpan={7} className="p-0">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-block justify-start rounded-none text-base-content/70"
+                      onClick={() => setAdding(true)}
+                    >
+                      <Plus size={16} />
+                      Ajouter une dépense
+                    </button>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th className="text-right" colSpan={4}>
+                  Total
+                </th>
+                <th className="text-right">{formatCents(total)}</th>
+                <th colSpan={2} />
               </tr>
-            )}
-            {editable && editingId === null && (
-              <tr className="block md:table-row">
-                <td colSpan={7} className="block p-0 md:table-cell">
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-block justify-start rounded-none text-base-content/70"
-                    onClick={() => setEditingId("new")}
-                  >
-                    <Plus size={16} />
-                    Nouveau Remboursement
-                  </button>
-                </td>
-              </tr>
-            )}
-          </tbody>
-          <tfoot className="block md:table-footer-group">
-            <tr className="flex justify-between md:table-row">
-              <th className="md:text-right" colSpan={4}>
-                Total
-              </th>
-              <th className="text-right">{formatCents(total)}</th>
-              <th colSpan={2} />
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+            </tfoot>
+          </table>
+        </div>
+      )}
       {warningCount > 0 && (
         <div role="status" className="alert alert-warning alert-soft">
           <TriangleAlert size={18} />
           <span>
-            {warningCount} remboursement(s) comportent une alerte. Cela ne
-            bloque pas la soumission.
+            {warningCount} dépense(s) comportent une alerte. Cela ne bloque pas
+            la soumission.
           </span>
         </div>
       )}
     </div>
-  );
-}
-
-function ReimbursementRow(props: {
-  line: ExpenseReportLineDetail;
-  editing: boolean;
-  setEditing: (editing: boolean) => void;
-  assoSlug: string;
-  expenseReportId: string;
-  assoType: AssoType | null;
-  typeDepenses: TypeDepenseOption[];
-  visibleSubventions: VisibleSubvention[];
-  soldeView: SoldeView;
-  editable: boolean;
-  updateAction: typeof updateReimbursementAction;
-  deleteAction: typeof deleteReimbursementAction;
-}) {
-  const deleteModalRef = useRef<ModalHandle>(null);
-  const [deleteState, deleteFormAction, deletePending] = useActionState(
-    props.deleteAction,
-    { ok: false },
-  );
-  useModalAutoClose(deleteModalRef, deleteState.ok);
-
-  return (
-    <>
-      <tr className="block rounded-box border border-base-300 bg-base-100 md:table-row md:rounded-none md:border-0">
-        <ReimbursementCells line={props.line} />
-        <td className="flex justify-end gap-1 md:table-cell">
-          <button
-            type="button"
-            className="btn btn-ghost btn-square btn-xs"
-            disabled={!props.editable}
-            onClick={() => props.setEditing(!props.editing)}
-            aria-label="Modifier"
-          >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-square btn-xs text-error"
-            disabled={!props.editable}
-            onClick={() => deleteModalRef.current?.open()}
-            aria-label="Supprimer"
-          >
-            <Trash2 size={15} />
-          </button>
-          <Modal
-            ref={deleteModalRef}
-            title={`Supprimer le remboursement « ${props.line.expenseName} » ?`}
-          >
-            <p className="text-sm text-base-content/80">
-              Cette action est définitive.
-            </p>
-            {!deleteState.ok && deleteState.error && (
-              <div role="alert" className="alert alert-error alert-soft mt-4">
-                {deleteState.error}
-              </div>
-            )}
-            <form action={deleteFormAction} className="modal-action">
-              <input type="hidden" name="id" value={props.line.id} />
-              <input type="hidden" name="assoSlug" value={props.assoSlug} />
-              <button
-                type="button"
-                className="btn"
-                onClick={() => deleteModalRef.current?.close()}
-              >
-                <X size={16} />
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="btn btn-error"
-                disabled={deletePending}
-              >
-                {deletePending ? (
-                  <span className="loading loading-spinner loading-sm" />
-                ) : (
-                  <>
-                    <Trash2 size={16} />
-                    Supprimer
-                  </>
-                )}
-              </button>
-            </form>
-          </Modal>
-        </td>
-      </tr>
-      {props.editing && (
-        <tr className="block rounded-box border border-primary/30 bg-primary/5 md:table-row">
-          <td colSpan={7} className="block md:table-cell">
-            <ReimbursementEditor
-              action={props.updateAction}
-              assoSlug={props.assoSlug}
-              expenseReportId={props.expenseReportId}
-              line={props.line}
-              assoType={props.assoType}
-              typeDepenses={props.typeDepenses}
-              visibleSubventions={props.visibleSubventions}
-              soldeView={props.soldeView}
-              onClose={() => props.setEditing(false)}
-            />
-          </td>
-        </tr>
-      )}
-    </>
   );
 }

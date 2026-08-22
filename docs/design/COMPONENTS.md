@@ -4,6 +4,29 @@ Living notes on UI decisions, captured from `/prototype` sessions so we don't
 re-litigate them each time. Update this file whenever a prototype session
 lands on a direction; don't restate things daisyUI's own docs already cover.
 
+## Expense report creation workflow
+
+- Two guided tabs: **Dépenses & justificatifs**, then **Bénéficiaire & envoi**.
+- Justificatifs stay directly below the reimbursement grid; there is no recap
+  step during creation. Submission, draft deletion and back navigation live on
+  the beneficiary tab.
+- Editable reimbursement rows are direct-entry spreadsheet rows. Never require
+  a preliminary “Modifier” action: inputs and selects are always visible. A
+  complete row autosaves after a short idle delay or when focus leaves it;
+  Enter saves immediately.
+- Keep save feedback icon-only beside the row actions, after delete: DaisyUI
+  Info loader while saving, Success check when saved, Warning when incomplete,
+  and Error on failure. The Alerts column is only for business warnings.
+- In the creation flow, call reimbursement rows “Dépenses”. When the grid is
+  empty, replace its irrelevant columns and zero total with a contrasted add
+  prompt. The upload drop zone sits directly in the Justificatifs section;
+  never wrap it in a second bordered card.
+- The former recap page is retained only as a read-only detail for historical
+  or no-longer-editable reports.
+- Beneficiary and IBAN also autosave as one unit. Changing the beneficiary
+  never reuses the previous person's IBAN, and submission persists the visible
+  beneficiary together with the status transition in one transaction.
+
 ## Navigation — sidebar + drawer
 
 Decided over two other options (top navbar + dropdown, sidebar + bottom dock).
@@ -36,6 +59,7 @@ Text length varies (`À jour` vs `Attention` vs `Bloqué`), so if it leads a
 row-based layout, every column after it shifts per-row and nothing lines up.
 
 Two ways to respect this:
+
 - Put a **fixed-width indicator** first instead — a small colored dot
   (`size-2.5 rounded-full bg-{success,warning,error}`), never text.
 - Put the **full text badge last** in the row — trailing width changes
@@ -53,6 +77,7 @@ shadows on everything: border + shadow with no background contrast reads as
 barely-there.
 
 The fix is a three-step ladder, applied consistently:
+
 - **Canvas** (`bg-base-200`) — set once, at the layout level
   (`components/nav/sidebar-drawer.tsx`'s `<main>`), not per-page. This is the
   "floor" everything else sits on.
@@ -61,7 +86,7 @@ The fix is a three-step ladder, applied consistently:
   visually solid, the border gives it a crisp edge, the shadow lifts it off
   the canvas. Missing any one of the three and it looks flat again.
 - **Divider / zebra** (`base-300` for borders and dividers, `base-200` for
-  zebra-striping *inside* an already-elevated surface) — reserve `base-300`
+  zebra-striping _inside_ an already-elevated surface) — reserve `base-300`
   for lines that need to be visible against either base-100 or base-200.
 
 Don't stack tinted wrappers (e.g. a `bg-base-200/60` div around a grid of

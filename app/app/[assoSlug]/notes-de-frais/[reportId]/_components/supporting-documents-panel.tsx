@@ -333,13 +333,11 @@ export function SupportingDocumentsPanel({
   return (
     <div className="flex flex-col gap-4">
       {editable && (
-        <div className="card border border-base-300 bg-base-100">
-          <div className="card-body gap-3">
-            {lockedType === null && showTypeToggle && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(
-                  Object.keys(documentTypeLabel) as SupportingDocumentType[]
-                ).map((type) => (
+        <div className="flex flex-col gap-3">
+          {lockedType === null && showTypeToggle && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(Object.keys(documentTypeLabel) as SupportingDocumentType[]).map(
+                (type) => (
                   <label
                     key={type}
                     className={`card cursor-pointer border-2 p-4 ${
@@ -363,28 +361,28 @@ export function SupportingDocumentsPanel({
                       {documentTypeLabel[type]}
                     </span>
                   </label>
-                ))}
-              </div>
-            )}
+                ),
+              )}
+            </div>
+          )}
 
-            <UploadForm
-              key={activeType}
-              assoSlug={assoSlug}
-              reportId={reportId}
-              documentType={activeType}
-              multiple={activeType === "RECEIPT"}
-            />
-            {lockedType === null && !showTypeToggle && (
-              <button
-                type="button"
-                className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
-                onClick={() => honorStatementModalRef.current?.open()}
-              >
-                <CircleHelp size={13} />
-                Je n&apos;ai pas de facture
-              </button>
-            )}
-          </div>
+          <UploadForm
+            key={activeType}
+            assoSlug={assoSlug}
+            reportId={reportId}
+            documentType={activeType}
+            multiple={activeType === "RECEIPT"}
+          />
+          {lockedType === null && !showTypeToggle && (
+            <button
+              type="button"
+              className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
+              onClick={() => honorStatementModalRef.current?.open()}
+            >
+              <CircleHelp size={13} />
+              Je n&apos;ai pas de facture
+            </button>
+          )}
         </div>
       )}
 

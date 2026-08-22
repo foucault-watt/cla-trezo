@@ -15,25 +15,39 @@ export default async function BeneficiaryPage({
   const context = await loadExpenseReportWizard(assoSlug, reportId);
   guardExpenseReportWizardStep(context, "beneficiaire", assoSlug, reportId);
   const members = await listActiveAssoMembers(context.assoId);
+  const { report } = context;
+  const totalAmountCents = report.lines.reduce(
+    (sum, line) => sum + line.amountCents,
+    0,
+  );
+  const warnings = [...new Set(report.lines.flatMap((line) => line.warnings))];
+
   return (
-    <section>
-      <div className="mb-5">
+    <section className="space-y-5">
+      <div>
         <h2 className="text-xl font-semibold">Bénéficiaire</h2>
         <p className="mt-1 text-sm text-base-content/70">
-          Une Note de frais rembourse une seule personne.
+          Indiquez qui recevra le remboursement, puis envoyez la demande.
         </p>
       </div>
+
       <BeneficiaryForm
         assoSlug={assoSlug}
         reportId={reportId}
         members={members}
         beneficiary={{
-          userId: context.report.beneficiaryUserId,
-          firstname: context.report.beneficiaryFirstname,
-          lastname: context.report.beneficiaryLastname,
-          ibanLast4: context.report.beneficiaryIbanLast4,
+          userId: report.beneficiaryUserId,
+          firstname: report.beneficiaryFirstname,
+          lastname: report.beneficiaryLastname,
+          ibanLast4: report.beneficiaryIbanLast4,
         }}
-        backHref={expenseReportStepHref(assoSlug, reportId, "justificatifs")}
+        reportStatus={report.status}
+        reportTitle={report.title}
+        reimbursementsCount={report.lines.length}
+        totalAmountCents={totalAmountCents}
+        documentsCount={report.supportingDocuments.length}
+        warnings={warnings}
+        backHref={expenseReportStepHref(assoSlug, reportId, "remboursements")}
       />
     </section>
   );

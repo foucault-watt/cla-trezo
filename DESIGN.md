@@ -123,7 +123,7 @@ Ces quatre couleurs ne décorent jamais l'interface : elles signalent exclusivem
 
 ### Named Rules
 
-**The Status Color Contract Rule.** Chaque statut de Note de frais a une couleur et une seule, appliquée identiquement à son badge et à sa pastille, dans tout le produit (vue Structure et vue Admin) : Brouillon = neutre (`badge-ghost`), Soumise = Bleu Info, Prise en charge = Orange Avertissement, Validée = Vert Succès, Rejetée = Rouge Erreur. N'introduire aucune variation locale de cette table.
+**The Status Color Contract Rule.** Chaque statut de Note de frais a une couleur et une seule, appliquée identiquement à son badge et à sa pastille, dans tout le produit (vue Structure et vue Admin) : Brouillon = Neutre soutenu (`badge-neutral` / `bg-neutral`), Soumise = Bleu Info, Prise en charge = Orange Avertissement, Validée = Vert Succès, Rejetée = Rouge Erreur. N'introduire aucune variation locale de cette table.
 
 **The Honey Continuity Rule.** Le thème sombre (« dim ») ne reprend pas la palette DaisyUI standard : le Primary et le Warning y sont retravaillés vers la même famille de teinte chaude (doré/ambre, teintes ~38–49°) que le thème clair, pour que l'identité « Jaune Bourdon » survive au changement de thème plutôt que de céder la place à un vert générique.
 
@@ -185,16 +185,24 @@ Le vocabulaire de composants est presque entièrement DaisyUI 5 non surchargé (
 
 ### Badges (statut)
 
-- **Style:** `badge` plein pour les statuts de Note de frais (voir Status Color Contract Rule) ; `badge-outline badge-sm` pour les montants par source de financement (Solde / Subvention) sur un bénéficiaire.
+- **Style:** `badge` plein pour les statuts de Note de frais (voir Status Color Contract Rule), y compris un `badge-neutral` soutenu pour Brouillon ; `badge-outline badge-sm` pour les montants par source de financement (Solde / Subvention) sur un bénéficiaire.
 - **Pastille compagnon:** un point de 0.625rem (`size-2.5 rounded-full`) porte la même couleur que le badge dans les vues liste — redondance délibérée pour un balayage visuel plus rapide qu'un badge texte seul.
 
 ### Stats
 
 - **Style:** `stats` DaisyUI (`stats-vertical` mobile → `sm:stats-horizontal`), toujours dans une carte bordée. Valeur en `stat-value text-2xl`, viré en Rouge Erreur uniquement quand elle signale une anomalie à traiter (ex. « Types à définir »).
 
-### Steps (signature)
+### Guided tabs (signature)
 
-Composant `steps` DaisyUI utilisé pour le parcours de Note de frais (Remboursements → Justificatifs → Bénéficiaire → Récapitulatif). L'étape active passe en Jaune Bourdon (`step-primary`, texte `font-semibold text-primary`) ; les étapes non encore accessibles restent en `text-base-content/40`. Toute la zone rond + trait est cliquable (lien invisible superposé), pas seulement le libellé.
+Navigation en deux cartes pour le parcours de création d'une Note de frais : **Dépenses & justificatifs → Bénéficiaire & envoi**. L'onglet actif porte une bordure et un fond Jaune Bourdon légers ; l'onglet non encore accessible reste en `text-base-content/40`. Toute la carte est cliquable. Le récapitulatif n'est pas une étape de création : il reste une vue de consultation pour les notes non modifiables ou historiques.
+
+Sur la seconde étape, bénéficiaire et IBAN forment une seule unité enregistrée automatiquement. Un changement de personne impose son propre IBAN : celui du bénéficiaire précédent n'est jamais repris. La soumission écrit les valeurs visibles et le changement de statut dans une même transaction.
+
+### Editable expense grid (signature)
+
+Les dépenses modifiables sont toujours affichées comme une grille de saisie directe : date, libellé, type, financement et montant sont éditables dans les cellules, sans bouton ni mode « Modifier ». Une ligne complète est enregistrée automatiquement après un court temps d'inactivité ou dès qu'on la quitte ; Entrée force l'enregistrement immédiat. L'état de sauvegarde reste iconographique, à droite de l'action de suppression : loader Info pendant l'écriture, coche Success une fois enregistrée, Warning pour une ligne incomplète et Error en cas d'échec. La colonne Alertes reste réservée aux alertes métier. Sans dépense, les colonnes et le total disparaissent au profit d'un appel à l'action contrasté. L'ajout ouvre une ligne vide dans la même grille ; la lecture seule retrouve des cellules textuelles ordinaires.
+
+Dans l'étape de création, la zone de dépôt des Justificatifs est posée directement dans la carte de section : aucun conteneur bordé intermédiaire ne doit doubler la zone en pointillés.
 
 ### Modal (signature)
 
