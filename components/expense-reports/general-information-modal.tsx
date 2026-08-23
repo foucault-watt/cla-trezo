@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Save, X } from "lucide-react";
 import {
   Modal,
   useModalAutoClose,
@@ -73,13 +73,17 @@ export function GeneralInformationModal({
               className="btn"
               onClick={() => modalRef.current?.close()}
             >
+              <X size={16} />
               Annuler
             </button>
             <button className="btn btn-primary" disabled={pending}>
               {pending ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
-                "Enregistrer"
+                <>
+                  <Save size={16} />
+                  Enregistrer
+                </>
               )}
             </button>
           </div>

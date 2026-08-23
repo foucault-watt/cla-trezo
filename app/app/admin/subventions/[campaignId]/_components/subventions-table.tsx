@@ -70,7 +70,7 @@ export function SubventionsTable({
                   onClick={() => setIsAdding(true)}
                 >
                   <Plus size={16} />
-                  Nouvelle ligne
+                  Ajouter une ligne
                 </button>
               </td>
             </tr>

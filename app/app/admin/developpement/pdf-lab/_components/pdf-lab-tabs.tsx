@@ -4,9 +4,10 @@ import { useState } from "react";
 import type { SubsidyConventionPdfData } from "@/pdf-lab/templates/convention/types";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import { ConventionPdfLabEditor } from "./convention-pdf-lab-editor";
+import { IconUsageTab } from "./icon-usage-tab";
 import { PdfLabEditor } from "./pdf-lab-editor";
 
-type PdfLabTab = "expense-report" | "subsidy-convention";
+type PdfLabTab = "expense-report" | "subsidy-convention" | "icon-usage";
 
 export function PdfLabTabs({
   expenseReportData,
@@ -38,12 +39,23 @@ export function PdfLabTabs({
         >
           Convention de subvention
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "icon-usage"}
+          className={`tab ${activeTab === "icon-usage" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("icon-usage")}
+        >
+          Icônes
+        </button>
       </div>
 
       {activeTab === "expense-report" ? (
         <PdfLabEditor initialData={expenseReportData} />
-      ) : (
+      ) : activeTab === "subsidy-convention" ? (
         <ConventionPdfLabEditor initialData={subsidyConventionData} />
+      ) : (
+        <IconUsageTab />
       )}
     </div>
   );

@@ -16,7 +16,7 @@ import { requireAdmin } from "@/lib/auth/guards";
 const navItems = [
   {
     href: "/app/admin",
-    label: "Tableau de bord",
+    label: "Dashboard",
     icon: <LayoutDashboard size={18} />,
   },
   {

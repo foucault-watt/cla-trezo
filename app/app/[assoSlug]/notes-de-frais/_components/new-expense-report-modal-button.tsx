@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { Plus } from "lucide-react";
 import { Modal, type ModalHandle } from "@/components/ui/modal";
 import { NewExpenseReportForm } from "./new-expense-report-form";
 
@@ -18,6 +19,7 @@ export function NewExpenseReportModalButton({
         className="btn btn-primary"
         onClick={() => modalRef.current?.open()}
       >
+        <Plus size={16} />
         Nouvelle Note de frais
       </button>
       <Modal ref={modalRef} title="Nouvelle Note de frais">

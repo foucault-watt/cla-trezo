@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Building2, Code2, Cookie, Server, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Code2,
+  Cookie,
+  Server,
+  ShieldCheck,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const sections = [
@@ -228,6 +235,7 @@ export default function MentionsLegalesPage() {
 
           <div className="mt-4">
             <Link href="/" className="btn btn-primary btn-sm">
+              <ArrowLeft size={16} />
               Retour à l&apos;accueil
             </Link>
           </div>

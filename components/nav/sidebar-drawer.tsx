@@ -34,7 +34,11 @@ export function SidebarDrawer({
       <input id="app-nav-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-1 flex-col bg-base-200">
         <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3 lg:hidden">
-          <label htmlFor="app-nav-drawer" className="btn btn-square btn-ghost btn-sm drawer-button">
+          <label
+            htmlFor="app-nav-drawer"
+            aria-label="Ouvrir le menu"
+            className="btn btn-square btn-ghost btn-sm drawer-button"
+          >
             <Menu size={18} />
           </label>
           <Image src="/logo.png" alt="" width={24} height={24} className="rounded-sm" />

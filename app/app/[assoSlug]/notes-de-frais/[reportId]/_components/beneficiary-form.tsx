@@ -9,6 +9,7 @@ import {
   TriangleAlert,
   User,
   UserPlus,
+  X,
 } from "lucide-react";
 import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
 import {
@@ -220,13 +221,17 @@ function SubmitCurrentBeneficiaryForm({
             className="btn"
             onClick={() => modalRef.current?.close()}
           >
+            <X size={16} />
             Annuler
           </button>
           <button className="btn btn-primary" disabled={pending}>
             {pending ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (
-              "Soumettre la note"
+              <>
+                <Send size={16} />
+                Soumettre la note
+              </>
             )}
           </button>
         </form>

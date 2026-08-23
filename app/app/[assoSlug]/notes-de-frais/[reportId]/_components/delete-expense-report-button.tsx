@@ -38,7 +38,7 @@ export function DeleteExpenseReportButton({
         onClick={() => modalRef.current?.open()}
       >
         <Trash2 size={16} />
-        Annuler la création
+        Supprimer
       </button>
       <Modal ref={modalRef} title="Supprimer cette Note de frais ?">
         <p className="text-sm text-base-content/80">

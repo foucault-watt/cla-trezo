@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Save } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   addManualMovementAction,
@@ -92,7 +93,10 @@ export function ManualMovementForm({
             {pending ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (
-              "Enregistrer"
+              <>
+                <Save size={16} />
+                Enregistrer
+              </>
             )}
           </button>
         </form>

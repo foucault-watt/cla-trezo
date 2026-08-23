@@ -80,7 +80,7 @@ export function ConventionSettingsForm({
               }
             >
               <Plus size={16} />
-              Ajouter
+              Ajouter un représentant
             </button>
           </div>
 

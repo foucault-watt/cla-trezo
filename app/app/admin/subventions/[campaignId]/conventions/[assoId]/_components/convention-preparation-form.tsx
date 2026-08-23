@@ -102,7 +102,7 @@ function RepresentativesEditor({
           onClick={() => onChange([...representatives, { name: "", role: "" }])}
         >
           <Plus size={16} />
-          Ajouter
+          Ajouter un représentant
         </button>
       </div>
       {representatives.map((representative, index) => (

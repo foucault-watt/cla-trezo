@@ -24,7 +24,7 @@ export function BackToAppLink() {
       className="btn btn-ghost btn-sm w-full justify-start gap-2"
     >
       <ArrowLeftRight size={18} />
-      Mode application
+      Retour à l&apos;application
     </button>
   );
 }

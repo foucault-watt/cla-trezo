@@ -2,10 +2,9 @@
 
 import { useActionState, useRef, useState } from "react";
 import {
-  CircleHelp,
   FileText,
   Receipt,
-  ShieldCheck,
+  ScrollText,
   Trash2,
   UploadCloud,
   X,
@@ -374,7 +373,7 @@ export function SupportingDocumentsPanel({
                       {type === "RECEIPT" ? (
                         <Receipt size={16} />
                       ) : (
-                        <ShieldCheck size={16} />
+                        <ScrollText size={16} />
                       )}
                       {documentTypeLabel[type]}
                     </span>
@@ -398,7 +397,7 @@ export function SupportingDocumentsPanel({
               className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
               onClick={() => honorStatementModalRef.current?.open()}
             >
-              <CircleHelp size={13} />
+              <ScrollText size={13} />
               Je n&apos;ai pas de facture
             </button>
           )}
@@ -450,7 +449,7 @@ export function SupportingDocumentsPanel({
               honorStatementModalRef.current?.close();
             }}
           >
-            <ShieldCheck size={16} />
+            <ScrollText size={16} />
             Je n&apos;ai pas de facture
           </button>
         </div>

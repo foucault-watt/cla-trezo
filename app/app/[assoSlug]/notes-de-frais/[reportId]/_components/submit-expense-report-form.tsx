@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import { CheckCircle2, Send, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Send, TriangleAlert, X } from "lucide-react";
 import {
   Modal,
   useModalAutoClose,
@@ -97,13 +97,17 @@ export function SubmitExpenseReportForm({
             className="btn"
             onClick={() => modalRef.current?.close()}
           >
+            <X size={16} />
             Annuler
           </button>
           <button className="btn btn-primary" disabled={pending}>
             {pending ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (
-              "Soumettre la note"
+              <>
+                <Send size={16} />
+                Soumettre la note
+              </>
             )}
           </button>
         </form>

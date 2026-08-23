@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Pencil, Save, X } from "lucide-react";
 import {
   updateExpenseReportAction,
   type UpdateExpenseReportState,
@@ -47,6 +48,7 @@ export function EditExpenseReportForm({
             className="btn btn-secondary btn-sm"
             onClick={() => setEditing((value) => !value)}
           >
+            {editing ? <X size={16} /> : <Pencil size={16} />}
             {editing ? "Annuler" : "Modifier"}
           </button>
         </div>
@@ -93,7 +95,10 @@ export function EditExpenseReportForm({
               {pending ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
-                "Enregistrer"
+                <>
+                  <Save size={16} />
+                  Enregistrer
+                </>
               )}
             </button>
           </form>

@@ -83,6 +83,7 @@ export default async function ReimbursementsPage({
         ) : (
           <button className="btn btn-primary" disabled>
             Ajoutez une dépense et un justificatif pour continuer
+            <ArrowRight size={16} />
           </button>
         )}
       </div>

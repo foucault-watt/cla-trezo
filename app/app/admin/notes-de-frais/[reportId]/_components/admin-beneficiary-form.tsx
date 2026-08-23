@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CheckCircle2, User, UserPlus } from "lucide-react";
+import { CheckCircle2, Save, User, UserPlus } from "lucide-react";
 import type { AssoMember } from "@/lib/asso/members";
 import {
   updateExpenseReportBeneficiaryAsAdminAction,
@@ -195,7 +195,10 @@ export function AdminBeneficiaryForm({
           {pending ? (
             <span className="loading loading-spinner loading-sm" />
           ) : (
-            "Enregistrer"
+            <>
+              <Save size={16} />
+              Enregistrer
+            </>
           )}
         </button>
       </div>

@@ -5,7 +5,7 @@ import {
   LogOut,
   Receipt,
   HandCoins,
-  ShieldCheck,
+  ShieldUser,
   Sparkles,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -56,7 +56,7 @@ export default async function MemberLayout({
           className="btn btn-ghost btn-sm w-full justify-start gap-2"
         >
           <ArrowLeftRight size={18} />
-          Changer d&apos;Asso
+          Changer d&apos;association
         </Link>
       )}
       {!user.isDemo && user.isAdmin && (
@@ -64,7 +64,7 @@ export default async function MemberLayout({
           href="/app/admin"
           className="btn btn-ghost btn-sm w-full justify-start gap-2"
         >
-          <ShieldCheck size={18} />
+          <ShieldUser size={18} />
           Vue admin
         </Link>
       )}

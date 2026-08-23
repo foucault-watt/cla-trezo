@@ -9,7 +9,7 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <div className="mb-4">
-        <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="mt-1 text-sm text-base-content/70">
           Vue d&apos;ensemble de l&apos;activité de CLA.
         </p>
