@@ -10,12 +10,12 @@ const REPORT: ExpenseReportRow = {
   description: "Déplacement en car",
   status: "DRAFT",
   createdAt: new Date("2026-01-01"),
+  beneficiaryFirstname: "Jean",
+  beneficiaryLastname: "Dupont",
+  beneficiaryIban: "FR7630006000011234567890189",
   lines: [
     {
       id: "line-1",
-      beneficiaryFirstname: "Jean",
-      beneficiaryLastname: "Dupont",
-      iban: "FR7630006000011234567890189",
       amountCents: 4250,
       expenseName: "Billets de train",
       typeDepenseId: "type-1",
@@ -38,32 +38,24 @@ const REPORT: ExpenseReportRow = {
 };
 
 describe("mapExpenseReportToDetail", () => {
-  it("inclut l'IBAN quand includeAdminFields est vrai", () => {
+  it("inclut l'IBAN de la Note quand includeAdminFields est vrai", () => {
     const result = mapExpenseReportToDetail(REPORT, {
       includeAdminFields: true,
     });
 
-    expect(result.lines).toEqual([
-      {
-        id: "line-1",
-        beneficiaryFirstname: "Jean",
-        beneficiaryLastname: "Dupont",
-        iban: "FR7630006000011234567890189",
-        amountCents: 4250,
-        expenseDate: null,
-        expenseName: "Billets de train",
-        typeDepenseId: "type-1",
-        typeDepenseLabel: "Transport",
-        customLabel: null,
-        fundingSource: "SUBVENTION",
-        subventionId: "sub-1",
-        subventionReason: "Achat de matériel",
-        warnings: [],
-      },
-    ]);
+    expect(result.beneficiaryIban).toBe("FR7630006000011234567890189");
   });
 
-  it("masque l'IBAN quand includeAdminFields est faux", () => {
+  it("masque l'IBAN de la Note quand includeAdminFields est faux", () => {
+    const result = mapExpenseReportToDetail(REPORT, {
+      includeAdminFields: false,
+    });
+
+    expect(result.beneficiaryIban).toBeNull();
+    expect(result.beneficiaryIbanLast4).toBe("0189");
+  });
+
+  it("mappe les Lignes indépendamment du flag Admin", () => {
     const result = mapExpenseReportToDetail(REPORT, {
       includeAdminFields: false,
     });
@@ -71,9 +63,6 @@ describe("mapExpenseReportToDetail", () => {
     expect(result.lines).toEqual([
       {
         id: "line-1",
-        beneficiaryFirstname: "Jean",
-        beneficiaryLastname: "Dupont",
-        iban: null,
         amountCents: 4250,
         expenseDate: null,
         expenseName: "Billets de train",

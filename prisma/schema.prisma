@@ -221,9 +221,6 @@ model TypeDepense {
 model ExpenseReportLine {
   id                   String            @id @default(uuid()) @db.Uuid
   expenseReportId      String            @map("expense_report_id") @db.Uuid
-  beneficiaryFirstname String            @map("beneficiary_firstname")
-  beneficiaryLastname  String            @map("beneficiary_lastname")
-  iban                 String?
   amountCents          Int               @map("amount_cents")
   expenseDate          DateTime?         @map("expense_date") @db.Date
   expenseName          String            @map("expense_name")

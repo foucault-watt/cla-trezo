@@ -22,6 +22,21 @@ export function fundingSourceDetail(line: {
     : fundingSourceLabel[line.fundingSource];
 }
 
+/**
+ * Nom court du bénéficiaire pour les vues compactes (liste des Notes) :
+ * "Prénom N." — null si l'un des deux champs n'est pas encore renseigné
+ * (bénéficiaire pas encore choisi à l'étape dédiée du wizard).
+ */
+export function beneficiaryShortName(
+  firstname: string | null,
+  lastname: string | null,
+): string | null {
+  const trimmedFirstname = firstname?.trim();
+  const trimmedLastname = lastname?.trim();
+  if (!trimmedFirstname || !trimmedLastname) return null;
+  return `${trimmedFirstname} ${trimmedLastname.charAt(0).toUpperCase()}.`;
+}
+
 export const expenseReportStatusLabel: Record<ExpenseReportStatus, string> = {
   DRAFT: "Brouillon",
   SUBMITTED: "Soumise",

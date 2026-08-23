@@ -78,7 +78,7 @@ export async function createExpenseReportAction(
 
 export type UpdateExpenseReportState = { ok: boolean; error?: string };
 
-type BeneficiaryFormValues = {
+export type BeneficiaryFormValues = {
   beneficiaryKind: "MEMBER" | "CUSTOM";
   beneficiaryUserId: string | null;
   beneficiaryFirstname: string;
@@ -86,14 +86,14 @@ type BeneficiaryFormValues = {
   beneficiaryIban: string;
 };
 
-type ExistingBeneficiary = {
+export type ExistingBeneficiary = {
   beneficiaryUserId: string | null;
   beneficiaryFirstname: string | null;
   beneficiaryLastname: string | null;
   beneficiaryIban: string | null;
 };
 
-type ResolvedBeneficiary =
+export type ResolvedBeneficiary =
   | {
       ok: true;
       beneficiary: {
@@ -114,7 +114,7 @@ function normalizedIdentityPart(value: string | null) {
  * être réutilisé que si l'identité n'a pas changé ; cela évite d'associer le
  * compte bancaire d'un ancien bénéficiaire au nom d'un nouveau.
  */
-async function resolveExpenseReportBeneficiary({
+export async function resolveExpenseReportBeneficiary({
   input,
   assoId,
   existing,
@@ -307,9 +307,9 @@ export async function submitExpenseReportAction(
 
 /**
  * Soumet la Note avec le bénéficiaire actuellement affiché dans le formulaire.
- * L'identité, l'IBAN, les colonnes historiques des lignes et le statut sont
- * écrits dans une seule transaction : la soumission ne peut donc jamais partir
- * avec un bénéficiaire plus ancien resté en base.
+ * Identité, IBAN et statut sont écrits en une seule mise à jour : la
+ * soumission ne peut donc jamais partir avec un bénéficiaire plus ancien
+ * resté en base.
  */
 export async function submitExpenseReportWithBeneficiaryAction(
   _prevState: SubmitExpenseReportState,
@@ -387,27 +387,17 @@ export async function submitExpenseReportWithBeneficiaryAction(
   }
 
   const { beneficiary } = resolved;
-  await prisma.$transaction([
-    prisma.expenseReport.update({
-      where: { id: report.id },
-      data: {
-        beneficiaryUserId: beneficiary.userId,
-        beneficiaryFirstname: beneficiary.firstname,
-        beneficiaryLastname: beneficiary.lastname,
-        beneficiaryIban: beneficiary.iban,
-        status: "SUBMITTED",
-        submittedAt: new Date(),
-      },
-    }),
-    prisma.expenseReportLine.updateMany({
-      where: { expenseReportId: report.id },
-      data: {
-        beneficiaryFirstname: beneficiary.firstname,
-        beneficiaryLastname: beneficiary.lastname,
-        iban: beneficiary.iban,
-      },
-    }),
-  ]);
+  await prisma.expenseReport.update({
+    where: { id: report.id },
+    data: {
+      beneficiaryUserId: beneficiary.userId,
+      beneficiaryFirstname: beneficiary.firstname,
+      beneficiaryLastname: beneficiary.lastname,
+      beneficiaryIban: beneficiary.iban,
+      status: "SUBMITTED",
+      submittedAt: new Date(),
+    },
+  });
 
   revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
   return { ok: true };
@@ -496,14 +486,7 @@ export async function addReimbursementAction(
   const { structure } = await requireStructureAccess(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.expenseReportId },
-    select: {
-      id: true,
-      assoId: true,
-      status: true,
-      beneficiaryFirstname: true,
-      beneficiaryLastname: true,
-      beneficiaryIban: true,
-    },
+    select: { id: true, assoId: true, status: true },
   });
   if (!report || report.assoId !== structure.assoId) {
     return { ok: false, error: "Note de frais introuvable.", values };
@@ -541,9 +524,6 @@ export async function addReimbursementAction(
   await prisma.expenseReportLine.create({
     data: {
       expenseReportId: report.id,
-      beneficiaryFirstname: report.beneficiaryFirstname ?? "",
-      beneficiaryLastname: report.beneficiaryLastname ?? "",
-      iban: report.beneficiaryIban,
       expenseDate: parsed.data.expenseDate,
       amountCents,
       expenseName: parsed.data.expenseName,
@@ -576,15 +556,7 @@ export async function updateReimbursementAction(
     select: {
       id: true,
       expenseReportId: true,
-      expenseReport: {
-        select: {
-          assoId: true,
-          status: true,
-          beneficiaryFirstname: true,
-          beneficiaryLastname: true,
-          beneficiaryIban: true,
-        },
-      },
+      expenseReport: { select: { assoId: true, status: true } },
     },
   });
   if (!line || line.expenseReport.assoId !== structure.assoId) {
@@ -622,9 +594,6 @@ export async function updateReimbursementAction(
   await prisma.expenseReportLine.update({
     where: { id: line.id },
     data: {
-      beneficiaryFirstname: line.expenseReport.beneficiaryFirstname ?? "",
-      beneficiaryLastname: line.expenseReport.beneficiaryLastname ?? "",
-      iban: line.expenseReport.beneficiaryIban,
       expenseDate: parsed.data.expenseDate,
       amountCents,
       expenseName: parsed.data.expenseName,
@@ -725,25 +694,15 @@ export async function updateExpenseReportBeneficiaryAction(
   if (!resolved.ok) return resolved;
   const { beneficiary } = resolved;
 
-  await prisma.$transaction([
-    prisma.expenseReport.update({
-      where: { id: report.id },
-      data: {
-        beneficiaryUserId: beneficiary.userId,
-        beneficiaryFirstname: beneficiary.firstname,
-        beneficiaryLastname: beneficiary.lastname,
-        beneficiaryIban: beneficiary.iban,
-      },
-    }),
-    prisma.expenseReportLine.updateMany({
-      where: { expenseReportId: report.id },
-      data: {
-        beneficiaryFirstname: beneficiary.firstname,
-        beneficiaryLastname: beneficiary.lastname,
-        iban: beneficiary.iban,
-      },
-    }),
-  ]);
+  await prisma.expenseReport.update({
+    where: { id: report.id },
+    data: {
+      beneficiaryUserId: beneficiary.userId,
+      beneficiaryFirstname: beneficiary.firstname,
+      beneficiaryLastname: beneficiary.lastname,
+      beneficiaryIban: beneficiary.iban,
+    },
+  });
   revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
   return { ok: true };
 }

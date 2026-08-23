@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ExpenseReportOverviewForAdmin } from "@/lib/admin/expense-reports";
 import {
+  beneficiaryShortName,
   expenseReportStatusBadgeClass,
   expenseReportStatusDotClass,
   expenseReportStatusLabel,
@@ -32,17 +33,25 @@ export function ListView({
               {report.assoName}
             </div>
           </div>
+          <div className="hidden w-28 shrink-0 truncate text-right text-sm text-base-content/70 md:block">
+            {beneficiaryShortName(
+              report.beneficiaryFirstname,
+              report.beneficiaryLastname,
+            ) ?? "—"}
+          </div>
           <div className="hidden w-24 shrink-0 text-right text-sm text-base-content/70 sm:block">
             {report.linesCount} remboursement(s)
           </div>
           <div className="w-28 shrink-0 text-right text-sm text-base-content/70">
             {formatCents(report.totalAmountCents)}
           </div>
-          <span
-            className={`badge shrink-0 ${expenseReportStatusBadgeClass[report.status]}`}
-          >
-            {expenseReportStatusLabel[report.status]}
-          </span>
+          <div className="flex w-36 shrink-0 justify-end">
+            <span
+              className={`badge ${expenseReportStatusBadgeClass[report.status]}`}
+            >
+              {expenseReportStatusLabel[report.status]}
+            </span>
+          </div>
         </Link>
       ))}
     </div>

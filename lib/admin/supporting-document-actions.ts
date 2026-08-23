@@ -2,48 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import type { SupportingDocumentType } from "@/app/generated/prisma/enums";
-import { requireStructureAccess } from "@/lib/auth/guards";
+import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
 import {
   assertExpenseReportMutable,
   ExpenseReportLifecycleError,
-} from "./expense-report-lifecycle";
+} from "@/lib/expense-reports/expense-report-lifecycle";
 import {
   addSupportingDocumentsCore,
   extractFiles,
   removeSupportingDocumentCore,
   type AddSupportingDocumentsState,
   type RemoveSupportingDocumentState,
-} from "./supporting-document-shared";
+} from "@/lib/expense-reports/supporting-document-shared";
 import {
-  parseAddSupportingDocumentsForm,
-  parseRemoveSupportingDocumentForm,
+  parseAddSupportingDocumentsAsAdminForm,
+  parseRemoveSupportingDocumentAsAdminForm,
 } from "./supporting-document-input";
 
 type EditableReportCheck =
   | { ok: true; report: { id: string; assoSlug: string } }
   | { ok: false; error: string };
 
-async function loadEditableReport(
-  reportId: string,
-  assoId: string,
-): Promise<EditableReportCheck> {
+async function loadEditableReport(reportId: string): Promise<EditableReportCheck> {
   const report = await prisma.expenseReport.findUnique({
     where: { id: reportId },
-    select: {
-      id: true,
-      assoId: true,
-      status: true,
-      asso: { select: { slug: true } },
-    },
+    select: { id: true, status: true, asso: { select: { slug: true } } },
   });
-  if (!report || report.assoId !== assoId) {
+  if (!report) {
     return { ok: false, error: "Note de frais introuvable." };
   }
   try {
     assertExpenseReportMutable({
       status: report.status,
-      actor: { type: "STRUCTURE", assoId },
+      actor: { type: "ADMIN" },
     });
   } catch (error) {
     if (!(error instanceof ExpenseReportLifecycleError)) throw error;
@@ -53,17 +45,17 @@ async function loadEditableReport(
 }
 
 /**
- * Ajoute un ou plusieurs Justificatifs, ou remplace l'Attestation sur
- * l'honneur existante (limitée à un seul fichier). Auth et chargement de la
- * Note propres à la Structure ; la logique métier vit dans
- * addSupportingDocumentsCore (supporting-document-shared.ts), partagée avec
- * l'Admin.
+ * Équivalent Admin de addSupportingDocumentsAction
+ * (lib/expense-reports/supporting-document-actions.ts) : auth et chargement
+ * de la Note propres à l'Admin (pas de scoping par assoSlug, l'Admin n'est
+ * rattaché à aucune Structure), logique métier partagée via
+ * addSupportingDocumentsCore.
  */
-export async function addSupportingDocumentsAction(
+export async function addSupportingDocumentsAsAdminAction(
   _prevState: AddSupportingDocumentsState,
   formData: FormData,
 ): Promise<AddSupportingDocumentsState> {
-  const parsed = parseAddSupportingDocumentsForm(formData);
+  const parsed = parseAddSupportingDocumentsAsAdminForm(formData);
   if (!parsed.success) {
     return {
       ok: false,
@@ -74,12 +66,9 @@ export async function addSupportingDocumentsAction(
   const files = extractFiles(formData);
   const documentType = parsed.data.documentType as SupportingDocumentType;
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  await requireAdmin();
 
-  const reportCheck = await loadEditableReport(
-    parsed.data.expenseReportId,
-    structure.assoId,
-  );
+  const reportCheck = await loadEditableReport(parsed.data.expenseReportId);
   if (!reportCheck.ok) {
     return { ok: false, error: reportCheck.error };
   }
@@ -91,19 +80,17 @@ export async function addSupportingDocumentsAction(
   });
 
   if (result.ok) {
-    revalidatePath(
-      `/app/${parsed.data.assoSlug}/notes-de-frais/${reportCheck.report.id}`,
-    );
+    revalidatePath(`/app/admin/notes-de-frais/${reportCheck.report.id}`);
   }
 
   return result;
 }
 
-export async function removeSupportingDocumentAction(
+export async function removeSupportingDocumentAsAdminAction(
   _prevState: RemoveSupportingDocumentState,
   formData: FormData,
 ): Promise<RemoveSupportingDocumentState> {
-  const parsed = parseRemoveSupportingDocumentForm(formData);
+  const parsed = parseRemoveSupportingDocumentAsAdminForm(formData);
   if (!parsed.success) {
     return {
       ok: false,
@@ -111,7 +98,7 @@ export async function removeSupportingDocumentAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  await requireAdmin();
 
   const document = await prisma.supportingDocument.findUnique({
     where: { id: parsed.data.id },
@@ -119,16 +106,16 @@ export async function removeSupportingDocumentAction(
       id: true,
       filePath: true,
       expenseReportId: true,
-      expenseReport: { select: { assoId: true, status: true } },
+      expenseReport: { select: { status: true } },
     },
   });
-  if (!document || document.expenseReport.assoId !== structure.assoId) {
+  if (!document) {
     return { ok: false, error: "Justificatif introuvable." };
   }
   try {
     assertExpenseReportMutable({
       status: document.expenseReport.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
+      actor: { type: "ADMIN" },
     });
   } catch (error) {
     if (!(error instanceof ExpenseReportLifecycleError)) throw error;
@@ -137,9 +124,7 @@ export async function removeSupportingDocumentAction(
 
   await removeSupportingDocumentCore(document);
 
-  revalidatePath(
-    `/app/${parsed.data.assoSlug}/notes-de-frais/${document.expenseReportId}`,
-  );
+  revalidatePath(`/app/admin/notes-de-frais/${document.expenseReportId}`);
 
   return { ok: true };
 }

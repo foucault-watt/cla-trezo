@@ -7,10 +7,7 @@ import {
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
-import {
-  updateExpenseReportAction,
-  type UpdateExpenseReportState,
-} from "@/lib/expense-reports/expense-report-actions";
+import type { UpdateExpenseReportState } from "@/lib/expense-reports/expense-report-actions";
 
 const initialState: UpdateExpenseReportState = { ok: false };
 
@@ -19,17 +16,19 @@ export function GeneralInformationModal({
   reportId,
   title,
   description,
+  action,
 }: {
-  assoSlug: string;
+  assoSlug?: string;
   reportId: string;
   title: string;
   description: string | null;
+  action: (
+    prevState: UpdateExpenseReportState,
+    formData: FormData,
+  ) => Promise<UpdateExpenseReportState>;
 }) {
   const modalRef = useRef<ModalHandle>(null);
-  const [state, formAction, pending] = useActionState(
-    updateExpenseReportAction,
-    initialState,
-  );
+  const [state, formAction, pending] = useActionState(action, initialState);
   useModalAutoClose(modalRef, state.ok);
   return (
     <>
@@ -44,7 +43,7 @@ export function GeneralInformationModal({
       <Modal ref={modalRef} title="Modifier les informations générales">
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="id" value={reportId} />
-          <input type="hidden" name="assoSlug" value={assoSlug} />
+          {assoSlug && <input type="hidden" name="assoSlug" value={assoSlug} />}
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Titre</legend>
             <input

@@ -1,7 +1,12 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { EXCLUDE_DEMO_ASSO_RELATION } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
+import {
+  assertExpenseReportMutable,
+  ExpenseReportLifecycleError,
+} from "@/lib/expense-reports/expense-report-lifecycle";
 import { mapExpenseReportToDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import type {
   ExpenseReportLineDetail,
@@ -25,6 +30,8 @@ export type ExpenseReportOverviewForAdmin = {
   status: ExpenseReportStatus;
   createdAt: Date;
   assoName: string;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
   linesCount: number;
   totalAmountCents: number;
 };
@@ -56,6 +63,8 @@ export async function listExpenseReportsForAdmin(): Promise<
     status: report.status,
     createdAt: report.createdAt,
     assoName: report.asso.name,
+    beneficiaryFirstname: report.beneficiaryFirstname,
+    beneficiaryLastname: report.beneficiaryLastname,
     linesCount: report.lines.length,
     totalAmountCents: report.lines.reduce(
       (sum, line) => sum + line.amountCents,
@@ -87,14 +96,36 @@ export type ExpenseReportDetailForAdmin = {
 };
 
 /**
+ * Une Note n'est modifiable par l'Admin qu'une fois Prise en charge (cf.
+ * assertExpenseReportMutable, ADR-0001) : Soumise (avant prise en charge),
+ * Finalisée ou Rejetée sont donc toutes en lecture seule côté Admin.
+ */
+export function isExpenseReportEditableByAdmin(
+  status: ExpenseReportStatus,
+): boolean {
+  try {
+    assertExpenseReportMutable({ status, actor: { type: "ADMIN" } });
+    return true;
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
+    return false;
+  }
+}
+
+/**
  * Détail complet d'une Note de frais pour l'écran de consultation Admin :
  * l'Admin voit toutes les Structures, contrairement à la Structure qui ne
  * voit que ses propres notes (cf. lib/expense-reports/expense-reports.ts).
  * Charge en plus le type de la Structure, les Types de dépense et les
  * Subventions visibles — nécessaires pour que l'Admin puisse éditer les
  * Lignes d'une Note Prise en charge (#18), pas seulement les consulter.
+ *
+ * Enveloppé dans `cache()` : le layout du wizard Admin et la page de l'étape
+ * courante appellent chacun cette fonction pour la même Note dans un même
+ * rendu — sans ça, chaque navigation déclencherait la requête (et ses
+ * appels associés) deux fois.
  */
-export async function getExpenseReportDetailForAdmin(
+export const getExpenseReportDetailForAdmin = cache(async function (
   reportId: string,
 ): Promise<ExpenseReportDetailForAdmin> {
   await requireAdmin();
@@ -143,4 +174,4 @@ export async function getExpenseReportDetailForAdmin(
     visibleSubventions,
     soldeView,
   };
-}
+});

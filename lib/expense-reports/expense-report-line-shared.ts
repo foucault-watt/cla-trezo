@@ -53,9 +53,6 @@ export async function loadFundingSourceEligibility({
 
 export type ExpenseReportLineFormValues = {
   expenseDate?: string;
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  iban: string;
   amount: string;
   expenseName: string;
   typeDepenseId: string;
@@ -74,9 +71,6 @@ export function rawLineFormValues(
 ): ExpenseReportLineFormValues {
   return {
     expenseDate: String(formData.get("expenseDate") ?? ""),
-    beneficiaryFirstname: String(formData.get("beneficiaryFirstname") ?? ""),
-    beneficiaryLastname: String(formData.get("beneficiaryLastname") ?? ""),
-    iban: String(formData.get("iban") ?? ""),
     amount: String(formData.get("amount") ?? ""),
     expenseName: String(formData.get("expenseName") ?? ""),
     typeDepenseId: String(formData.get("typeDepenseId") ?? ""),
@@ -89,9 +83,9 @@ export function rawLineFormValues(
 /**
  * Forme commune du retour des Server Actions d'ajout/modification d'une
  * Ligne, côté Structure (expense-report-actions.ts) comme côté Admin
- * (lib/admin/expense-report-actions.ts, cf. #18) : permet à AddLigneForm et
- * LigneRow (components/expense-reports/) d'accepter l'une ou l'autre action
- * en prop sans dupliquer le composant par acteur.
+ * (lib/admin/expense-report-actions.ts, cf. #18) : permet à ReimbursementsTable
+ * (app/app/[assoSlug]/notes-de-frais/[reportId]/_components/) d'accepter l'une
+ * ou l'autre action en prop sans dupliquer le composant par acteur.
  */
 export type ExpenseReportLineFormState = {
   ok: boolean;

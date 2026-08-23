@@ -90,6 +90,8 @@ describe("listExpenseReports", () => {
         description: null,
         status: "DRAFT",
         createdAt: new Date("2026-01-01"),
+        beneficiaryFirstname: "Foucault",
+        beneficiaryLastname: "Wattinne",
         lines: [{ amountCents: 1000 }, { amountCents: 2500 }],
       },
     ]);
@@ -105,6 +107,8 @@ describe("listExpenseReports", () => {
         createdAt: new Date("2026-01-01"),
         linesCount: 2,
         totalAmountCents: 3500,
+        beneficiaryFirstname: "Foucault",
+        beneficiaryLastname: "Wattinne",
       },
     ]);
   });
@@ -152,9 +156,6 @@ describe("getExpenseReportDetail", () => {
       lines: [
         {
           id: "line-1",
-          beneficiaryFirstname: "Jean",
-          beneficiaryLastname: "Dupont",
-          iban: "FR7630006000011234567890189",
           amountCents: 4250,
           expenseName: "Billets de train",
           typeDepenseId: "type-1",
@@ -186,9 +187,6 @@ describe("getExpenseReportDetail", () => {
     expect(result.report.lines).toEqual([
       {
         id: "line-1",
-        beneficiaryFirstname: "Jean",
-        beneficiaryLastname: "Dupont",
-        iban: null,
         amountCents: 4250,
         expenseDate: null,
         expenseName: "Billets de train",
@@ -261,7 +259,7 @@ describe("getExpenseReportDetail", () => {
     expect(result.visibleSubventions.map((s) => s.id)).toEqual(["sub-recent"]);
   });
 
-  it("ne renvoie jamais l'IBAN à la Structure, même si la Ligne en a un en base", async () => {
+  it("ne renvoie jamais l'IBAN de la Note à la Structure, même si elle en a un en base", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: "report-1",
       assoId: "asso-1",
@@ -269,27 +267,16 @@ describe("getExpenseReportDetail", () => {
       description: null,
       status: "DRAFT",
       createdAt: new Date("2026-01-01"),
-      lines: [
-        {
-          id: "line-1",
-          beneficiaryFirstname: "Jean",
-          beneficiaryLastname: "Dupont",
-          iban: "FR7630006000011234567890189",
-          amountCents: 4250,
-          expenseName: "Billets de train",
-          typeDepenseId: null,
-          typeDepense: null,
-          customLabel: "Frais divers",
-          fundingSource: "SOLDE",
-          subventionId: null,
-          subvention: null,
-        },
-      ],
+      beneficiaryFirstname: "Jean",
+      beneficiaryLastname: "Dupont",
+      beneficiaryIban: "FR7630006000011234567890189",
+      lines: [],
       supportingDocuments: [],
     });
 
     const result = await getExpenseReportDetail("club-info", "report-1");
 
-    expect(result.report.lines[0]?.iban).toBeNull();
+    expect(result.report.beneficiaryIban).toBeNull();
+    expect(result.report.beneficiaryIbanLast4).toBe("0189");
   });
 });

@@ -96,7 +96,7 @@ export const ibanSchema = z
 // (input non rendu -> null/undefined), soit vide (select resté sur son
 // option placeholder) : les deux doivent être traités comme "non fourni",
 // avant seulement de valider le format uuid si une valeur est présente.
-const nullableUuid = () =>
+export const nullableUuid = () =>
   z
     .string()
     .nullish()
@@ -107,17 +107,6 @@ const nullableUuid = () =>
     );
 
 export const expenseReportLineBaseSchema = z.object({
-  beneficiaryFirstname: z
-    .string()
-    .trim()
-    .min(1, "Le prénom du bénéficiaire est obligatoire.")
-    .max(100),
-  beneficiaryLastname: z
-    .string()
-    .trim()
-    .min(1, "Le nom du bénéficiaire est obligatoire.")
-    .max(100),
-  iban: ibanSchema,
   amount: z.coerce.number().positive("Le montant doit être positif."),
   expenseName: z
     .string()
@@ -140,14 +129,10 @@ const expenseDateSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "La date de la dépense est obligatoire.")
   .transform((value) => new Date(`${value}T00:00:00.000Z`));
 
-/** Nouveau contrat d'un Remboursement : l'identité est portée par la Note. */
-export const reimbursementBaseSchema = expenseReportLineBaseSchema
-  .omit({
-    beneficiaryFirstname: true,
-    beneficiaryLastname: true,
-    iban: true,
-  })
-  .extend({ expenseDate: expenseDateSchema });
+/** L'identité du bénéficiaire est portée par la Note, jamais par la Ligne. */
+export const reimbursementBaseSchema = expenseReportLineBaseSchema.extend({
+  expenseDate: expenseDateSchema,
+});
 
 export const addReimbursementFormSchema = refineExpenseReportLine(
   reimbursementBaseSchema.extend({

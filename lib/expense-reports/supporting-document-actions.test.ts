@@ -82,6 +82,7 @@ const draftReport = {
   id: "report-1",
   assoId: "asso-1",
   status: "DRAFT",
+  asso: { slug: "club-info" },
 };
 
 const validFields = {

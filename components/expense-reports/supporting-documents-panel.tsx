@@ -15,14 +15,22 @@ import {
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
-import {
-  addSupportingDocumentsAction,
-  removeSupportingDocumentAction,
-  type AddSupportingDocumentsState,
-  type RemoveSupportingDocumentState,
-} from "@/lib/expense-reports/supporting-document-actions";
+import type {
+  AddSupportingDocumentsState,
+  RemoveSupportingDocumentState,
+} from "@/lib/expense-reports/supporting-document-shared";
 import type { SupportingDocumentDetail } from "@/lib/expense-reports/expense-reports";
 import type { SupportingDocumentType } from "@/app/generated/prisma/enums";
+
+type AddSupportingDocumentsAction = (
+  prevState: AddSupportingDocumentsState,
+  formData: FormData,
+) => Promise<AddSupportingDocumentsState>;
+
+type RemoveSupportingDocumentAction = (
+  prevState: RemoveSupportingDocumentState,
+  formData: FormData,
+) => Promise<RemoveSupportingDocumentState>;
 
 const initialAddState: AddSupportingDocumentsState = { ok: false };
 const initialRemoveState: RemoveSupportingDocumentState = { ok: false };
@@ -39,22 +47,20 @@ const documentTypeLabel: Record<SupportingDocumentType, string> = {
   HONOR_STATEMENT: "Attestation sur l'honneur",
 };
 
-function documentUrl(assoSlug: string, reportId: string, documentId: string) {
-  return `/app/${assoSlug}/notes-de-frais/${reportId}/justificatifs/${documentId}`;
-}
-
 function RemoveDocumentButton({
   assoSlug,
   documentId,
   filename,
+  removeAction,
 }: {
-  assoSlug: string;
+  assoSlug?: string;
   documentId: string;
   filename: string;
+  removeAction: RemoveSupportingDocumentAction;
 }) {
   const modalRef = useRef<ModalHandle>(null);
   const [state, formAction, pending] = useActionState(
-    removeSupportingDocumentAction,
+    removeAction,
     initialRemoveState,
   );
   useModalAutoClose(modalRef, state.ok);
@@ -76,7 +82,7 @@ function RemoveDocumentButton({
         </p>
         <form action={formAction}>
           <input type="hidden" name="id" value={documentId} />
-          <input type="hidden" name="assoSlug" value={assoSlug} />
+          {assoSlug && <input type="hidden" name="assoSlug" value={assoSlug} />}
           <div className="modal-action">
             <button
               type="button"
@@ -105,17 +111,19 @@ function RemoveDocumentButton({
 
 function DocumentRow({
   assoSlug,
-  reportId,
+  basePath,
   document,
   editable,
+  removeAction,
 }: {
-  assoSlug: string;
-  reportId: string;
+  assoSlug?: string;
+  basePath: string;
   document: SupportingDocumentDetail;
   editable: boolean;
+  removeAction: RemoveSupportingDocumentAction;
 }) {
   const isImage = document.mimeType.startsWith("image/");
-  const url = documentUrl(assoSlug, reportId, document.id);
+  const url = `${basePath}/justificatifs/${document.id}`;
 
   return (
     <li className="flex items-center gap-3 rounded-box border border-base-300 p-2">
@@ -138,6 +146,7 @@ function DocumentRow({
           assoSlug={assoSlug}
           documentId={document.id}
           filename={document.originalFilename}
+          removeAction={removeAction}
         />
       )}
     </li>
@@ -243,14 +252,16 @@ function UploadForm({
   reportId,
   documentType,
   multiple,
+  addAction,
 }: {
-  assoSlug: string;
+  assoSlug?: string;
   reportId: string;
   documentType: SupportingDocumentType;
   multiple: boolean;
+  addAction: AddSupportingDocumentsAction;
 }) {
   const [state, formAction, pending] = useActionState(
-    addSupportingDocumentsAction,
+    addAction,
     initialAddState,
   );
 
@@ -269,7 +280,7 @@ function UploadForm({
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="expenseReportId" value={reportId} />
-      <input type="hidden" name="assoSlug" value={assoSlug} />
+      {assoSlug && <input type="hidden" name="assoSlug" value={assoSlug} />}
       <input type="hidden" name="documentType" value={documentType} />
 
       <FileDropZone
@@ -291,13 +302,20 @@ function UploadForm({
 export function SupportingDocumentsPanel({
   assoSlug,
   reportId,
+  basePath,
   documents,
   editable,
+  addAction,
+  removeAction,
 }: {
-  assoSlug: string;
+  assoSlug?: string;
   reportId: string;
+  /** Ex. `/app/club-info/notes-de-frais/report-1` ou `/app/admin/notes-de-frais/report-1`. */
+  basePath: string;
   documents: SupportingDocumentDetail[];
   editable: boolean;
+  addAction: AddSupportingDocumentsAction;
+  removeAction: RemoveSupportingDocumentAction;
 }) {
   const receipts = documents.filter((doc) => doc.type === "RECEIPT");
   const honorStatements = documents.filter(
@@ -372,6 +390,7 @@ export function SupportingDocumentsPanel({
             reportId={reportId}
             documentType={activeType}
             multiple={activeType === "RECEIPT"}
+            addAction={addAction}
           />
           {lockedType === null && !showTypeToggle && (
             <button
@@ -398,9 +417,10 @@ export function SupportingDocumentsPanel({
             <DocumentRow
               key={doc.id}
               assoSlug={assoSlug}
-              reportId={reportId}
+              basePath={basePath}
               document={doc}
               editable={editable}
+              removeAction={removeAction}
             />
           ))}
         </ul>

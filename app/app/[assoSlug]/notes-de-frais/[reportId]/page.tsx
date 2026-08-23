@@ -13,10 +13,9 @@ export default async function ExpenseReportEntryPage({
 }) {
   const { assoSlug, reportId } = await params;
   const context = await loadExpenseReportWizard(assoSlug, reportId);
-  const step =
-    context.editable && !context.legacyMultiBeneficiary
-      ? firstIncompleteExpenseReportStep(context.completion)
-      : null;
+  const step = context.editable
+    ? firstIncompleteExpenseReportStep(context.completion)
+    : null;
   redirect(
     step
       ? expenseReportStepHref(assoSlug, reportId, step)

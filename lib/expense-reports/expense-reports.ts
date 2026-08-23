@@ -31,6 +31,8 @@ export type ExpenseReportOverview = {
   createdAt: Date;
   linesCount: number;
   totalAmountCents: number;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
 };
 
 /**
@@ -60,6 +62,8 @@ export async function listExpenseReports(
       (sum, line) => sum + line.amountCents,
       0,
     ),
+    beneficiaryFirstname: report.beneficiaryFirstname,
+    beneficiaryLastname: report.beneficiaryLastname,
   }));
 }
 

@@ -12,9 +12,8 @@ import {
   guardExpenseReportSummary,
   loadExpenseReportWizard,
 } from "@/lib/expense-reports/expense-report-wizard";
-import { DeleteExpenseReportButton } from "../_components/delete-expense-report-button";
-import { GeneralInformationModal } from "../_components/general-information-modal";
-import { SubmitExpenseReportForm } from "../_components/submit-expense-report-form";
+import { updateExpenseReportAction } from "@/lib/expense-reports/expense-report-actions";
+import { GeneralInformationModal } from "@/components/expense-reports/general-information-modal";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR");
 
@@ -32,7 +31,7 @@ export default async function ExpenseReportSummaryPage({
   const beneficiaryName =
     report.beneficiaryFirstname && report.beneficiaryLastname
       ? `${report.beneficiaryFirstname} ${report.beneficiaryLastname}`
-      : "Bénéficiaires historiques";
+      : "Non renseigné";
 
   return (
     <section className="space-y-5">
@@ -42,12 +41,6 @@ export default async function ExpenseReportSummaryPage({
           Vérifiez toutes les informations avant de soumettre la Note de frais.
         </p>
       </div>
-      {context.legacyMultiBeneficiary && (
-        <div className="alert alert-warning alert-soft">
-          Cette ancienne Note contient plusieurs bénéficiaires. Elle est
-          conservée en lecture seule dans son format historique.
-        </div>
-      )}
 
       <SummarySection
         title="Informations générales"
@@ -58,6 +51,7 @@ export default async function ExpenseReportSummaryPage({
               reportId={reportId}
               title={report.title}
               description={report.description}
+              action={updateExpenseReportAction}
             />
           )
         }
@@ -73,8 +67,7 @@ export default async function ExpenseReportSummaryPage({
       <SummarySection
         title="Bénéficiaire"
         action={
-          context.editable &&
-          !context.legacyMultiBeneficiary && (
+          context.editable && (
             <Link
               className="btn btn-ghost btn-sm"
               href={expenseReportStepHref(assoSlug, reportId, "beneficiaire")}
@@ -85,37 +78,19 @@ export default async function ExpenseReportSummaryPage({
           )
         }
       >
-        {context.legacyMultiBeneficiary ? (
-          <ul className="list-disc pl-5">
-            {[
-              ...new Set(
-                report.lines.map(
-                  (line) =>
-                    `${line.beneficiaryFirstname} ${line.beneficiaryLastname}`,
-                ),
-              ),
-            ].map((name) => (
-              <li key={name}>{name}</li>
-            ))}
-          </ul>
-        ) : (
-          <>
-            <p className="font-medium">{beneficiaryName}</p>
-            <p className="mt-1 text-sm text-base-content/70">
-              IBAN :{" "}
-              {report.beneficiaryIbanLast4
-                ? `•••• ${report.beneficiaryIbanLast4}`
-                : "non renseigné"}
-            </p>
-          </>
-        )}
+        <p className="font-medium">{beneficiaryName}</p>
+        <p className="mt-1 text-sm text-base-content/70">
+          IBAN :{" "}
+          {report.beneficiaryIbanLast4
+            ? `•••• ${report.beneficiaryIbanLast4}`
+            : "non renseigné"}
+        </p>
       </SummarySection>
 
       <SummarySection
         title="Dépenses"
         action={
-          context.editable &&
-          !context.legacyMultiBeneficiary && (
+          context.editable && (
             <Link
               className="btn btn-ghost btn-sm"
               href={expenseReportStepHref(assoSlug, reportId, "remboursements")}
@@ -186,8 +161,7 @@ export default async function ExpenseReportSummaryPage({
       <SummarySection
         title="Justificatifs"
         action={
-          context.editable &&
-          !context.legacyMultiBeneficiary && (
+          context.editable && (
             <Link
               className="btn btn-ghost btn-sm"
               href={expenseReportStepHref(assoSlug, reportId, "remboursements")}
@@ -213,35 +187,6 @@ export default async function ExpenseReportSummaryPage({
           ))}
         </ul>
       </SummarySection>
-
-      {report.status === "DRAFT" && (
-        <div className="flex items-center justify-between gap-3">
-          <DeleteExpenseReportButton
-            assoSlug={assoSlug}
-            reportId={reportId}
-            title={report.title}
-          />
-          {context.completion.remboursements &&
-            context.completion.beneficiaire &&
-            !context.legacyMultiBeneficiary && (
-              <SubmitExpenseReportForm
-                assoSlug={assoSlug}
-                reportId={reportId}
-                beneficiaryName={beneficiaryName}
-                reimbursementsCount={report.lines.length}
-                totalAmountCents={total}
-                documentsCount={report.supportingDocuments.length}
-                warnings={warnings}
-              />
-            )}
-        </div>
-      )}
-      {report.status === "SUBMITTED" && (
-        <div className="alert alert-success alert-soft">
-          Cette Note de frais a été soumise. Vous pouvez encore la modifier tant
-          que l&apos;Admin CLA ne l&apos;a pas prise en charge.
-        </div>
-      )}
     </section>
   );
 }

@@ -3,26 +3,29 @@ import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
 } from "@/lib/expense-reports/labels";
-import { loadExpenseReportWizard } from "@/lib/expense-reports/expense-report-wizard";
-import { updateExpenseReportAction } from "@/lib/expense-reports/expense-report-actions";
-import { ExpenseReportStepper } from "./_components/expense-report-stepper";
+import {
+  getExpenseReportDetailForAdmin,
+  isExpenseReportEditableByAdmin,
+} from "@/lib/admin/expense-reports";
+import { updateExpenseReportAsAdminAction } from "@/lib/admin/expense-report-actions";
 import { GeneralInformationModal } from "@/components/expense-reports/general-information-modal";
+import { AdminExpenseReportStepper } from "./_components/expense-report-stepper";
 
-export default async function ExpenseReportWizardLayout({
+export default async function AdminExpenseReportWizardLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ assoSlug: string; reportId: string }>;
+  params: Promise<{ reportId: string }>;
 }) {
-  const { assoSlug, reportId } = await params;
-  const context = await loadExpenseReportWizard(assoSlug, reportId);
-  const { report } = context;
+  const { reportId } = await params;
+  const report = await getExpenseReportDetailForAdmin(reportId);
+  const editable = isExpenseReportEditableByAdmin(report.status);
 
   return (
     <div>
       <Link
-        href={`/app/${assoSlug}/notes-de-frais`}
+        href="/app/admin/notes-de-frais"
         className="link link-hover text-sm text-base-content/70"
       >
         ← Toutes les Notes de frais
@@ -30,6 +33,9 @@ export default async function ExpenseReportWizardLayout({
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{report.title}</h1>
+          <p className="mt-1 text-sm text-base-content/70">
+            {report.assoName}
+          </p>
           {report.description && (
             <p className="mt-1 text-sm text-base-content/70">
               {report.description}
@@ -37,13 +43,12 @@ export default async function ExpenseReportWizardLayout({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {context.editable && (
+          {editable && (
             <GeneralInformationModal
-              assoSlug={assoSlug}
               reportId={reportId}
               title={report.title}
               description={report.description}
-              action={updateExpenseReportAction}
+              action={updateExpenseReportAsAdminAction}
             />
           )}
           <span
@@ -53,20 +58,12 @@ export default async function ExpenseReportWizardLayout({
           </span>
         </div>
       </div>
-      {!context.editable && report.status === "TAKEN_OVER" && (
+      {!editable && report.status === "SUBMITTED" && (
         <div role="status" className="alert alert-info alert-soft mt-5">
-          L&apos;Admin CLA traite désormais cette Note de frais. Elle est
-          disponible en lecture seule.
+          Prenez cette Note de frais en charge pour pouvoir la modifier.
         </div>
       )}
-      {context.editable && (
-        <ExpenseReportStepper
-          assoSlug={assoSlug}
-          reportId={reportId}
-          completion={context.completion}
-          editable={context.editable}
-        />
-      )}
+      <AdminExpenseReportStepper reportId={reportId} />
       <div className="mt-5">{children}</div>
     </div>
   );

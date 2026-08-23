@@ -6,8 +6,12 @@ import {
   guardExpenseReportWizardStep,
   loadExpenseReportWizard,
 } from "@/lib/expense-reports/expense-report-wizard";
-import { ReimbursementsTable } from "../_components/reimbursements-table";
-import { SupportingDocumentsPanel } from "../_components/supporting-documents-panel";
+import {
+  addSupportingDocumentsAction,
+  removeSupportingDocumentAction,
+} from "@/lib/expense-reports/supporting-document-actions";
+import { ReimbursementsTable } from "@/components/expense-reports/reimbursements-table";
+import { SupportingDocumentsPanel } from "@/components/expense-reports/supporting-documents-panel";
 
 export default async function ReimbursementsPage({
   params,
@@ -60,8 +64,11 @@ export default async function ReimbursementsPage({
         <SupportingDocumentsPanel
           assoSlug={assoSlug}
           reportId={reportId}
+          basePath={`/app/${assoSlug}/notes-de-frais/${reportId}`}
           documents={context.report.supportingDocuments}
           editable={context.editable}
+          addAction={addSupportingDocumentsAction}
+          removeAction={removeSupportingDocumentAction}
         />
       </section>
       <div className="flex justify-end pt-1">

@@ -6,9 +6,6 @@ import type {
 
 export type ExpenseReportLineDetail = {
   id: string;
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  iban: string | null;
   amountCents: number;
   expenseDate?: Date | null;
   expenseName: string;
@@ -48,9 +45,6 @@ export type ExpenseReportDetail = {
 
 type ExpenseReportLineRow = {
   id: string;
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  iban: string | null;
   amountCents: number;
   expenseDate?: Date | null;
   expenseName: string;
@@ -112,24 +106,16 @@ export function mapExpenseReportToDetail(
       ? (report.beneficiaryIban ?? null)
       : null,
     beneficiaryIbanLast4: report.beneficiaryIban?.slice(-4) ?? null,
-    lines: report.lines.map((line) =>
-      mapLineToDetail(line, options.includeAdminFields),
-    ),
+    lines: report.lines.map(mapLineToDetail),
     supportingDocuments: report.supportingDocuments.map(
       mapSupportingDocumentToDetail,
     ),
   };
 }
 
-function mapLineToDetail(
-  line: ExpenseReportLineRow,
-  includeAdminFields: boolean,
-): ExpenseReportLineDetail {
+function mapLineToDetail(line: ExpenseReportLineRow): ExpenseReportLineDetail {
   return {
     id: line.id,
-    beneficiaryFirstname: line.beneficiaryFirstname,
-    beneficiaryLastname: line.beneficiaryLastname,
-    iban: includeAdminFields ? line.iban : null,
     amountCents: line.amountCents,
     expenseDate: line.expenseDate ?? null,
     expenseName: line.expenseName,

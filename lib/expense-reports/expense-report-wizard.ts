@@ -38,22 +38,12 @@ export async function loadExpenseReportWizard(
 ) {
   const context = await getExpenseReportDetail(assoSlug, reportId);
   const completion = computeExpenseReportStepCompletion(context.report);
-  const legacyBeneficiaries = new Set(
-    context.report.lines
-      .filter((line) => line.beneficiaryFirstname && line.beneficiaryLastname)
-      .map(
-        (line) =>
-          `${line.beneficiaryFirstname.trim().toLocaleLowerCase("fr-FR")}|${line.beneficiaryLastname.trim().toLocaleLowerCase("fr-FR")}`,
-      ),
-  );
   return {
     ...context,
     completion,
     editable:
       context.report.status === "DRAFT" ||
       context.report.status === "SUBMITTED",
-    legacyMultiBeneficiary:
-      !context.report.beneficiaryFirstname && legacyBeneficiaries.size > 1,
   };
 }
 
@@ -63,7 +53,7 @@ export function guardExpenseReportWizardStep(
   assoSlug: string,
   reportId: string,
 ) {
-  if (!context.editable || context.legacyMultiBeneficiary) {
+  if (!context.editable) {
     redirect(expenseReportSummaryHref(assoSlug, reportId));
   }
 
@@ -82,7 +72,7 @@ export function guardExpenseReportSummary(
   assoSlug: string,
   reportId: string,
 ) {
-  if (!context.editable || context.legacyMultiBeneficiary) return;
+  if (!context.editable) return;
   redirect(
     expenseReportStepHref(
       assoSlug,

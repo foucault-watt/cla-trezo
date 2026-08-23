@@ -440,14 +440,6 @@ describe("updateExpenseReportBeneficiaryAction", () => {
         beneficiaryIban: storedIban,
       },
     });
-    expect(lineUpdateManyMock).toHaveBeenCalledWith({
-      where: { expenseReportId: reportId },
-      data: {
-        beneficiaryFirstname: "Même",
-        beneficiaryLastname: "Personne",
-        iban: storedIban,
-      },
-    });
     expect(result).toEqual({ ok: true });
   });
 });
@@ -458,7 +450,7 @@ describe("submitExpenseReportWithBeneficiaryAction", () => {
   const newUserId = "22222222-2222-4222-8222-222222222222";
   const newIban = "FR1420041010050500013M02606";
 
-  it("enregistre le bénéficiaire visible et soumet la Note dans une seule transaction", async () => {
+  it("enregistre le bénéficiaire visible et soumet la Note", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: reportId,
       assoId: "asso-1",
@@ -499,15 +491,6 @@ describe("submitExpenseReportWithBeneficiaryAction", () => {
         submittedAt: expect.any(Date),
       },
     });
-    expect(lineUpdateManyMock).toHaveBeenCalledWith({
-      where: { expenseReportId: reportId },
-      data: {
-        beneficiaryFirstname: "Nouvelle",
-        beneficiaryLastname: "Personne",
-        iban: newIban,
-      },
-    });
-    expect(transactionMock).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ ok: true });
   });
 });
