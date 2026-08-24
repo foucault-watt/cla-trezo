@@ -3,17 +3,25 @@
 import { useState } from "react";
 import type { SubsidyConventionPdfData } from "@/pdf-lab/templates/convention/types";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
+import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import { ConventionPdfLabEditor } from "./convention-pdf-lab-editor";
 import { IconUsageTab } from "./icon-usage-tab";
+import { NdfSoldePdfLabEditor } from "./ndf-solde-pdf-lab-editor";
 import { PdfLabEditor } from "./pdf-lab-editor";
 
-type PdfLabTab = "expense-report" | "subsidy-convention" | "icon-usage";
+type PdfLabTab =
+  | "expense-report"
+  | "expense-balance"
+  | "subsidy-convention"
+  | "icon-usage";
 
 export function PdfLabTabs({
   expenseReportData,
+  expenseBalanceData,
   subsidyConventionData,
 }: {
   expenseReportData: ExpenseReportPdfData;
+  expenseBalanceData: ExpenseBalancePdfData;
   subsidyConventionData: SubsidyConventionPdfData;
 }) {
   const [activeTab, setActiveTab] = useState<PdfLabTab>("expense-report");
@@ -29,6 +37,15 @@ export function PdfLabTabs({
           onClick={() => setActiveTab("expense-report")}
         >
           Note de frais
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "expense-balance"}
+          className={`tab ${activeTab === "expense-balance" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("expense-balance")}
+        >
+          Note de frais (solde)
         </button>
         <button
           type="button"
@@ -52,6 +69,8 @@ export function PdfLabTabs({
 
       {activeTab === "expense-report" ? (
         <PdfLabEditor initialData={expenseReportData} />
+      ) : activeTab === "expense-balance" ? (
+        <NdfSoldePdfLabEditor initialData={expenseBalanceData} />
       ) : activeTab === "subsidy-convention" ? (
         <ConventionPdfLabEditor initialData={subsidyConventionData} />
       ) : (

@@ -105,7 +105,7 @@ Un template est prêt lorsque :
 
 La création d’un template et son branchement au produit sont deux étapes distinctes. Par défaut, le travail reste dans PDF Lab. Une route ou une interface admin ne doit être ajoutée que lorsqu’elle est explicitement demandée.
 
-Les templates `ndf-fn-sb` et `convention` possèdent un atelier admin de
-développement à `/app/admin/developpement/pdf-lab`. Deux onglets permettent de
-tester leurs champs et collections dynamiques, puis de télécharger le rendu côté
-serveur sans enregistrer les données.
+Les templates `ndf-fn-sb`, `ndf-solde` et `convention` possèdent un atelier
+admin de développement à `/app/admin/developpement/pdf-lab`. Un onglet par
+template permet de tester leurs champs et collections dynamiques, puis de
+télécharger le rendu côté serveur sans enregistrer les données.

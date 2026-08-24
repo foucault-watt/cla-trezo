@@ -6,12 +6,13 @@ describe("PDF template registry", () => {
     expect(listPdfTemplates().map((template) => template.slug)).toEqual([
       "convention",
       "ndf-fn-sb",
+      "ndf-solde",
     ]);
   });
 
   it("retourne une erreur explicite pour un slug inconnu", () => {
     expect(() => getPdfTemplate("inconnu")).toThrow(
-      "Templates disponibles : convention, ndf-fn-sb",
+      "Templates disponibles : convention, ndf-fn-sb, ndf-solde",
     );
   });
 });

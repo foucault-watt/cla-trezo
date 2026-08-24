@@ -785,6 +785,28 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/developpement/pdf-lab/_components/pdf-lab-editor.tsx",
   },
 
+  // app/app/admin/developpement/pdf-lab/_components/ndf-solde-pdf-lab-editor.tsx
+  {
+    icon: "Plus",
+    visibleText: "Ajouter une ligne",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/pdf-lab/_components/ndf-solde-pdf-lab-editor.tsx",
+    context: "cohérent avec pdf-lab-editor.tsx",
+  },
+  {
+    icon: "Trash2",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/developpement/pdf-lab/_components/ndf-solde-pdf-lab-editor.tsx",
+    context: "aria-label dynamique \"Supprimer la ligne {n}\"",
+  },
+  {
+    icon: "Download",
+    visibleText: "Télécharger le PDF",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/pdf-lab/_components/ndf-solde-pdf-lab-editor.tsx",
+  },
+
   // app/app/admin/developpement/pdf-lab/_components/convention-pdf-lab-editor.tsx
   {
     icon: "Plus",
