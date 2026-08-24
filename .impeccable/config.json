@@ -14,6 +14,12 @@
         "value": "#1155cc",
         "createdAt": "2026-08-24T14:10:38.224Z",
         "reason": "same email-link color already used identically in pdf-lab/templates/ndf-fn-sb/document.tsx for the same CLA letterhead"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#566173",
+        "createdAt": "2026-08-24T14:22:59.326Z",
+        "reason": "same empty-table-row text color already used identically in pdf-lab/templates/convention/document.tsx"
       }
     ]
   }

@@ -1,6 +1,8 @@
 import type { ReactElement } from "react";
 import { SubsidyConventionDocument } from "./templates/convention/document";
 import { fixture as subsidyConventionFixture } from "./templates/convention/fixture";
+import { FinancementDocument } from "./templates/financement/document";
+import { fixture as financementFixture } from "./templates/financement/fixture";
 import { ExpenseReportDocument } from "./templates/ndf-fn-sb/document";
 import { fixture as expenseReportFixture } from "./templates/ndf-fn-sb/fixture";
 import { ExpenseBalanceDocument } from "./templates/ndf-solde/document";
@@ -18,6 +20,13 @@ const templates: Record<string, PdfTemplateDefinition> = {
     label: "Convention de subvention",
     createFixtureDocument: () => (
       <SubsidyConventionDocument data={subsidyConventionFixture} />
+    ),
+  },
+  financement: {
+    slug: "financement",
+    label: "Ordre de financement",
+    createFixtureDocument: () => (
+      <FinancementDocument data={financementFixture} />
     ),
   },
   "ndf-fn-sb": {

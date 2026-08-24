@@ -5,6 +5,7 @@ describe("PDF template registry", () => {
   it("expose les templates dans un ordre stable", () => {
     expect(listPdfTemplates().map((template) => template.slug)).toEqual([
       "convention",
+      "financement",
       "ndf-fn-sb",
       "ndf-solde",
     ]);
@@ -12,7 +13,7 @@ describe("PDF template registry", () => {
 
   it("retourne une erreur explicite pour un slug inconnu", () => {
     expect(() => getPdfTemplate("inconnu")).toThrow(
-      "Templates disponibles : convention, ndf-fn-sb, ndf-solde",
+      "Templates disponibles : convention, financement, ndf-fn-sb, ndf-solde",
     );
   });
 });
