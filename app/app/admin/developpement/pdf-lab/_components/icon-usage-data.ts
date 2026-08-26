@@ -1277,4 +1277,26 @@ export const iconUsages: IconUsage[] = [
     context:
       "bouton de confirmation dans la modale, désactivé tant que la case n'est pas cochée",
   },
+
+  // app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+    context: "modale de confirmation de suppression",
+  },
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer définitivement",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+    context: "bouton de confirmation dans la modale",
+  },
 ];
