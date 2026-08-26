@@ -12,22 +12,52 @@ import {
 } from "@/lib/admin/validate-expense-report-action";
 import type { ExpenseReportValidationGroup } from "@/lib/admin/expense-report-validation-preparation";
 import { Modal, type ModalHandle } from "@/components/ui/modal";
+import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { SubventionPdfFields } from "./subvention-pdf-fields";
 import { SoldePdfFields } from "./solde-pdf-fields";
 
 type DocumentState =
-  | { key: string; kind: "SUBVENTION"; subventionId: string; data: ExpenseReportPdfData }
+  | {
+      key: string;
+      kind: "SUBVENTION";
+      subventionId: string;
+      data: ExpenseReportPdfData;
+    }
   | { key: string; kind: "CLUB_BALANCE"; data: ExpenseBalancePdfData };
 
 function tabLabel(document: DocumentState): string {
-  return document.kind === "CLUB_BALANCE" ? "Solde" : document.data.grantName;
+  return document.kind === "CLUB_BALANCE"
+    ? fundingSourceLabel.CLUB_BALANCE
+    : document.data.grantName;
 }
 
-function pdfLabel(pdf: GeneratedExpenseReportPdf, documents: DocumentState[]): string {
+/**
+ * Remplace les données du document `key` sans perdre son `kind` ni son
+ * éventuel `subventionId` — la Ligne appelante connaît toujours le type de
+ * `data` associé à ce `key` (cf. SoldePdfFields/SubventionPdfFields
+ * ci-dessous), TypeScript ne peut simplement pas le vérifier à travers le
+ * `.map` sur l'union `DocumentState`.
+ */
+function replaceDocumentData(
+  documents: DocumentState[],
+  key: string,
+  data: ExpenseReportPdfData | ExpenseBalancePdfData,
+): DocumentState[] {
+  return documents.map((document) =>
+    document.key === key ? ({ ...document, data } as DocumentState) : document,
+  );
+}
+
+function pdfLabel(
+  pdf: GeneratedExpenseReportPdf,
+  documents: DocumentState[],
+): string {
   const document = documents.find(
     (candidate) =>
-      (candidate.kind === "CLUB_BALANCE" && pdf.fundingSource === "CLUB_BALANCE") ||
-      (candidate.kind === "SUBVENTION" && candidate.subventionId === pdf.subventionId),
+      (candidate.kind === "CLUB_BALANCE" &&
+        pdf.fundingSource === "CLUB_BALANCE") ||
+      (candidate.kind === "SUBVENTION" &&
+        candidate.subventionId === pdf.subventionId),
   );
   return document ? tabLabel(document) : "PDF";
 }
@@ -67,7 +97,9 @@ export function ValidateExpenseReportEditor({
   const [activeKey, setActiveKey] = useState(documents[0]?.key);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [generatedPdfs, setGeneratedPdfs] = useState<GeneratedExpenseReportPdf[]>([]);
+  const [generatedPdfs, setGeneratedPdfs] = useState<
+    GeneratedExpenseReportPdf[]
+  >([]);
   const confirmModalRef = useRef<ModalHandle>(null);
   const successModalRef = useRef<ModalHandle>(null);
 
@@ -127,11 +159,7 @@ export function ValidateExpenseReportEditor({
           data={active.data}
           onChange={(data) =>
             setDocuments((current) =>
-              current.map((document) =>
-                document.key === active.key && document.kind === "CLUB_BALANCE"
-                  ? { ...document, data }
-                  : document,
-              ),
+              replaceDocumentData(current, active.key, data),
             )
           }
         />
@@ -140,11 +168,7 @@ export function ValidateExpenseReportEditor({
           data={active.data}
           onChange={(data) =>
             setDocuments((current) =>
-              current.map((document) =>
-                document.key === active.key && document.kind === "SUBVENTION"
-                  ? { ...document, data }
-                  : document,
-              ),
+              replaceDocumentData(current, active.key, data),
             )
           }
         />
@@ -163,9 +187,9 @@ export function ValidateExpenseReportEditor({
 
       <Modal ref={confirmModalRef} title="Valider cette Note de frais ?">
         <p className="text-sm text-base-content/80">
-          Cette action est définitive : la Note deviendra immuable, le Solde
-          et les Subventions concernées seront mis à jour, et l&apos;IBAN
-          sera supprimé de la base.
+          Cette action est définitive : la Note deviendra immuable, le Solde et
+          les Subventions concernées seront mis à jour, et l&apos;IBAN sera
+          supprimé de la base.
         </p>
         {error && (
           <div role="alert" className="alert alert-error alert-soft mt-4">

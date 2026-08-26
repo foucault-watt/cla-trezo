@@ -1,9 +1,10 @@
+import type { FundingSourceType } from "@/app/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { readStoredFile } from "@/lib/storage/file-storage";
 
 function pdfFilename(pdf: {
-  fundingSource: "CLUB_BALANCE" | "SUBVENTION";
+  fundingSource: FundingSourceType;
   subvention: { reason: string } | null;
 }): string {
   if (pdf.fundingSource === "CLUB_BALANCE") {
