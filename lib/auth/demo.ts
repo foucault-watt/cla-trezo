@@ -256,8 +256,6 @@ async function resetDemoData(
             beneficiaryLastname: params.beneficiary.lastname,
             lines: {
               create: params.lines.map((line) => ({
-                beneficiaryFirstname: params.beneficiary.firstname,
-                beneficiaryLastname: params.beneficiary.lastname,
                 amountCents: line.amountCents,
                 expenseName: line.expenseName,
                 ...expenseType(line.typeLabel),

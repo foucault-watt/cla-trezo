@@ -8,11 +8,7 @@ function resolveStorageRoot(): string {
   return path.resolve(process.cwd(), configured);
 }
 
-/**
- * Chemin relatif stocké en base (`SupportingDocument.filePath`) : indépendant
- * de la racine de stockage pour pouvoir déplacer celle-ci sans migration.
- */
-export function buildSupportingDocumentPath({
+function buildDocumentPath({
   assoSlug,
   reportId,
   extension,
@@ -27,6 +23,30 @@ export function buildSupportingDocumentPath({
 
   const filename = `${randomUUID()}.${extension}`;
   return path.posix.join(assoSlug, reportId, filename);
+}
+
+/**
+ * Chemin relatif stocké en base (`SupportingDocument.filePath`) : indépendant
+ * de la racine de stockage pour pouvoir déplacer celle-ci sans migration.
+ */
+export function buildSupportingDocumentPath(args: {
+  assoSlug: string;
+  reportId: string;
+  extension: string;
+}): string {
+  return buildDocumentPath(args);
+}
+
+/**
+ * Chemin relatif stocké en base (`ExpenseReportPdf.filePath`) : un PDF final
+ * par source de financement (ADR-0006).
+ */
+export function buildExpenseReportPdfPath(args: {
+  assoSlug: string;
+  reportId: string;
+  extension: string;
+}): string {
+  return buildDocumentPath(args);
 }
 
 function resolveAbsolutePath(relativePath: string): string {

@@ -12,6 +12,7 @@ function validForm() {
   form.set("claSignatoryName", "Camille Martin");
   form.set("claSignatoryRole", "Présidente");
   form.set("claSignatureCity", "Lille");
+  form.set("claTreasurerName", "Baptiste Frenay");
   return form;
 }
 

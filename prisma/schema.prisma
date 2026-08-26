@@ -159,6 +159,7 @@ model Subvention {
   asso               Asso                @relation(fields: [assoId], references: [id])
   expenseReportLines ExpenseReportLine[]
   financialMovements FinancialMovement[]
+  expenseReportPdfs  ExpenseReportPdf[]
 
   @@map("subvention")
 }
@@ -174,6 +175,10 @@ model ConventionPdfSettings {
   claSignatoryName   String   @map("cla_signatory_name")
   claSignatoryRole   String   @map("cla_signatory_role")
   claSignatureCity   String   @map("cla_signature_city")
+  /// Nom affiché comme "Le Trésorier de CLA" sur les PDF finaux de Note de
+  /// frais (ndf-fn-sb, ndf-solde) — distinct du signataire des Conventions
+  /// de subvention ci-dessus, qui peut être une autre personne.
+  claTreasurerName   String   @default("") @map("cla_treasurer_name")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("convention_pdf_settings")
@@ -190,7 +195,6 @@ model ExpenseReport {
   takenAt              DateTime?           @map("taken_at")
   submittedAt          DateTime?           @map("submitted_at")
   finalizedAt          DateTime?           @map("finalized_at")
-  finalPdfPath         String?             @map("final_pdf_path")
   beneficiaryUserId    String?             @map("beneficiary_user_id") @db.Uuid
   beneficiaryFirstname String?             @map("beneficiary_firstname")
   beneficiaryLastname  String?             @map("beneficiary_lastname")
@@ -204,6 +208,7 @@ model ExpenseReport {
   beneficiaryUser     User?                @relation("Beneficiary", fields: [beneficiaryUserId], references: [id], onDelete: SetNull)
   lines               ExpenseReportLine[]
   supportingDocuments SupportingDocument[]
+  pdfs                ExpenseReportPdf[]
 
   @@map("expense_report")
 }
@@ -219,17 +224,17 @@ model TypeDepense {
 }
 
 model ExpenseReportLine {
-  id                   String            @id @default(uuid()) @db.Uuid
-  expenseReportId      String            @map("expense_report_id") @db.Uuid
-  amountCents          Int               @map("amount_cents")
-  expenseDate          DateTime?         @map("expense_date") @db.Date
-  expenseName          String            @map("expense_name")
-  typeDepenseId        String?           @map("type_depense_id") @db.Uuid
-  customLabel          String?           @map("custom_label")
-  fundingSource        FundingSourceType @map("funding_source")
-  subventionId         String?           @map("subvention_id") @db.Uuid
-  createdAt            DateTime          @default(now()) @map("created_at")
-  updatedAt            DateTime          @updatedAt @map("updated_at")
+  id              String            @id @default(uuid()) @db.Uuid
+  expenseReportId String            @map("expense_report_id") @db.Uuid
+  amountCents     Int               @map("amount_cents")
+  expenseDate     DateTime?         @map("expense_date") @db.Date
+  expenseName     String            @map("expense_name")
+  typeDepenseId   String?           @map("type_depense_id") @db.Uuid
+  customLabel     String?           @map("custom_label")
+  fundingSource   FundingSourceType @map("funding_source")
+  subventionId    String?           @map("subvention_id") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
 
   expenseReport     ExpenseReport      @relation(fields: [expenseReportId], references: [id])
   typeDepense       TypeDepense?       @relation(fields: [typeDepenseId], references: [id])
@@ -251,6 +256,24 @@ model SupportingDocument {
   expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id])
 
   @@map("supporting_document")
+}
+
+/// Un enregistrement par PDF final généré à la Validation d'une Note de
+/// frais : un par Subvention distincte utilisée par la Note (subventionId
+/// renseigné), plus un pour le Solde si des Lignes en dépendent
+/// (subventionId absent) — cf. ADR-0006.
+model ExpenseReportPdf {
+  id              String            @id @default(uuid()) @db.Uuid
+  expenseReportId String            @map("expense_report_id") @db.Uuid
+  fundingSource   FundingSourceType @map("funding_source")
+  subventionId    String?           @map("subvention_id") @db.Uuid
+  filePath        String            @map("file_path")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id])
+  subvention    Subvention?   @relation(fields: [subventionId], references: [id])
+
+  @@map("expense_report_pdf")
 }
 
 model FinancialMovement {

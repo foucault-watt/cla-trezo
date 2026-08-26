@@ -24,6 +24,7 @@ _Avoid_: budget, trésorerie (trop génériques, mélangent Solde et Subvention)
 
 **Campagne de subvention**:
 Regroupement administratif de Subventions portant un même Type de subvention et une même période (ex: "CA Budget 2026"). Porte le Type de subvention et la date de publication communs à toutes ses Subventions. Créée par l'Admin, qui y ajoute ensuite une ou plusieurs Subventions, éventuellement plusieurs pour la même Structure.
+_Avoid_: financement (terme utilisé dans les PDF générés — ndf-fn-sb, Ordre de financement — pour désigner ce concept côté bénéficiaire ; à éviter en interne)
 
 **Subvention**:
 Enveloppe financière accordée à une Structure (Club, Commission ou Association) au sein d'une Campagne de subvention, toujours séparée du Solde — elle ne l'augmente jamais, même pour un Club. Portée par une raison et un montant unique (pas de ventilation interne).
@@ -59,7 +60,7 @@ Note envoyée à l'Admin. Encore modifiable par la Structure tant que l'Admin n'
 L'Admin a commencé à traiter la note. La Structure perd définitivement la main (cf. ADR-0001).
 
 **Validée**:
-Le PDF final a été généré. La note est immuable (cf. ADR-0003), le Solde et les Subventions concernées sont mis à jour, l'IBAN est supprimé (cf. ADR-0002).
+Le ou les PDF finaux ont été générés (cf. PDF final). La note est immuable (cf. ADR-0003), le Solde et les Subventions concernées sont mis à jour, l'IBAN est supprimé (cf. ADR-0002).
 
 **Rejetée**:
 L'Admin refuse la note après Prise en charge. Statut terminal : accessible uniquement depuis Prise en charge, jamais depuis Brouillon ou Soumise directement, et non modifiable ensuite (pas de retour en Brouillon).
@@ -82,10 +83,6 @@ Mouvement ajouté par l'Admin qui augmente le Solde d'un Club. Concerne uniqueme
 **Sortie manuelle**:
 Mouvement ajouté par l'Admin qui diminue le Solde d'un Club. Ne peut jamais être liée à une Subvention — les Subventions ne se consomment que via les Notes de frais.
 
-**Convention**:
-Document PDF officiel généré à partir d'une Subvention. Correspond toujours à une seule Subvention.
-_Avoid_: courrier
-
 **Warning**:
 Signal non-bloquant affiché à l'utilisateur ou à l'admin (dépassement de Subvention, Subvention ancienne, Solde négatif). Ne bloque jamais la soumission ni la validation — l'admin garde toujours la décision finale.
 _Avoid_: erreur, blocage (impliqueraient à tort un blocage dur)
@@ -102,3 +99,17 @@ Justificatif alternatif utilisé en l'absence de Facture. Une Note de frais cont
 **Admin**:
 Rôle unique ayant le dernier mot sur la validation des Notes de frais, la gestion des Subventions et des entrées/sorties de Solde. Un seul rôle en V1, quel que soit l'usage du terme "trésorier" dans les échanges courants.
 _Avoid_: trésorier (dans le code — c'est un synonyme d'usage, pas un rôle distinct)
+
+## Documents PDF
+
+**PDF final**:
+Document PDF officiel généré à la validation d'une Note de frais, remis comme justificatif de remboursement. Une Note de frais peut mélanger plusieurs sources de financement entre ses Remboursements ; la validation génère un PDF final par source distincte — un par Subvention concernée, plus un regroupant tous les Remboursements financés par le Solde s'il y en a. Une Note produit donc un ou plusieurs PDF finaux, jamais un PDF unique combinant toutes les sources.
+_Avoid_: le PDF, la note en PDF
+
+**Convention de subvention**:
+Document PDF officiel généré lors de l'octroi d'une Subvention à une Association loi 1901. Correspond toujours à une seule Subvention.
+_Avoid_: courrier, convention (seul)
+
+**Ordre de financement**:
+Équivalent de la Convention de subvention pour un Club ou une Commission bénéficiaire d'une Subvention. Document PDF officiel généré lors de l'octroi d'une Subvention, toujours lié à une seule Subvention.
+_Avoid_: convention (réservé à l'Association loi 1901)

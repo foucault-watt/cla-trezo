@@ -182,6 +182,29 @@ export function ConventionSettingsForm({
         </div>
       </div>
 
+      <div className="card card-border bg-base-100">
+        <div className="card-body gap-4">
+          <div>
+            <h2 className="card-title">Notes de frais</h2>
+            <p className="text-sm text-base-content/60">
+              Nom proposé par défaut pour la signature « Le Trésorier de CLA
+              » sur les PDF finaux d’une Note de frais validée.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Trésorier de CLA</legend>
+              <input
+                className="input w-full"
+                name="claTreasurerName"
+                defaultValue={initialSettings.claTreasurerName}
+                required
+              />
+            </fieldset>
+          </div>
+        </div>
+      </div>
+
       {!state.ok && state.error && (
         <div role="alert" className="alert alert-error alert-soft">
           <span>{state.error}</span>

@@ -1103,4 +1103,46 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/remboursements/page.tsx",
     context: "état désactivé, cohérent avec le bouton actif \"Choisir le bénéficiaire\"",
   },
+
+  // components/expense-reports/pdf-field-editors.tsx
+  {
+    icon: "Plus",
+    visibleText: "Ajouter une ligne",
+    ariaLabel: null,
+    file: "components/expense-reports/pdf-field-editors.tsx",
+    context: "cohérent avec pdf-lab-editor.tsx",
+  },
+  {
+    icon: "Trash2",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/expense-reports/pdf-field-editors.tsx",
+    context: "aria-label dynamique \"Supprimer la ligne {n}\", cohérent avec pdf-lab-editor.tsx",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/valider/_components/subvention-pdf-fields.tsx
+  {
+    icon: "Download",
+    visibleText: "Aperçu PDF",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/subvention-pdf-fields.tsx",
+    context: "télécharge un aperçu sans rien enregistrer",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/valider/_components/solde-pdf-fields.tsx
+  {
+    icon: "Download",
+    visibleText: "Aperçu PDF",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/solde-pdf-fields.tsx",
+    context: "télécharge un aperçu sans rien enregistrer",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
+  {
+    icon: "Save",
+    visibleText: "Confirmer la validation",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+  },
 ];

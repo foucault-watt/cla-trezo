@@ -20,6 +20,7 @@ export const conventionPdfSettingsSchema = z.object({
   claSignatoryName: requiredText,
   claSignatoryRole: requiredText,
   claSignatureCity: requiredText,
+  claTreasurerName: requiredText,
 });
 
 export type ConventionPdfSettingsInput = z.infer<
@@ -43,5 +44,6 @@ export function parseConventionPdfSettingsForm(formData: FormData) {
     claSignatoryName: formData.get("claSignatoryName"),
     claSignatoryRole: formData.get("claSignatoryRole"),
     claSignatureCity: formData.get("claSignatureCity"),
+    claTreasurerName: formData.get("claTreasurerName"),
   });
 }

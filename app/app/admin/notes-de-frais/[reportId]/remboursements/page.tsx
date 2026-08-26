@@ -13,6 +13,7 @@ import {
 } from "@/lib/admin/supporting-document-actions";
 import { ReimbursementsTable } from "@/components/expense-reports/reimbursements-table";
 import { SupportingDocumentsPanel } from "@/components/expense-reports/supporting-documents-panel";
+import Link from "next/link";
 import { TakeOverButton } from "../_components/take-over-button";
 
 export default async function AdminReimbursementsPage({
@@ -73,6 +74,16 @@ export default async function AdminReimbursementsPage({
       {report.status === "SUBMITTED" && (
         <div className="flex justify-end pt-1">
           <TakeOverButton reportId={reportId} />
+        </div>
+      )}
+      {report.status === "TAKEN_OVER" && (
+        <div className="flex justify-end pt-1">
+          <Link
+            href={`/app/admin/notes-de-frais/${reportId}/valider`}
+            className="btn btn-primary"
+          >
+            Valider
+          </Link>
         </div>
       )}
     </section>

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  buildExpenseReportPdfPath,
   buildSupportingDocumentPath,
   deleteStoredFile,
   readStoredFile,
@@ -40,6 +41,31 @@ describe("buildSupportingDocumentPath", () => {
   it("refuse un assoSlug qui contiendrait un séparateur de chemin", () => {
     expect(() =>
       buildSupportingDocumentPath({
+        assoSlug: "../evil",
+        reportId: "report-1",
+        extension: "pdf",
+      }),
+    ).toThrow();
+  });
+});
+
+describe("buildExpenseReportPdfPath", () => {
+  it("génère un chemin {assoSlug}/{reportId}/{uuid}.{extension}", () => {
+    const relativePath = buildExpenseReportPdfPath({
+      assoSlug: "club-info",
+      reportId: "report-1",
+      extension: "pdf",
+    });
+
+    const segments = relativePath.split("/");
+    expect(segments[0]).toBe("club-info");
+    expect(segments[1]).toBe("report-1");
+    expect(segments[2]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
+  });
+
+  it("refuse un assoSlug qui contiendrait un séparateur de chemin", () => {
+    expect(() =>
+      buildExpenseReportPdfPath({
         assoSlug: "../evil",
         reportId: "report-1",
         extension: "pdf",

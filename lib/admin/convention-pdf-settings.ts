@@ -17,6 +17,7 @@ export const defaultConventionPdfSettings: ConventionPdfSettingsInput = {
   claSignatoryName: "Mathéo GUEFFIER",
   claSignatoryRole: "Secrétaire général",
   claSignatureCity: "Lille",
+  claTreasurerName: "Mathis MARCISET",
 };
 
 export async function getConventionPdfSettings(): Promise<ConventionPdfSettingsInput> {
