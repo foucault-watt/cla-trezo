@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useRef } from "react";
 import { Trash2, X } from "lucide-react";
 import { Modal, type ModalHandle } from "@/components/ui/modal";
 import {
@@ -20,15 +19,11 @@ export function DeleteExpenseReportButton({
   reportId: string;
   title: string;
 }) {
-  const router = useRouter();
   const modalRef = useRef<ModalHandle>(null);
   const [state, formAction, pending] = useActionState(
     deleteExpenseReportAction,
     initialState,
   );
-  useEffect(() => {
-    if (state.ok) router.push(`/app/${assoSlug}/notes-de-frais`);
-  }, [state.ok, assoSlug, router]);
 
   return (
     <>

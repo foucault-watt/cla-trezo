@@ -12,6 +12,7 @@ import {
 } from "@/lib/expense-reports/supporting-document-actions";
 import { ReimbursementsTable } from "@/components/expense-reports/reimbursements-table";
 import { SupportingDocumentsPanel } from "@/components/expense-reports/supporting-documents-panel";
+import { DeleteExpenseReportButton } from "../_components/delete-expense-report-button";
 
 export default async function ReimbursementsPage({
   params,
@@ -71,7 +72,16 @@ export default async function ReimbursementsPage({
           removeAction={removeSupportingDocumentAction}
         />
       </section>
-      <div className="flex justify-end pt-1">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
+        <div>
+          {context.report.status === "DRAFT" && (
+            <DeleteExpenseReportButton
+              assoSlug={assoSlug}
+              reportId={reportId}
+              title={context.report.title}
+            />
+          )}
+        </div>
         {context.completion.remboursements ? (
           <Link
             className="btn btn-primary"

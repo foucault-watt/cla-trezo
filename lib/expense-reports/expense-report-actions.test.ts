@@ -22,6 +22,7 @@ const {
   transactionMock,
   revalidatePathMock,
   deleteStoredFileMock,
+  redirectMock,
 } = vi.hoisted(() => ({
   requireStructureAccessMock: vi.fn(),
   reportCreateMock: vi.fn(),
@@ -44,6 +45,9 @@ const {
   transactionMock: vi.fn(),
   revalidatePathMock: vi.fn(),
   deleteStoredFileMock: vi.fn(),
+  redirectMock: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  }),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -78,6 +82,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
+vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/storage/file-storage", () => ({
   deleteStoredFile: deleteStoredFileMock,
 }));
@@ -126,6 +131,7 @@ beforeEach(() => {
   transactionMock.mockReset();
   revalidatePathMock.mockReset();
   deleteStoredFileMock.mockReset();
+  redirectMock.mockClear();
   requireStructureAccessMock.mockResolvedValue(structureAccess);
   lineFindManyMock.mockResolvedValue([]);
   financialMovementFindManyMock.mockResolvedValue([]);
@@ -554,10 +560,9 @@ describe("deleteExpenseReportAction", () => {
       ],
     });
 
-    const result = await deleteExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
+    await expect(
+      deleteExpenseReportAction({ ok: false }, formData(valid)),
+    ).rejects.toThrow("NEXT_REDIRECT:/app/club-info/notes-de-frais");
 
     expect(lineDeleteManyMock).toHaveBeenCalledWith({
       where: { expenseReportId: valid.id },
@@ -573,10 +578,10 @@ describe("deleteExpenseReportAction", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith(
       "/app/club-info/notes-de-frais",
     );
-    expect(result).toEqual({ ok: true });
+    expect(redirectMock).toHaveBeenCalledWith("/app/club-info/notes-de-frais");
   });
 
-  it("reste ok même si la purge d'un fichier orphelin échoue", async () => {
+  it("redirige vers la liste même si la purge d'un fichier orphelin échoue", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: valid.id,
       assoId: "asso-1",
@@ -585,11 +590,8 @@ describe("deleteExpenseReportAction", () => {
     });
     deleteStoredFileMock.mockRejectedValue(new Error("ENOENT"));
 
-    const result = await deleteExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(result).toEqual({ ok: true });
+    await expect(
+      deleteExpenseReportAction({ ok: false }, formData(valid)),
+    ).rejects.toThrow("NEXT_REDIRECT:/app/club-info/notes-de-frais");
   });
 });

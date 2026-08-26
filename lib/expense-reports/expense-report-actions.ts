@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { toAmountCents } from "@/lib/money";
@@ -464,7 +465,10 @@ export async function deleteExpenseReportAction(
 
   revalidatePath(`/app/${parsed.data.assoSlug}/notes-de-frais`);
 
-  return { ok: true };
+  // redirect() throws to let Next.js navigate directly from the action,
+  // avoiding a client-side push racing the implicit refresh of the current
+  // (now-deleted) report page, which would otherwise 404 first.
+  redirect(`/app/${parsed.data.assoSlug}/notes-de-frais`);
 }
 
 export type ReimbursementFormState = ExpenseReportLineFormState;
