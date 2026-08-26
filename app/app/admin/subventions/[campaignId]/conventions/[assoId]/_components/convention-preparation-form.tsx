@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import { representativesForPrimarySection } from "@/lib/admin/convention-preparation-fields";
 import { formatCents } from "@/lib/money";
 import type {
@@ -204,7 +205,7 @@ export function ConventionPreparationForm({
 }) {
   const [data, setData] = useState(initialData);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { push: pushToast } = useToast();
 
   function updateParty(
     key: "firstParty" | "secondParty",
@@ -256,12 +257,11 @@ export function ConventionPreparationForm({
   async function downloadPdf() {
     const invalid = validationError();
     if (invalid) {
-      setError(invalid);
+      pushToast({ type: "error", message: invalid });
       return;
     }
 
     setPending(true);
-    setError(null);
     try {
       const response = await fetch(
         `/app/admin/subventions/${campaignId}/conventions/${assoId}/download`,
@@ -287,11 +287,13 @@ export function ConventionPreparationForm({
       link.click();
       URL.revokeObjectURL(url);
     } catch (downloadError) {
-      setError(
-        downloadError instanceof Error
-          ? downloadError.message
-          : "La génération de la convention a échoué.",
-      );
+      pushToast({
+        type: "error",
+        message:
+          downloadError instanceof Error
+            ? downloadError.message
+            : "La génération de la convention a échoué.",
+      });
     } finally {
       setPending(false);
     }
@@ -499,12 +501,6 @@ export function ConventionPreparationForm({
           </div>
         </div>
       </details>
-
-      {error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{error}</span>
-        </div>
-      )}
 
       <div className="flex justify-end">
         <button

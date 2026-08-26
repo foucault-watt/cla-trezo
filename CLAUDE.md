@@ -21,3 +21,7 @@ Vitest, unit tests colocated as `*.test.ts`. Write a test whenever a change touc
 ### Seeds
 
 `prisma/seed.ts` = données de référence permanentes. `scripts/seed-*.ts` = seeds manuels jetables pour du volume de test, toujours gardés par `ALLOW_DEV_SEED=true`. See `docs/agents/seeds.md`.
+
+### Toasts
+
+Système d'alerte toast global (`ToastProvider`/`useToast`, monté dans `app/layout.tsx`), avec un mécanisme `?toast=...&toastType=...` pour survivre à un `redirect()` côté serveur. See `docs/agents/toasts.md`.

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Pencil, Save, X } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import {
   updateExpenseReportAction,
   type UpdateExpenseReportState,
@@ -21,6 +22,7 @@ export function EditExpenseReportForm({
   description: string | null;
 }) {
   const [editing, setEditing] = useState(false);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     updateExpenseReportAction,
     initialState,
@@ -35,6 +37,12 @@ export function EditExpenseReportForm({
       setEditing(false);
     }
   }
+
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <div className="card mt-8 border border-base-300 bg-base-100 shadow-md">
@@ -80,12 +88,6 @@ export function EditExpenseReportForm({
                 defaultValue={description ?? ""}
               />
             </fieldset>
-
-            {!state.ok && state.error && (
-              <div role="alert" className="alert alert-error alert-soft">
-                <span>{state.error}</span>
-              </div>
-            )}
 
             <button
               type="submit"

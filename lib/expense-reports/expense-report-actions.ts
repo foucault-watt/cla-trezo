@@ -467,8 +467,18 @@ export async function deleteExpenseReportAction(
 
   // redirect() throws to let Next.js navigate directly from the action,
   // avoiding a client-side push racing the implicit refresh of the current
-  // (now-deleted) report page, which would otherwise 404 first.
-  redirect(`/app/${parsed.data.assoSlug}/notes-de-frais`);
+  // (now-deleted) report page, which would otherwise 404 first. Cette même
+  // contrainte empêche d'afficher le toast de succès depuis le client (le
+  // code après un redirect() serveur ne s'exécute jamais) : le message
+  // transite donc par l'URL cible, lu et nettoyé par <ToastQueryFlag /> —
+  // voir docs/agents/toasts.md.
+  const toastParams = new URLSearchParams({
+    toast: "Note de frais supprimée.",
+    toastType: "success",
+  });
+  redirect(
+    `/app/${parsed.data.assoSlug}/notes-de-frais?${toastParams.toString()}`,
+  );
 }
 
 export type ReimbursementFormState = ExpenseReportLineFormState;

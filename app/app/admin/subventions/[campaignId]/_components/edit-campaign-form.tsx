@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useToast } from "@/components/ui/toast";
 import {
   updateSubventionCampaignAction,
   type UpdateSubventionCampaignState,
@@ -29,6 +30,7 @@ export function EditCampaignForm({
   date: Date;
   publicationDate: Date | null;
 }) {
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     updateSubventionCampaignAction,
     initialState,
@@ -37,6 +39,14 @@ export function EditCampaignForm({
   const [publicationDateValue, setPublicationDateValue] = useState(
     toDateInputValue(publicationDate),
   );
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({ type: "success", message: "Campagne mise à jour." });
+    } else if (state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -67,17 +77,6 @@ export function EditCampaignForm({
           passée ou égale à aujourd&apos;hui la rend Publiée.
         </p>
       </fieldset>
-
-      {!state.ok && state.error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{state.error}</span>
-        </div>
-      )}
-      {state.ok && (
-        <div role="alert" className="alert alert-success alert-soft">
-          <span>Campagne mise à jour.</span>
-        </div>
-      )}
 
       <button
         type="submit"

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Building2, Landmark, Scale } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import {
   setAssoTypeAction,
   type SetAssoTypeState,
@@ -32,12 +33,19 @@ function AssoTypeCard({
   description: string;
   current: AssoType | null;
 }) {
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     setAssoTypeAction,
     initialState,
   );
   const Icon = icons[value];
   const isCurrent = current === value;
+
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <div
@@ -51,12 +59,6 @@ function AssoTypeCard({
         <p className="text-sm whitespace-pre-line text-base-content/70">
           {description}
         </p>
-
-        {!state.ok && state.error && (
-          <div role="alert" className="alert alert-error alert-soft mt-2">
-            <span>{state.error}</span>
-          </div>
-        )}
 
         <form action={formAction} className="card-actions justify-end">
           <input type="hidden" name="assoId" value={assoId} />

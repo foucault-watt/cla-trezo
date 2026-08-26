@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useToast } from "@/components/ui/toast";
 import {
   createSubventionCampaignAction,
   type CreateSubventionCampaignState,
@@ -13,6 +14,7 @@ const initialState: CreateSubventionCampaignState = { ok: false };
 
 export function NewCampaignForm() {
   const router = useRouter();
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     createSubventionCampaignAction,
     initialState,
@@ -23,9 +25,12 @@ export function NewCampaignForm() {
 
   useEffect(() => {
     if (state.ok && state.campaignId) {
+      pushToast({ type: "success", message: "Campagne créée." });
       router.push(`/app/admin/subventions/${state.campaignId}`);
+    } else if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
     }
-  }, [state, router]);
+  }, [state, router, pushToast]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -55,12 +60,6 @@ export function NewCampaignForm() {
           pour ne pas encore la publier.
         </p>
       </fieldset>
-
-      {!state.ok && state.error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{state.error}</span>
-        </div>
-      )}
 
       <button
         type="submit"

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   createExpenseReportAction,
   type CreateExpenseReportState,
@@ -11,6 +12,7 @@ const initialState: CreateExpenseReportState = { ok: false };
 
 export function NewExpenseReportForm({ assoSlug }: { assoSlug: string }) {
   const router = useRouter();
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     createExpenseReportAction,
     initialState,
@@ -18,9 +20,12 @@ export function NewExpenseReportForm({ assoSlug }: { assoSlug: string }) {
 
   useEffect(() => {
     if (state.ok && state.reportId) {
+      pushToast({ type: "success", message: "Note de frais créée." });
       router.push(`/app/${assoSlug}/notes-de-frais/${state.reportId}`);
+    } else if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
     }
-  }, [state, router, assoSlug]);
+  }, [state, router, assoSlug, pushToast]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -41,12 +46,6 @@ export function NewExpenseReportForm({ assoSlug }: { assoSlug: string }) {
         <legend className="fieldset-legend">Description (facultative)</legend>
         <textarea name="description" className="textarea w-full" rows={3} />
       </fieldset>
-
-      {!state.ok && state.error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{state.error}</span>
-        </div>
-      )}
 
       <button type="submit" className="btn btn-primary" disabled={pending}>
         {pending ? (

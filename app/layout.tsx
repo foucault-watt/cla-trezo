@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { themeInitScript } from "@/lib/theme";
+import { ToastProvider } from "@/components/ui/toast";
+import { ToastQueryFlag } from "@/components/ui/toast-query-flag";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +46,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        {children}
+        <ToastProvider>
+          <Suspense fallback={null}>
+            <ToastQueryFlag />
+          </Suspense>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import {
   saveConventionPdfSettingsAction,
   type ConventionPdfSettingsState,
@@ -18,10 +19,22 @@ export function ConventionSettingsForm({
   const [representatives, setRepresentatives] = useState(
     initialSettings.claRepresentatives,
   );
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     saveConventionPdfSettingsAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({
+        type: "success",
+        message: "Les paramètres PDF ont été enregistrés.",
+      });
+    } else if (state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -204,17 +217,6 @@ export function ConventionSettingsForm({
           </div>
         </div>
       </div>
-
-      {!state.ok && state.error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{state.error}</span>
-        </div>
-      )}
-      {state.ok && (
-        <div role="status" className="alert alert-success alert-soft">
-          <span>Les paramètres PDF ont été enregistrés.</span>
-        </div>
-      )}
 
       <div className="flex justify-end">
         <button

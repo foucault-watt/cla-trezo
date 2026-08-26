@@ -418,13 +418,6 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx
   {
-    icon: "CheckCircle2",
-    visibleText: "La Note de frais a bien été soumise à l'Admin CLA.",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
-    context: "bandeau de statut après succès",
-  },
-  {
     icon: "Send",
     visibleText: "Soumettre la Note de frais",
     ariaLabel: null,

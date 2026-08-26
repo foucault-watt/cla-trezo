@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Trash2, X } from "lucide-react";
 import { Modal, type ModalHandle } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import {
   deleteExpenseReportAction,
   type DeleteExpenseReportState,
@@ -20,10 +21,17 @@ export function DeleteExpenseReportButton({
   title: string;
 }) {
   const modalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     deleteExpenseReportAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <>
@@ -41,11 +49,6 @@ export function DeleteExpenseReportButton({
           supprimée, avec toutes ses Dépenses et ses Justificatifs. Cette action
           est irréversible.
         </p>
-        {!state.ok && state.error && (
-          <div role="alert" className="alert alert-error alert-soft mt-4">
-            {state.error}
-          </div>
-        )}
         <form action={formAction} className="modal-action">
           <input type="hidden" name="id" value={reportId} />
           <input type="hidden" name="assoSlug" value={assoSlug} />

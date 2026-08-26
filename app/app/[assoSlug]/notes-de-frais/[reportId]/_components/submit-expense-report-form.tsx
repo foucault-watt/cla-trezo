@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState, useRef } from "react";
-import { CheckCircle2, Send, TriangleAlert, X } from "lucide-react";
+import { useActionState, useEffect, useRef } from "react";
+import { Send, TriangleAlert, X } from "lucide-react";
 import {
   Modal,
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import {
   submitExpenseReportAction,
   type SubmitExpenseReportState,
@@ -33,19 +34,26 @@ export function SubmitExpenseReportForm({
   warnings: string[];
 }) {
   const modalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     submitExpenseReportAction,
     initialState,
   );
   useModalAutoClose(modalRef, state.ok);
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({
+        type: "success",
+        message: "La Note de frais a bien été soumise à l'Admin CLA.",
+      });
+    } else if (state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
+
   return (
     <>
-      {state.ok && (
-        <div role="status" className="alert alert-success alert-soft mb-4">
-          <CheckCircle2 size={18} />
-          La Note de frais a bien été soumise à l&apos;Admin CLA.
-        </div>
-      )}
       <button
         type="button"
         className="btn btn-primary"
@@ -84,11 +92,6 @@ export function SubmitExpenseReportForm({
           La note restera modifiable jusqu&apos;à sa prise en charge par
           l&apos;Admin CLA.
         </p>
-        {!state.ok && state.error && (
-          <div role="alert" className="alert alert-error alert-soft mt-4">
-            {state.error}
-          </div>
-        )}
         <form action={formAction} className="modal-action">
           <input type="hidden" name="id" value={reportId} />
           <input type="hidden" name="assoSlug" value={assoSlug} />

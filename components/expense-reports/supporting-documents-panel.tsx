@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   FileText,
   Receipt,
@@ -14,6 +14,7 @@ import {
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import type {
   AddSupportingDocumentsState,
   RemoveSupportingDocumentState,
@@ -58,11 +59,18 @@ function RemoveDocumentButton({
   removeAction: RemoveSupportingDocumentAction;
 }) {
   const modalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     removeAction,
     initialRemoveState,
   );
   useModalAutoClose(modalRef, state.ok);
+
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <>
@@ -259,6 +267,7 @@ function UploadForm({
   multiple: boolean;
   addAction: AddSupportingDocumentsAction;
 }) {
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     addAction,
     initialAddState,
@@ -276,6 +285,12 @@ function UploadForm({
     }
   }
 
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
+
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="expenseReportId" value={reportId} />
@@ -288,12 +303,6 @@ function UploadForm({
         pending={pending}
         label={dropZoneCopy[documentType]}
       />
-
-      {!state.ok && state.error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{state.error}</span>
-        </div>
-      )}
     </form>
   );
 }

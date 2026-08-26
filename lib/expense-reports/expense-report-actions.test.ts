@@ -578,7 +578,9 @@ describe("deleteExpenseReportAction", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith(
       "/app/club-info/notes-de-frais",
     );
-    expect(redirectMock).toHaveBeenCalledWith("/app/club-info/notes-de-frais");
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/app/club-info/notes-de-frais?toast=Note+de+frais+supprim%C3%A9e.&toastType=success",
+    );
   });
 
   it("redirige vers la liste même si la purge d'un fichier orphelin échoue", async () => {

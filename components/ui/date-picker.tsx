@@ -1,6 +1,5 @@
 "use client";
 
-import "cally";
 import { useEffect, useId, useRef } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
@@ -85,6 +84,15 @@ export function DatePicker({
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  // `cally` enregistre ses custom elements (`customElements.define`) dès
+  // l'évaluation du module, ce qui touche `document` : un `import` statique
+  // en haut de fichier casse le SSR (Next.js évalue aussi les modules des
+  // client components côté serveur). On ne charge donc `cally` que dans le
+  // navigateur, une fois le composant monté.
+  useEffect(() => {
+    import("cally");
+  }, []);
 
   useEffect(() => {
     const element = calendarRef.current;

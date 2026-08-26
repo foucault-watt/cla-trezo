@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Pencil, Save, X } from "lucide-react";
 import {
   Modal,
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import type { UpdateExpenseReportState } from "@/lib/expense-reports/expense-report-actions";
 
 const initialState: UpdateExpenseReportState = { ok: false };
@@ -28,8 +29,16 @@ export function GeneralInformationModal({
   ) => Promise<UpdateExpenseReportState>;
 }) {
   const modalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(action, initialState);
   useModalAutoClose(modalRef, state.ok);
+
+  useEffect(() => {
+    if (!state.ok && state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
+
   return (
     <>
       <button
@@ -64,9 +73,6 @@ export function GeneralInformationModal({
               defaultValue={description ?? ""}
             />
           </fieldset>
-          {!state.ok && state.error && (
-            <div className="alert alert-error alert-soft">{state.error}</div>
-          )}
           <div className="modal-action">
             <button
               type="button"

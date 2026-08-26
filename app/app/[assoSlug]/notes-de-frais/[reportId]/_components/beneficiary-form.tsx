@@ -17,6 +17,7 @@ import {
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import type { AssoMember } from "@/lib/asso/members";
 import {
   submitExpenseReportWithBeneficiaryAction,
@@ -135,12 +136,24 @@ function SubmitCurrentBeneficiaryForm({
   disabled: boolean;
 }) {
   const modalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     submitExpenseReportWithBeneficiaryAction,
     initialSubmitState,
   );
   useModalAutoClose(modalRef, state.ok);
   const names = beneficiaryNames(draft, members);
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({
+        type: "success",
+        message: "La Note de frais a bien été soumise à l'Admin CLA.",
+      });
+    } else if (state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <>
@@ -187,11 +200,6 @@ function SubmitCurrentBeneficiaryForm({
           La note restera modifiable jusqu&apos;à sa prise en charge par
           l&apos;Admin CLA.
         </p>
-        {!state.ok && state.error && (
-          <div role="alert" className="alert alert-error alert-soft mt-4">
-            {state.error}
-          </div>
-        )}
         <form action={formAction} className="modal-action">
           <input type="hidden" name="id" value={reportId} />
           <input type="hidden" name="assoSlug" value={assoSlug} />

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useToast } from "@/components/ui/toast";
 import {
   addManualMovementAction,
   type AddManualMovementState,
@@ -17,12 +18,21 @@ export function ManualMovementForm({
   assoId: string;
   assoSlug: string;
 }) {
+  const { push: pushToast } = useToast();
   const [state, formAction, pending] = useActionState(
     addManualMovementAction,
     initialState,
   );
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({ type: "success", message: "Mouvement enregistré." });
+    } else if (state.error) {
+      pushToast({ type: "error", message: state.error });
+    }
+  }, [state, pushToast]);
 
   return (
     <div className="card border border-base-300 bg-base-100 shadow-md">
@@ -77,17 +87,6 @@ export function ManualMovementForm({
               required
             />
           </fieldset>
-
-          {!state.ok && state.error && (
-            <div role="alert" className="alert alert-error alert-soft">
-              <span>{state.error}</span>
-            </div>
-          )}
-          {state.ok && (
-            <div role="alert" className="alert alert-success alert-soft">
-              <span>Mouvement enregistré.</span>
-            </div>
-          )}
 
           <button type="submit" className="btn btn-primary" disabled={pending}>
             {pending ? (

@@ -22,6 +22,7 @@ import {
   useModalAutoClose,
   type ModalHandle,
 } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
 import type { ExpenseReportLineDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import {
@@ -221,11 +222,18 @@ function EditableReimbursementRow({
   );
   const [fields, setFields] = useState(initialFields);
   const deleteModalRef = useRef<ModalHandle>(null);
+  const { push: pushToast } = useToast();
   const [deleteState, deleteFormAction, deletePending] = useActionState(
     deleteAction,
     initialFormState,
   );
   useModalAutoClose(deleteModalRef, deleteState.ok);
+
+  useEffect(() => {
+    if (!deleteState.ok && deleteState.error) {
+      pushToast({ type: "error", message: deleteState.error });
+    }
+  }, [deleteState, pushToast]);
 
   useEffect(
     () => () => {
@@ -511,11 +519,6 @@ function EditableReimbursementRow({
           <p className="text-sm text-base-content/80">
             Cette action est définitive.
           </p>
-          {!deleteState.ok && deleteState.error && (
-            <div role="alert" className="alert alert-error alert-soft mt-4">
-              {deleteState.error}
-            </div>
-          )}
           <form action={deleteFormAction} className="modal-action">
             <input type="hidden" name="id" value={line.id} />
             <input type="hidden" name="assoSlug" value={assoSlug} />
