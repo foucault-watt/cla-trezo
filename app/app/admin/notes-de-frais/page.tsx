@@ -18,17 +18,14 @@ export default async function AdminNotesDeFraisPage({
         <div>
           <h1 className="text-2xl font-semibold">Notes de frais</h1>
           <p className="mt-1 text-sm text-base-content/70">
-            Notes de frais Soumises ou Prises en charge, toutes Assos
-            confondues.
+            Notes de frais soumises, toutes Assos confondues.
           </p>
         </div>
         {reports.length > 0 && <ViewToggle current={current} />}
       </div>
 
       {reports.length === 0 ? (
-        <p className="text-base-content/70">
-          Aucune Note de frais en attente de traitement.
-        </p>
+        <p className="text-base-content/70">Aucune Note de frais soumise.</p>
       ) : current === "list" ? (
         <ListView reports={reports} />
       ) : current === "grid" ? (

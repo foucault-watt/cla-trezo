@@ -1141,8 +1141,53 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
   {
     icon: "Save",
-    visibleText: "Confirmer la validation",
+    visibleText: "Valider la note de frais",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+    context: "ouvre la modale de confirmation",
+  },
+  {
+    icon: "Save",
+    visibleText: "Confirmer",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+    context: "bouton de confirmation dans la modale \"Valider cette Note de frais ?\"",
+  },
+  {
+    icon: "Download",
+    visibleText: "Solde",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+    context:
+      "modale de succès, un lien par PDF généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention, cohérent avec layout.tsx",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/remboursements/page.tsx
+  {
+    icon: "ArrowRight",
+    visibleText: "Vérifier la deuxième étape",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/remboursements/page.tsx",
+    context:
+      "renvoie vers l'étape Bénéficiaire, où se trouve le bouton de Validation",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/beneficiaire/page.tsx
+  {
+    icon: "CheckCircle2",
+    visibleText: "Valider la note de frais",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/beneficiaire/page.tsx",
+    context: "déclenche l'aperçu de validation (/valider)",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/layout.tsx
+  {
+    icon: "Download",
+    visibleText: "Solde",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/layout.tsx",
+    context:
+      "un bouton par PDF final généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention concernée",
   },
 ];

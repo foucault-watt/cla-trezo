@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import { listActiveAssoMembers } from "@/lib/asso/members";
 import {
   getExpenseReportDetailForAdmin,
@@ -43,6 +45,17 @@ export default async function AdminBeneficiaryPage({
             {report.beneficiaryIban ?? "IBAN supprimé après finalisation"}
           </p>
         </section>
+      )}
+      {report.status === "TAKEN_OVER" && (
+        <div className="flex justify-end pt-1">
+          <Link
+            href={`/app/admin/notes-de-frais/${reportId}/valider`}
+            className="btn btn-primary"
+          >
+            <CheckCircle2 size={18} />
+            Valider la note de frais
+          </Link>
+        </div>
       )}
     </section>
   );

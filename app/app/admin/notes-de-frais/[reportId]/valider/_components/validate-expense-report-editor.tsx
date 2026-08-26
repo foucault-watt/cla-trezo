@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import {
   validateExpenseReportAction,
+  type GeneratedExpenseReportPdf,
   type ValidateExpenseReportGroupInput,
 } from "@/lib/admin/validate-expense-report-action";
 import type { ExpenseReportValidationGroup } from "@/lib/admin/expense-report-validation-preparation";
+import { Modal, type ModalHandle } from "@/components/ui/modal";
 import { SubventionPdfFields } from "./subvention-pdf-fields";
 import { SoldePdfFields } from "./solde-pdf-fields";
 
@@ -21,6 +23,15 @@ function tabLabel(document: DocumentState): string {
   return document.kind === "CLUB_BALANCE" ? "Solde" : document.data.grantName;
 }
 
+function pdfLabel(pdf: GeneratedExpenseReportPdf, documents: DocumentState[]): string {
+  const document = documents.find(
+    (candidate) =>
+      (candidate.kind === "CLUB_BALANCE" && pdf.fundingSource === "CLUB_BALANCE") ||
+      (candidate.kind === "SUBVENTION" && candidate.subventionId === pdf.subventionId),
+  );
+  return document ? tabLabel(document) : "PDF";
+}
+
 /**
  * Aperçu éditable puis confirmation de la Validation d'une Note de frais
  * (issue #20) : un onglet par document à générer (un par Subvention
@@ -28,7 +39,10 @@ function tabLabel(document: DocumentState): string {
  * éditable comme dans l'atelier pdf-lab. L'édition ne change que le PDF —
  * les mouvements financiers, la suppression de l'IBAN et le passage à
  * Validée restent calculés côté serveur à partir des vraies Lignes de la
- * Note (cf. validate-expense-report-action.ts).
+ * Note (cf. validate-expense-report-action.ts). La confirmation passe par
+ * une modale (cette action est définitive), suivie d'une seconde proposant
+ * le téléchargement des PDF générés — même pattern de modale que le reste
+ * du site (cf. components/ui/modal.tsx).
  */
 export function ValidateExpenseReportEditor({
   reportId,
@@ -53,6 +67,9 @@ export function ValidateExpenseReportEditor({
   const [activeKey, setActiveKey] = useState(documents[0]?.key);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [generatedPdfs, setGeneratedPdfs] = useState<GeneratedExpenseReportPdf[]>([]);
+  const confirmModalRef = useRef<ModalHandle>(null);
+  const successModalRef = useRef<ModalHandle>(null);
 
   const active = documents.find((document) => document.key === activeKey);
 
@@ -71,11 +88,18 @@ export function ValidateExpenseReportEditor({
       );
       const result = await validateExpenseReportAction(reportId, payload);
       if (!result.ok) {
-        setError(result.error ?? "La validation a échoué.");
+        setError(result.error);
         return;
       }
-      router.push(`/app/admin/notes-de-frais/${reportId}/remboursements`);
+      confirmModalRef.current?.close();
+      setGeneratedPdfs(result.pdfs);
+      successModalRef.current?.open();
     });
+  }
+
+  function finish() {
+    successModalRef.current?.close();
+    router.push(`/app/admin/notes-de-frais/${reportId}/remboursements`);
   }
 
   if (!active) return null;
@@ -126,27 +150,76 @@ export function ValidateExpenseReportEditor({
         />
       )}
 
-      {error && (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{error}</span>
-        </div>
-      )}
-
       <div className="flex justify-end border-t border-base-300 pt-4">
         <button
           type="button"
           className="btn btn-primary"
-          onClick={confirm}
-          disabled={pending}
+          onClick={() => confirmModalRef.current?.open()}
         >
-          {pending ? (
-            <span className="loading loading-spinner loading-sm" />
-          ) : (
-            <Save size={18} />
-          )}
-          {pending ? "Validation…" : "Confirmer la validation"}
+          <Save size={18} />
+          Valider la note de frais
         </button>
       </div>
+
+      <Modal ref={confirmModalRef} title="Valider cette Note de frais ?">
+        <p className="text-sm text-base-content/80">
+          Cette action est définitive : la Note deviendra immuable, le Solde
+          et les Subventions concernées seront mis à jour, et l&apos;IBAN
+          sera supprimé de la base.
+        </p>
+        {error && (
+          <div role="alert" className="alert alert-error alert-soft mt-4">
+            <span>{error}</span>
+          </div>
+        )}
+        <div className="modal-action">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => confirmModalRef.current?.close()}
+            disabled={pending}
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={confirm}
+            disabled={pending}
+          >
+            {pending ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              <Save size={18} />
+            )}
+            {pending ? "Validation…" : "Confirmer"}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal ref={successModalRef} title="Note de frais validée">
+        <p className="text-sm text-base-content/80">
+          La validation a réussi. Téléchargez le ou les PDF générés :
+        </p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {generatedPdfs.map((pdf) => (
+            <li key={pdf.id}>
+              <a
+                href={`/app/admin/notes-de-frais/${reportId}/pdfs/${pdf.id}`}
+                className="btn btn-soft btn-sm"
+              >
+                <Download size={16} />
+                {pdfLabel(pdf, documents)}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className="modal-action">
+          <button type="button" className="btn btn-primary" onClick={finish}>
+            Terminer
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

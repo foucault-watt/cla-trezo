@@ -79,7 +79,7 @@ describe("listExpenseReportsForAdmin", () => {
     expect(requireAdminMock).toHaveBeenCalled();
   });
 
-  it("ne récupère que les Notes Soumises ou Prises en charge, toutes Structures confondues, hors Asso démo", async () => {
+  it("récupère les Notes déjà soumises (jamais un Brouillon), toutes Structures confondues, hors Asso démo", async () => {
     reportFindManyMock.mockResolvedValue([]);
 
     await listExpenseReportsForAdmin();
@@ -87,7 +87,7 @@ describe("listExpenseReportsForAdmin", () => {
     expect(reportFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          status: { in: ["SUBMITTED", "TAKEN_OVER"] },
+          status: { in: ["SUBMITTED", "TAKEN_OVER", "FINALIZED", "REJECTED"] },
           asso: { isDemo: false },
         },
       }),
@@ -150,6 +150,7 @@ describe("getExpenseReportDetailForAdmin", () => {
     asso: { name: "Club Info", slug: "club-info", type: "CLUB" },
     lines: [],
     supportingDocuments: [],
+    pdfs: [],
   };
 
   it("renvoie 404 si la Note de frais n'existe pas", async () => {
@@ -189,5 +190,35 @@ describe("getExpenseReportDetailForAdmin", () => {
       balanceCents: 5000,
       movements: [],
     });
+    expect(result.pdfs).toEqual([]);
+  });
+
+  it("mappe les PDF finaux générés à la Validation, avec la raison de la Subvention le cas échéant", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      ...baseReport,
+      status: "FINALIZED",
+      pdfs: [
+        { id: "pdf-1", fundingSource: "CLUB_BALANCE", subvention: null },
+        {
+          id: "pdf-2",
+          fundingSource: "SUBVENTION",
+          subvention: { reason: "Achat de matériel" },
+        },
+      ],
+    });
+    typeDepenseFindManyMock.mockResolvedValue([]);
+    listVisibleSubventionsForAdminMock.mockResolvedValue([]);
+    getClubSoldeForAdminMock.mockResolvedValue({ status: "not_applicable" });
+
+    const result = await getExpenseReportDetailForAdmin("report-1");
+
+    expect(result.pdfs).toEqual([
+      { id: "pdf-1", fundingSource: "CLUB_BALANCE", subventionReason: null },
+      {
+        id: "pdf-2",
+        fundingSource: "SUBVENTION",
+        subventionReason: "Achat de matériel",
+      },
+    ]);
   });
 });

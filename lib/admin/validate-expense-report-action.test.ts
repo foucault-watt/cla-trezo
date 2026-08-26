@@ -122,7 +122,13 @@ describe("validateExpenseReportAction", () => {
       { kind: "CLUB_BALANCE", data: ndfSoldeFixture },
     ]);
 
-    expect(result).toEqual({ ok: true });
+    expect(result.ok).toBe(true);
+    expect(result).toEqual({
+      ok: true,
+      pdfs: [
+        { id: expect.any(String), fundingSource: "CLUB_BALANCE", subventionId: null },
+      ],
+    });
     expect(renderSoldePdfMock).toHaveBeenCalledTimes(1);
     expect(renderSubventionPdfMock).not.toHaveBeenCalled();
     expect(writeStoredFileMock).toHaveBeenCalledTimes(1);
@@ -143,6 +149,7 @@ describe("validateExpenseReportAction", () => {
     expect(txExpenseReportPdfCreateManyMock).toHaveBeenCalledWith({
       data: [
         {
+          id: expect.any(String),
           expenseReportId: "report-1",
           fundingSource: "CLUB_BALANCE",
           subventionId: null,
@@ -166,7 +173,12 @@ describe("validateExpenseReportAction", () => {
       { kind: "SUBVENTION", subventionId: "sub-a", data: ndfFnSbFixture },
     ]);
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({
+      ok: true,
+      pdfs: [
+        { id: expect.any(String), fundingSource: "SUBVENTION", subventionId: "sub-a" },
+      ],
+    });
     expect(renderSubventionPdfMock).toHaveBeenCalledTimes(1);
     expect(renderSoldePdfMock).not.toHaveBeenCalled();
     expect(txFinancialMovementCreateManyMock).toHaveBeenCalledWith({
@@ -196,7 +208,7 @@ describe("validateExpenseReportAction", () => {
       { kind: "SUBVENTION", subventionId: "sub-b", data: ndfFnSbFixture },
     ]);
 
-    expect(result).toEqual({ ok: true });
+    expect(result.ok).toBe(true);
     expect(writeStoredFileMock).toHaveBeenCalledTimes(3);
     expect(txFinancialMovementCreateManyMock).toHaveBeenCalledWith({
       data: expect.arrayContaining([

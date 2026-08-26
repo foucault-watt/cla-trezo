@@ -14,6 +14,7 @@ import {
 import { ReimbursementsTable } from "@/components/expense-reports/reimbursements-table";
 import { SupportingDocumentsPanel } from "@/components/expense-reports/supporting-documents-panel";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { TakeOverButton } from "../_components/take-over-button";
 
 export default async function AdminReimbursementsPage({
@@ -79,10 +80,11 @@ export default async function AdminReimbursementsPage({
       {report.status === "TAKEN_OVER" && (
         <div className="flex justify-end pt-1">
           <Link
-            href={`/app/admin/notes-de-frais/${reportId}/valider`}
-            className="btn btn-primary"
+            href={`/app/admin/notes-de-frais/${reportId}/beneficiaire`}
+            className="btn btn-soft"
           >
-            Valider
+            Vérifier la deuxième étape
+            <ArrowRight size={18} />
           </Link>
         </div>
       )}

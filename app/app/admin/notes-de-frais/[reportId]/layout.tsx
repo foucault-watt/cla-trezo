@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
+  fundingSourceLabel,
 } from "@/lib/expense-reports/labels";
 import {
   getExpenseReportDetailForAdmin,
@@ -61,6 +63,25 @@ export default async function AdminExpenseReportWizardLayout({
       {!editable && report.status === "SUBMITTED" && (
         <div role="status" className="alert alert-info alert-soft mt-5">
           Prenez cette Note de frais en charge pour pouvoir la modifier.
+        </div>
+      )}
+      {report.status === "FINALIZED" && report.pdfs.length > 0 && (
+        <div className="mt-5 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+          <h2 className="text-sm font-semibold">PDF finaux</h2>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {report.pdfs.map((pdf) => (
+              <li key={pdf.id}>
+                <a
+                  href={`/app/admin/notes-de-frais/${reportId}/pdfs/${pdf.id}`}
+                  className="btn btn-soft btn-sm"
+                >
+                  <Download size={16} />
+                  {pdf.subventionReason ??
+                    fundingSourceLabel[pdf.fundingSource]}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       <AdminExpenseReportStepper reportId={reportId} />

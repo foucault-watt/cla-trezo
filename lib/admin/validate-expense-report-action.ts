@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import type {
   FinancialAccountType,
@@ -34,7 +35,15 @@ type ValidatedExpenseReportGroup =
   | { kind: "SUBVENTION"; subventionId: string; data: ExpenseReportPdfData }
   | { kind: "CLUB_BALANCE"; data: ExpenseBalancePdfData };
 
-export type ValidateExpenseReportState = { ok: boolean; error?: string };
+export type GeneratedExpenseReportPdf = {
+  id: string;
+  fundingSource: FundingSourceType;
+  subventionId: string | null;
+};
+
+export type ValidateExpenseReportState =
+  | { ok: true; pdfs: GeneratedExpenseReportPdf[] }
+  | { ok: false; error: string };
 
 const INVALID_DOCUMENTS_ERROR =
   "Les documents envoyés ne correspondent pas aux Lignes de cette Note.";
@@ -119,6 +128,7 @@ export async function validateExpenseReportAction(
   }
 
   const writtenFiles: {
+    id: string;
     fundingSource: FundingSourceType;
     subventionId: string | null;
     relativePath: string;
@@ -137,6 +147,7 @@ export async function validateExpenseReportAction(
       });
       await writeStoredFile(relativePath, buffer);
       writtenFiles.push({
+        id: randomUUID(),
         fundingSource: group.kind,
         subventionId: group.kind === "SUBVENTION" ? group.subventionId : null,
         relativePath,
@@ -180,6 +191,7 @@ export async function validateExpenseReportAction(
 
       await tx.expenseReportPdf.createMany({
         data: writtenFiles.map((file) => ({
+          id: file.id,
           expenseReportId: report.id,
           fundingSource: file.fundingSource,
           subventionId: file.subventionId,
@@ -209,5 +221,12 @@ export async function validateExpenseReportAction(
   revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
   revalidatePath("/app/admin/notes-de-frais");
 
-  return { ok: true };
+  return {
+    ok: true,
+    pdfs: writtenFiles.map((file) => ({
+      id: file.id,
+      fundingSource: file.fundingSource,
+      subventionId: file.subventionId,
+    })),
+  };
 }

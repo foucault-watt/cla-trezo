@@ -21,6 +21,7 @@ import type { SoldeView } from "@/lib/solde/solde";
 import type {
   AssoType,
   ExpenseReportStatus,
+  FundingSourceType,
 } from "@/app/generated/prisma/enums";
 export type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 
@@ -37,8 +38,10 @@ export type ExpenseReportOverviewForAdmin = {
 };
 
 /**
- * Notes de frais en attente de traitement (Soumises ou Prises en charge),
- * toutes Structures confondues — cf. T24.
+ * Notes de frais déjà soumises par une Structure (donc plus en Brouillon),
+ * toutes Structures confondues — cf. T24. Inclut les Notes déjà traitées
+ * (Validée, Rejetée) pour que l'Admin puisse les retrouver après coup, pas
+ * seulement celles encore en attente de traitement.
  */
 export async function listExpenseReportsForAdmin(): Promise<
   ExpenseReportOverviewForAdmin[]
@@ -47,7 +50,7 @@ export async function listExpenseReportsForAdmin(): Promise<
 
   const reports = await prisma.expenseReport.findMany({
     where: {
-      status: { in: ["SUBMITTED", "TAKEN_OVER"] },
+      status: { in: ["SUBMITTED", "TAKEN_OVER", "FINALIZED", "REJECTED"] },
       ...EXCLUDE_DEMO_ASSO_RELATION,
     },
     orderBy: { submittedAt: "asc" },
@@ -73,6 +76,12 @@ export async function listExpenseReportsForAdmin(): Promise<
   }));
 }
 
+export type ExpenseReportPdfDetail = {
+  id: string;
+  fundingSource: FundingSourceType;
+  subventionReason: string | null;
+};
+
 export type ExpenseReportDetailForAdmin = {
   id: string;
   title: string;
@@ -93,6 +102,8 @@ export type ExpenseReportDetailForAdmin = {
   soldeView: SoldeView;
   lines: ExpenseReportLineDetail[];
   supportingDocuments: SupportingDocumentDetail[];
+  /** Un PDF par source de financement distincte, généré à la Validation (ADR-0006). Vide tant que la Note n'est pas Validée. */
+  pdfs: ExpenseReportPdfDetail[];
 };
 
 /**
@@ -144,6 +155,10 @@ export const getExpenseReportDetailForAdmin = cache(async function (
       supportingDocuments: {
         orderBy: { createdAt: "asc" },
       },
+      pdfs: {
+        orderBy: { createdAt: "asc" },
+        include: { subvention: { select: { reason: true } } },
+      },
     },
   });
 
@@ -173,5 +188,10 @@ export const getExpenseReportDetailForAdmin = cache(async function (
     typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),
     visibleSubventions,
     soldeView,
+    pdfs: report.pdfs.map((pdf) => ({
+      id: pdf.id,
+      fundingSource: pdf.fundingSource,
+      subventionReason: pdf.subvention?.reason ?? null,
+    })),
   };
 });
