@@ -12,6 +12,7 @@ import {
 } from "@/lib/subventions/status";
 import { formatCents } from "@/lib/money";
 import { EditCampaignForm } from "./_components/edit-campaign-form";
+import { DeleteCampaignButton } from "./_components/delete-campaign-button";
 import { SubventionsTable } from "./_components/subventions-table";
 
 export default async function AdminSubventionCampaignDetailPage({
@@ -73,9 +74,17 @@ export default async function AdminSubventionCampaignDetailPage({
             {campaign.date.toLocaleDateString("fr-FR")}
           </p>
         </div>
-        <span className={`badge ${campaignStatusBadgeClass[campaign.status]}`}>
-          {campaignStatusLabel[campaign.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`badge ${campaignStatusBadgeClass[campaign.status]}`}
+          >
+            {campaignStatusLabel[campaign.status]}
+          </span>
+          <DeleteCampaignButton
+            campaignId={campaign.id}
+            name={`${subventionTypeLabel[campaign.type]} ${campaign.name}`}
+          />
+        </div>
       </div>
 
       <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">

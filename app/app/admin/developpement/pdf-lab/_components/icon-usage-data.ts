@@ -612,7 +612,15 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/page.tsx",
-    context: "dans une carte de sélection de structure, à côté du nom de la structure",
+    context:
+      "dans une carte de sélection de structure, à côté du nom de la structure (×2 dans ce fichier : Assos où l'utilisateur a un rôle, et pour l'Admin, Assos accessibles sans rôle)",
+  },
+  {
+    icon: "ShieldUser",
+    visibleText: "Autres Assos, accessibles en vue Admin (vous n'y avez pas de rôle)",
+    ariaLabel: null,
+    file: "app/app/page.tsx",
+    context: "titre de la section listant toutes les Assos pour un Admin sans rôle dedans",
   },
 
   // app/app/admin/subventions/[campaignId]/page.tsx
@@ -1268,5 +1276,27 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/notes-de-frais/[reportId]/_components/delete-expense-report-as-admin-button.tsx",
     context:
       "bouton de confirmation dans la modale, désactivé tant que la case n'est pas cochée",
+  },
+
+  // app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+    context: "modale de confirmation de suppression",
+  },
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer définitivement",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
+    context: "bouton de confirmation dans la modale",
   },
 ];

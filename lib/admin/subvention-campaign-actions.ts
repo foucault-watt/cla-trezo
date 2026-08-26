@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
 import {
   parseSubventionCampaignForm,
   parseSubventionCampaignUpdateForm,
+  parseSubventionCampaignDeleteForm,
 } from "./subvention-campaign-input";
 
 export type CreateSubventionCampaignState = {
@@ -77,4 +79,65 @@ export async function updateSubventionCampaignAction(
   revalidatePath("/app/admin/subventions");
 
   return { ok: true };
+}
+
+export type DeleteSubventionCampaignState = { ok: boolean; error?: string };
+
+/**
+ * Supprime une Campagne et toutes ses Subventions. Refusée si l'une des
+ * Subventions est déjà utilisée (par une Ligne de Note de frais ou un
+ * Mouvement financier), même raison que deleteSubventionAction — sinon la
+ * suppression casserait silencieusement le calcul du montant utilisé.
+ */
+export async function deleteSubventionCampaignAction(
+  _prevState: DeleteSubventionCampaignState,
+  formData: FormData,
+): Promise<DeleteSubventionCampaignState> {
+  await requireAdmin();
+
+  const parsed = parseSubventionCampaignDeleteForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const campaign = await prisma.subventionCampaign.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true },
+  });
+  if (!campaign) {
+    return { ok: false, error: "Campagne introuvable." };
+  }
+
+  const usedSubventionsCount = await prisma.subvention.count({
+    where: {
+      campaignId: campaign.id,
+      OR: [
+        { expenseReportLines: { some: {} } },
+        { financialMovements: { some: {} } },
+      ],
+    },
+  });
+  if (usedSubventionsCount > 0) {
+    return {
+      ok: false,
+      error:
+        "Cette Campagne contient des Subventions déjà utilisées, impossible de la supprimer.",
+    };
+  }
+
+  await prisma.$transaction([
+    prisma.subvention.deleteMany({ where: { campaignId: campaign.id } }),
+    prisma.subventionCampaign.delete({ where: { id: campaign.id } }),
+  ]);
+
+  revalidatePath("/app/admin/subventions");
+
+  const toastParams = new URLSearchParams({
+    toast: "Campagne supprimée.",
+    toastType: "success",
+  });
+  redirect(`/app/admin/subventions?${toastParams.toString()}`);
 }
