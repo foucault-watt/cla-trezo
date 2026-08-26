@@ -83,6 +83,21 @@ export async function listAssociations(): Promise<AssoOverview[]> {
   return assos.map(toOverview);
 }
 
+export type AssoDirectoryEntry = { id: string; slug: string; name: string };
+
+/**
+ * Liste légère de toutes les Structures (pas de calcul de Solde), utilisée
+ * pour permettre à l'Admin d'accéder à la vue "app" de n'importe quelle
+ * Structure même sans y avoir de rôle (cf. resolveStructureAccess).
+ */
+export async function listAssoDirectory(): Promise<AssoDirectoryEntry[]> {
+  return prisma.asso.findMany({
+    where: EXCLUDE_DEMO_ASSO,
+    orderBy: { name: "asc" },
+    select: { id: true, slug: true, name: true },
+  });
+}
+
 export async function getAssociationOverview(
   slug: string,
 ): Promise<AssoOverview | null> {
