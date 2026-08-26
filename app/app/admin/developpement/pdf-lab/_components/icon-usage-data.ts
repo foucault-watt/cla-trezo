@@ -1190,4 +1190,90 @@ export const iconUsages: IconUsage[] = [
     context:
       "un bouton par PDF final généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention concernée",
   },
+
+  // components/ui/toast.tsx
+  {
+    icon: "CheckCircle2",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/ui/toast.tsx",
+    context:
+      "icône du toast de type succès ; texte du message toujours dynamique (fourni par l'appelant via useToast().push)",
+  },
+  {
+    icon: "CircleAlert",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/ui/toast.tsx",
+    context:
+      "icône du toast de type erreur, cohérent avec reimbursements-table.tsx",
+  },
+  {
+    icon: "TriangleAlert",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/ui/toast.tsx",
+    context: "icône du toast de type avertissement",
+  },
+  {
+    icon: "Info",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/ui/toast.tsx",
+    context: "icône du toast de type info",
+  },
+  {
+    icon: "X",
+    visibleText: null,
+    ariaLabel: "Fermer",
+    file: "components/ui/toast.tsx",
+    context: "bouton icône seul de fermeture manuelle d'un toast",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx
+  {
+    icon: "Ban",
+    visibleText: "Rejeter la note de frais",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx",
+    context: "modale de confirmation du rejet",
+  },
+  {
+    icon: "Ban",
+    visibleText: "Confirmer le rejet",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx",
+    context: "bouton de confirmation dans la modale",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/_components/delete-expense-report-as-admin-button.tsx
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/delete-expense-report-as-admin-button.tsx",
+    context:
+      "disponible quel que soit le statut, contrairement à DeleteExpenseReportButton (Structure, Brouillon uniquement)",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/delete-expense-report-as-admin-button.tsx",
+    context: "modale de confirmation de suppression",
+  },
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer définitivement",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/delete-expense-report-as-admin-button.tsx",
+    context:
+      "bouton de confirmation dans la modale, désactivé tant que la case n'est pas cochée",
+  },
 ];

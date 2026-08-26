@@ -70,6 +70,26 @@ export function parseTakeOverExpenseReportForm(formData: FormData) {
   });
 }
 
+export const rejectExpenseReportFormSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export function parseRejectExpenseReportForm(formData: FormData) {
+  return rejectExpenseReportFormSchema.safeParse({
+    id: formData.get("id"),
+  });
+}
+
+export const deleteExpenseReportAsAdminFormSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export function parseDeleteExpenseReportAsAdminForm(formData: FormData) {
+  return deleteExpenseReportAsAdminFormSchema.safeParse({
+    id: formData.get("id"),
+  });
+}
+
 // Pas de assoSlug (contrairement aux formulaires Structure) : la page Admin
 // n'est pas scopée à une Structure, l'Association de la Ligne se déduit de
 // la Note de frais elle-même (cf. lib/admin/expense-report-actions.ts).

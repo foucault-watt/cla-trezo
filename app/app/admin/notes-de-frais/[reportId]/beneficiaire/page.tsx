@@ -6,6 +6,7 @@ import {
   isExpenseReportEditableByAdmin,
 } from "@/lib/admin/expense-reports";
 import { AdminBeneficiaryForm } from "../_components/admin-beneficiary-form";
+import { RejectButton } from "../_components/reject-button";
 
 export default async function AdminBeneficiaryPage({
   params,
@@ -47,7 +48,8 @@ export default async function AdminBeneficiaryPage({
         </section>
       )}
       {report.status === "TAKEN_OVER" && (
-        <div className="flex justify-end pt-1">
+        <div className="flex flex-wrap justify-end gap-2 pt-1">
+          <RejectButton reportId={reportId} />
           <Link
             href={`/app/admin/notes-de-frais/${reportId}/valider`}
             className="btn btn-primary"

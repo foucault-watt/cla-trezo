@@ -4,30 +4,48 @@ const {
   requireAdminMock,
   reportFindUniqueMock,
   reportUpdateMock,
+  reportDeleteMock,
   lineCreateMock,
   lineFindUniqueMock,
   lineUpdateMock,
   lineDeleteMock,
+  lineDeleteManyMock,
   lineFindManyMock,
   assoFindUniqueMock,
   subventionFindUniqueMock,
   financialMovementFindManyMock,
+  financialMovementDeleteManyMock,
+  expenseReportPdfDeleteManyMock,
+  supportingDocumentDeleteManyMock,
   refAssoUserFindFirstMock,
   revalidatePathMock,
+  transactionMock,
+  deleteStoredFileMock,
+  redirectMock,
 } = vi.hoisted(() => ({
   requireAdminMock: vi.fn(),
   reportFindUniqueMock: vi.fn(),
   reportUpdateMock: vi.fn(),
+  reportDeleteMock: vi.fn(),
   lineCreateMock: vi.fn(),
   lineFindUniqueMock: vi.fn(),
   lineUpdateMock: vi.fn(),
   lineDeleteMock: vi.fn(),
+  lineDeleteManyMock: vi.fn(),
   lineFindManyMock: vi.fn(),
   assoFindUniqueMock: vi.fn(),
   subventionFindUniqueMock: vi.fn(),
   financialMovementFindManyMock: vi.fn(),
+  financialMovementDeleteManyMock: vi.fn(),
+  expenseReportPdfDeleteManyMock: vi.fn(),
+  supportingDocumentDeleteManyMock: vi.fn(),
   refAssoUserFindFirstMock: vi.fn(),
   revalidatePathMock: vi.fn(),
+  transactionMock: vi.fn(),
+  deleteStoredFileMock: vi.fn(),
+  redirectMock: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  }),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({ requireAdmin: requireAdminMock }));
@@ -36,24 +54,38 @@ vi.mock("@/lib/prisma", () => ({
     expenseReport: {
       findUnique: reportFindUniqueMock,
       update: reportUpdateMock,
+      delete: reportDeleteMock,
     },
     expenseReportLine: {
       create: lineCreateMock,
       findUnique: lineFindUniqueMock,
       update: lineUpdateMock,
       delete: lineDeleteMock,
+      deleteMany: lineDeleteManyMock,
       findMany: lineFindManyMock,
     },
     asso: { findUnique: assoFindUniqueMock },
     subvention: { findUnique: subventionFindUniqueMock },
-    financialMovement: { findMany: financialMovementFindManyMock },
+    financialMovement: {
+      findMany: financialMovementFindManyMock,
+      deleteMany: financialMovementDeleteManyMock,
+    },
+    expenseReportPdf: { deleteMany: expenseReportPdfDeleteManyMock },
+    supportingDocument: { deleteMany: supportingDocumentDeleteManyMock },
     refAssoUser: { findFirst: refAssoUserFindFirstMock },
+    $transaction: transactionMock,
   },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
+vi.mock("next/navigation", () => ({ redirect: redirectMock }));
+vi.mock("@/lib/storage/file-storage", () => ({
+  deleteStoredFile: deleteStoredFileMock,
+}));
 
 const {
   takeOverExpenseReportAction,
+  rejectExpenseReportAction,
+  deleteExpenseReportAsAdminAction,
   deleteExpenseReportLineAsAdminAction,
   updateExpenseReportAsAdminAction,
   updateExpenseReportBeneficiaryAsAdminAction,
@@ -73,19 +105,31 @@ beforeEach(() => {
   requireAdminMock.mockReset();
   reportFindUniqueMock.mockReset();
   reportUpdateMock.mockReset();
+  reportDeleteMock.mockReset();
   lineCreateMock.mockReset();
   lineFindUniqueMock.mockReset();
   lineUpdateMock.mockReset();
   lineDeleteMock.mockReset();
+  lineDeleteManyMock.mockReset();
   lineFindManyMock.mockReset();
   assoFindUniqueMock.mockReset();
   subventionFindUniqueMock.mockReset();
   financialMovementFindManyMock.mockReset();
+  financialMovementDeleteManyMock.mockReset();
+  expenseReportPdfDeleteManyMock.mockReset();
+  supportingDocumentDeleteManyMock.mockReset();
   refAssoUserFindFirstMock.mockReset();
   revalidatePathMock.mockReset();
+  transactionMock.mockReset();
+  deleteStoredFileMock.mockReset();
+  redirectMock.mockClear();
   requireAdminMock.mockResolvedValue(admin);
   lineFindManyMock.mockResolvedValue([]);
   financialMovementFindManyMock.mockResolvedValue([]);
+  transactionMock.mockImplementation((operations: Promise<unknown>[]) =>
+    Promise.all(operations),
+  );
+  deleteStoredFileMock.mockResolvedValue(undefined);
 });
 
 describe("takeOverExpenseReportAction", () => {
@@ -159,6 +203,130 @@ describe("takeOverExpenseReportAction", () => {
       `/app/admin/notes-de-frais/${valid.id}`,
     );
     expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("rejectExpenseReportAction", () => {
+  const valid = { id: "33333333-3333-3333-8333-333333333333" };
+
+  it("refuse une Note introuvable", async () => {
+    reportFindUniqueMock.mockResolvedValue(null);
+
+    const result = await rejectExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({ ok: false, error: "Note de frais introuvable." });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuse si la Note n'est pas Prise en charge", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      status: "SUBMITTED",
+    });
+
+    const result = await rejectExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Cette Note de frais ne peut pas être rejetée.",
+    });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("passe une Note Prise en charge à Rejetée", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      status: "TAKEN_OVER",
+    });
+
+    const result = await rejectExpenseReportAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(reportUpdateMock).toHaveBeenCalledWith({
+      where: { id: valid.id },
+      data: { status: "REJECTED" },
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      `/app/admin/notes-de-frais/${valid.id}`,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("deleteExpenseReportAsAdminAction", () => {
+  const valid = { id: "44444444-4444-4444-8444-444444444444" };
+
+  it("refuse une Note introuvable", async () => {
+    reportFindUniqueMock.mockResolvedValue(null);
+
+    const result = await deleteExpenseReportAsAdminAction(
+      { ok: false },
+      formData(valid),
+    );
+
+    expect(result).toEqual({ ok: false, error: "Note de frais introuvable." });
+    expect(transactionMock).not.toHaveBeenCalled();
+  });
+
+  it("supprime en cascade les mouvements, PDF, Lignes, Justificatifs puis la Note, quel que soit le statut", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      lines: [{ id: "line-1" }, { id: "line-2" }],
+      supportingDocuments: [{ filePath: "asso/report/a.pdf" }],
+      pdfs: [{ filePath: "asso/report/final-solde.pdf" }],
+    });
+
+    await deleteExpenseReportAsAdminAction(
+      { ok: false },
+      formData(valid),
+    ).catch(() => {});
+
+    expect(financialMovementDeleteManyMock).toHaveBeenCalledWith({
+      where: { expenseReportLineId: { in: ["line-1", "line-2"] } },
+    });
+    expect(expenseReportPdfDeleteManyMock).toHaveBeenCalledWith({
+      where: { expenseReportId: valid.id },
+    });
+    expect(lineDeleteManyMock).toHaveBeenCalledWith({
+      where: { expenseReportId: valid.id },
+    });
+    expect(supportingDocumentDeleteManyMock).toHaveBeenCalledWith({
+      where: { expenseReportId: valid.id },
+    });
+    expect(reportDeleteMock).toHaveBeenCalledWith({
+      where: { id: valid.id },
+    });
+    expect(deleteStoredFileMock).toHaveBeenCalledWith("asso/report/a.pdf");
+    expect(deleteStoredFileMock).toHaveBeenCalledWith(
+      "asso/report/final-solde.pdf",
+    );
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/app/admin/notes-de-frais?toast=Note+de+frais+supprim%C3%A9e.&toastType=success",
+    );
+  });
+
+  it("reste ok même si la purge d'un fichier orphelin échoue", async () => {
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      lines: [],
+      supportingDocuments: [{ filePath: "asso/report/a.pdf" }],
+      pdfs: [],
+    });
+    deleteStoredFileMock.mockRejectedValue(new Error("ENOENT"));
+
+    await expect(
+      deleteExpenseReportAsAdminAction({ ok: false }, formData(valid)),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalled();
   });
 });
 

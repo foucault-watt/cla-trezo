@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import {
   assertExpenseReportMutable,
@@ -17,9 +18,12 @@ import { resolveExpenseReportBeneficiary } from "@/lib/expense-reports/expense-r
 import { loadExpenseLineWarnings } from "@/lib/expense-reports/line-warnings";
 import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { deleteStoredFile } from "@/lib/storage/file-storage";
 import {
   parseAddReimbursementAsAdminForm,
+  parseDeleteExpenseReportAsAdminForm,
   parseDeleteExpenseReportLineAsAdminForm,
+  parseRejectExpenseReportForm,
   parseTakeOverExpenseReportForm,
   parseUpdateExpenseReportAsAdminForm,
   parseUpdateExpenseReportBeneficiaryAsAdminForm,
@@ -186,6 +190,136 @@ export async function takeOverExpenseReportAction(
   revalidatePath("/app/admin/notes-de-frais");
 
   return { ok: true };
+}
+
+export type RejectExpenseReportState = { ok: boolean; error?: string };
+
+/**
+ * Refuse une Note Prise en charge (issue #20, hors périmètre initial) :
+ * statut terminal, aucune transition sortante définie dans
+ * ALLOWED_TRANSITIONS — donc non modifiable ensuite, sans code
+ * supplémentaire à écrire pour ça (même raisonnement que l'immutabilité de
+ * FINALIZED).
+ */
+export async function rejectExpenseReportAction(
+  _prevState: RejectExpenseReportState,
+  formData: FormData,
+): Promise<RejectExpenseReportState> {
+  await requireAdmin();
+
+  const parsed = parseRejectExpenseReportForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const report = await prisma.expenseReport.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, status: true },
+  });
+  if (!report) {
+    return { ok: false, error: "Note de frais introuvable." };
+  }
+  try {
+    assertExpenseReportTransition({
+      from: report.status,
+      to: "REJECTED",
+      actor: { type: "ADMIN" },
+    });
+  } catch (error) {
+    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
+    return {
+      ok: false,
+      error: "Cette Note de frais ne peut pas être rejetée.",
+    };
+  }
+
+  await prisma.expenseReport.update({
+    where: { id: report.id },
+    data: { status: "REJECTED" },
+  });
+
+  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
+  revalidatePath("/app/admin/notes-de-frais");
+
+  return { ok: true };
+}
+
+export type DeleteExpenseReportAsAdminState = { ok: boolean; error?: string };
+
+/**
+ * Supprime une Note de frais Admin, quel que soit son statut — y compris
+ * Validée, sur demande explicite : contrairement à deleteExpenseReportAction
+ * (Structure, limité au Brouillon), aucune restriction de statut ici. Purge
+ * en cascade les FinancialMovement et ExpenseReportPdf liés avant la Note
+ * elle-même (contraintes de clé étrangère), ce qui recalcule silencieusement
+ * le Solde/les Subventions concernées comme si la Note n'avait jamais existé
+ * — l'Admin a été prévenu dans la modale de confirmation, cf.
+ * delete-expense-report-as-admin-button.tsx.
+ */
+export async function deleteExpenseReportAsAdminAction(
+  _prevState: DeleteExpenseReportAsAdminState,
+  formData: FormData,
+): Promise<DeleteExpenseReportAsAdminState> {
+  await requireAdmin();
+
+  const parsed = parseDeleteExpenseReportAsAdminForm(formData);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+    };
+  }
+
+  const report = await prisma.expenseReport.findUnique({
+    where: { id: parsed.data.id },
+    select: {
+      id: true,
+      lines: { select: { id: true } },
+      supportingDocuments: { select: { filePath: true } },
+      pdfs: { select: { filePath: true } },
+    },
+  });
+  if (!report) {
+    return { ok: false, error: "Note de frais introuvable." };
+  }
+
+  const lineIds = report.lines.map((line) => line.id);
+
+  await prisma.$transaction([
+    prisma.financialMovement.deleteMany({
+      where: { expenseReportLineId: { in: lineIds } },
+    }),
+    prisma.expenseReportPdf.deleteMany({
+      where: { expenseReportId: report.id },
+    }),
+    prisma.expenseReportLine.deleteMany({
+      where: { expenseReportId: report.id },
+    }),
+    prisma.supportingDocument.deleteMany({
+      where: { expenseReportId: report.id },
+    }),
+    prisma.expenseReport.delete({ where: { id: report.id } }),
+  ]);
+
+  // Best-effort, en parallèle : la DB fait foi, un fichier orphelin est
+  // toléré (même choix que deleteExpenseReportAction côté Structure).
+  await Promise.allSettled([
+    ...report.supportingDocuments.map((document) =>
+      deleteStoredFile(document.filePath),
+    ),
+    ...report.pdfs.map((pdf) => deleteStoredFile(pdf.filePath)),
+  ]);
+
+  revalidatePath("/app/admin/notes-de-frais");
+
+  const toastParams = new URLSearchParams({
+    toast: "Note de frais supprimée.",
+    toastType: "success",
+  });
+  redirect(`/app/admin/notes-de-frais?${toastParams.toString()}`);
 }
 
 export type DeleteExpenseReportLineAsAdminState = ExpenseReportLineDeleteState;

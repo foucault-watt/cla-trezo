@@ -12,6 +12,7 @@ import {
 import { updateExpenseReportAsAdminAction } from "@/lib/admin/expense-report-actions";
 import { GeneralInformationModal } from "@/components/expense-reports/general-information-modal";
 import { AdminExpenseReportStepper } from "./_components/expense-report-stepper";
+import { DeleteExpenseReportAsAdminButton } from "./_components/delete-expense-report-as-admin-button";
 
 export default async function AdminExpenseReportWizardLayout({
   children,
@@ -44,7 +45,7 @@ export default async function AdminExpenseReportWizardLayout({
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {editable && (
             <GeneralInformationModal
               reportId={reportId}
@@ -58,6 +59,10 @@ export default async function AdminExpenseReportWizardLayout({
           >
             {expenseReportStatusLabel[report.status]}
           </span>
+          <DeleteExpenseReportAsAdminButton
+            reportId={reportId}
+            status={report.status}
+          />
         </div>
       </div>
       {!editable && report.status === "SUBMITTED" && (
