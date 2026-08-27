@@ -667,6 +667,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: "Supprimer la Subvention",
     file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
+    context: "bouton icône seul, ouvre la modale de confirmation de suppression",
   },
   {
     icon: "Check",
@@ -679,6 +680,20 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: "Annuler la modification",
     file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
+    context: "modale de confirmation de suppression, cohérent avec delete-campaign-button.tsx",
+  },
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer définitivement",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
+    context: "bouton de confirmation dans la modale de suppression",
   },
 
   // app/app/admin/subventions/[campaignId]/_components/new-subvention-row.tsx
@@ -956,10 +971,11 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/subventions/[campaignId]/_components/subventions-table.tsx
   {
     icon: "Plus",
-    visibleText: "Ajouter une ligne",
+    visibleText: "Ajouter une Subvention",
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/subventions-table.tsx",
-    context: "cohérent avec pdf-lab-editor.tsx et convention-pdf-lab-editor.tsx",
+    context:
+      "(×2 dans ce fichier : état vide et pied de tableau), cohérent avec reimbursements-table.tsx",
   },
 
   // app/app/admin/subventions/[campaignId]/_components/asso-select.tsx
@@ -1072,6 +1088,22 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Enregistrer",
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/edit-campaign-form.tsx",
+    context: "dans la modale de modification",
+  },
+  {
+    icon: "Pencil",
+    visibleText: "Modifier",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/edit-campaign-form.tsx",
+    context:
+      "bouton déclencheur en haut de la page, ouvre la modale ; cohérent avec general-information-modal.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/edit-campaign-form.tsx",
+    context: "dans la modale de modification",
   },
   {
     icon: "Save",

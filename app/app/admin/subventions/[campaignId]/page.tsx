@@ -75,15 +75,18 @@ export default async function AdminSubventionCampaignDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <EditCampaignForm
+            campaignId={campaign.id}
+            type={campaign.type}
+            name={campaign.name}
+            date={campaign.date}
+            publicationDate={campaign.publicationDate}
+          />
           <span
             className={`badge ${campaignStatusBadgeClass[campaign.status]}`}
           >
             {campaignStatusLabel[campaign.status]}
           </span>
-          <DeleteCampaignButton
-            campaignId={campaign.id}
-            name={`${subventionTypeLabel[campaign.type]} ${campaign.name}`}
-          />
         </div>
       </div>
 
@@ -100,68 +103,65 @@ export default async function AdminSubventionCampaignDetailPage({
         </div>
       </div>
 
-      <div className="mt-6">
+      <section className="mt-6 rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
+        <div className="mb-4">
+          <h3 className="font-semibold">Subventions</h3>
+          <p className="text-xs text-base-content/60">
+            Ajoutez et corrigez les subventions directement dans le tableau.
+          </p>
+        </div>
         <SubventionsTable
           campaignId={campaign.id}
           subventions={campaign.subventions}
           assos={assos}
         />
-      </div>
+      </section>
 
-      <div className="card card-border mt-8 bg-base-100">
-        <div className="card-body gap-4">
-          <div>
-            <h2 className="card-title">Conventions de subvention</h2>
-            <p className="text-sm text-base-content/60">
-              Une convention regroupe toutes les lignes accordées à une même
-              association dans cette campagne.
-            </p>
-          </div>
+      <div className="ml-7 h-5 border-l-2 border-dashed border-base-300" />
 
-          {conventionGroups.length === 0 ? (
-            <p className="text-sm text-base-content/70">
-              Ajoutez une ligne de subvention pour préparer une convention.
-            </p>
-          ) : (
-            <ul className="list rounded-box border border-base-300">
-              {conventionGroups.map((group) => (
-                <li className="list-row items-center" key={group.assoId}>
-                  <FileDown size={20} className="text-base-content/60" />
-                  <div>
-                    <p className="font-medium">{group.assoName}</p>
-                    <p className="text-xs text-base-content/60">
-                      {group.linesCount} ligne
-                      {group.linesCount > 1 ? "s" : ""} ·{" "}
-                      {formatCents(group.totalAmountCents)}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/app/admin/subventions/${campaign.id}/conventions/${group.assoId}`}
-                    className="btn btn-sm"
-                  >
-                    Préparer le PDF
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+      <section className="rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
+        <div className="mb-4">
+          <h3 className="font-semibold">Conventions de subvention</h3>
+          <p className="text-xs text-base-content/60">
+            Une convention regroupe toutes les lignes accordées à une même
+            association dans cette campagne.
+          </p>
         </div>
-      </div>
 
-      <div className="collapse-arrow collapse mt-8 border border-base-300 bg-base-100">
-        <input type="checkbox" />
-        <div className="collapse-title font-medium">
-          Réglages : modifier la campagne
-        </div>
-        <div className="collapse-content">
-          <EditCampaignForm
-            campaignId={campaign.id}
-            type={campaign.type}
-            name={campaign.name}
-            date={campaign.date}
-            publicationDate={campaign.publicationDate}
-          />
-        </div>
+        {conventionGroups.length === 0 ? (
+          <p className="text-sm text-base-content/70">
+            Ajoutez une ligne de subvention pour préparer une convention.
+          </p>
+        ) : (
+          <ul className="list rounded-box border border-base-300">
+            {conventionGroups.map((group) => (
+              <li className="list-row items-center" key={group.assoId}>
+                <FileDown size={20} className="text-base-content/60" />
+                <div>
+                  <p className="font-medium">{group.assoName}</p>
+                  <p className="text-xs text-base-content/60">
+                    {group.linesCount} ligne
+                    {group.linesCount > 1 ? "s" : ""} ·{" "}
+                    {formatCents(group.totalAmountCents)}
+                  </p>
+                </div>
+                <Link
+                  href={`/app/admin/subventions/${campaign.id}/conventions/${group.assoId}`}
+                  className="btn btn-sm"
+                >
+                  Préparer le PDF
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <div className="mt-8">
+        <DeleteCampaignButton
+          campaignId={campaign.id}
+          name={`${subventionTypeLabel[campaign.type]} ${campaign.name}`}
+        />
       </div>
     </div>
   );

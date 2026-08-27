@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import {
   updateSubventionAction,
@@ -8,6 +8,7 @@ import {
   type UpdateSubventionState,
   type DeleteSubventionState,
 } from "@/lib/admin/subvention-actions";
+import { Modal, useModalAutoClose, type ModalHandle } from "@/components/ui/modal";
 import { formatCents } from "@/lib/money";
 
 const initialUpdateState: UpdateSubventionState = { ok: false };
@@ -35,6 +36,8 @@ export function SubventionRow({
     deleteSubventionAction,
     initialDeleteState,
   );
+  const deleteModalRef = useRef<ModalHandle>(null);
+  useModalAutoClose(deleteModalRef, deleteState.ok);
 
   // Ferme le panneau d'édition dès que la mise à jour réussit, sans passer
   // par un effet (cf. règle react-hooks/set-state-in-effect) : on ajuste
@@ -70,43 +73,17 @@ export function SubventionRow({
             >
               {editing ? <X size={15} /> : <Pencil size={15} />}
             </button>
-            <form action={deleteFormAction}>
-              <input type="hidden" name="id" value={subvention.id} />
-              <input type="hidden" name="campaignId" value={campaignId} />
-              <button
-                type="submit"
-                className="btn btn-ghost btn-square btn-xs text-error"
-                aria-label="Supprimer la Subvention"
-                disabled={deletePending}
-                onClick={(event) => {
-                  if (
-                    !confirm(
-                      `Supprimer la Subvention de ${subvention.assoName} (${formatCents(subvention.amountCents)}) ?`,
-                    )
-                  ) {
-                    event.preventDefault();
-                  }
-                }}
-              >
-                {deletePending ? (
-                  <span className="loading loading-spinner loading-xs" />
-                ) : (
-                  <Trash2 size={15} />
-                )}
-              </button>
-            </form>
+            <button
+              type="button"
+              className="btn btn-ghost btn-square btn-xs text-error"
+              aria-label="Supprimer la Subvention"
+              onClick={() => deleteModalRef.current?.open()}
+            >
+              <Trash2 size={15} />
+            </button>
           </div>
         </td>
       </tr>
-      {!deleteState.ok && deleteState.error && (
-        <tr>
-          <td colSpan={4}>
-            <div role="alert" className="alert alert-error alert-soft alert-sm">
-              <span>{deleteState.error}</span>
-            </div>
-          </td>
-        </tr>
-      )}
       {editing && (
         <tr>
           <td colSpan={4}>
@@ -183,6 +160,43 @@ export function SubventionRow({
           </td>
         </tr>
       )}
+      <Modal
+        ref={deleteModalRef}
+        title={`Supprimer la Subvention de ${subvention.assoName} ?`}
+      >
+        <p className="text-sm text-base-content/80">
+          « <span className="font-medium">{subvention.reason}</span> » (
+          {formatCents(subvention.amountCents)}) sera définitivement
+          supprimée. Cette action est irréversible.
+        </p>
+        {!deleteState.ok && deleteState.error && (
+          <div role="alert" className="alert alert-error alert-soft mt-4">
+            <span>{deleteState.error}</span>
+          </div>
+        )}
+        <form action={deleteFormAction} className="modal-action">
+          <input type="hidden" name="id" value={subvention.id} />
+          <input type="hidden" name="campaignId" value={campaignId} />
+          <button
+            type="button"
+            className="btn"
+            onClick={() => deleteModalRef.current?.close()}
+          >
+            <X size={16} />
+            Annuler
+          </button>
+          <button type="submit" className="btn btn-error" disabled={deletePending}>
+            {deletePending ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              <>
+                <Trash2 size={16} />
+                Supprimer définitivement
+              </>
+            )}
+          </button>
+        </form>
+      </Modal>
     </>
   );
 }
