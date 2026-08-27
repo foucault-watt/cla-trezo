@@ -235,10 +235,12 @@ async function resetDemoData(
       const createDemoReport = (params: {
         title: string;
         description?: string;
-        status: "DRAFT" | "SUBMITTED" | "TAKEN_OVER" | "REJECTED";
+        status: "DRAFT" | "SUBMITTED" | "TAKEN_OVER" | "FINALIZED" | "REJECTED";
         beneficiary: DemoBeneficiary;
+        createdAt?: Date;
         submittedAt?: Date;
         takenAt?: Date;
+        finalizedAt?: Date;
         takenByAdminId?: string;
         lines: DemoLineFixture[];
       }) =>
@@ -249,8 +251,10 @@ async function resetDemoData(
             title: params.title,
             description: params.description,
             status: params.status,
+            createdAt: params.createdAt,
             submittedAt: params.submittedAt,
             takenAt: params.takenAt,
+            finalizedAt: params.finalizedAt,
             takenByAdminId: params.takenByAdminId,
             beneficiaryFirstname: params.beneficiary.firstname,
             beneficiaryLastname: params.beneficiary.lastname,
@@ -337,6 +341,141 @@ async function resetDemoData(
             amountCents: 25_000,
             expenseName: "Location sono + éclairage",
             typeLabel: "Événement",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      // Notes anciennes (années précédentes), pour donner un vrai historique
+      // à parcourir sur les pages qui étalent la liste sur plusieurs années
+      // (au lieu des seules notes "du jour" ci-dessus).
+      await createDemoReport({
+        title: "Séminaire de rentrée",
+        status: "FINALIZED",
+        createdAt: daysAgo(350),
+        submittedAt: daysAgo(347),
+        takenAt: daysAgo(344),
+        finalizedAt: daysAgo(343),
+        takenByAdminId: adminId,
+        beneficiary: { firstname: "Julien", lastname: "Petit" },
+        lines: [
+          {
+            amountCents: 14_500,
+            expenseName: "Location salle et pause café",
+            typeLabel: "Événement",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Achat matériel sportif",
+        status: "FINALIZED",
+        createdAt: daysAgo(660),
+        submittedAt: daysAgo(657),
+        takenAt: daysAgo(654),
+        finalizedAt: daysAgo(653),
+        takenByAdminId: adminId,
+        beneficiary: treasurerName,
+        lines: [
+          {
+            amountCents: 18_900,
+            expenseName: "Ballons, plots et chasubles",
+            typeLabel: "Matériel",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Location salle d'assemblée générale",
+        status: "FINALIZED",
+        createdAt: daysAgo(700),
+        submittedAt: daysAgo(697),
+        takenAt: daysAgo(694),
+        finalizedAt: daysAgo(693),
+        takenByAdminId: adminId,
+        beneficiary: { firstname: "Julien", lastname: "Petit" },
+        lines: [
+          {
+            amountCents: 22_000,
+            expenseName: "Location amphithéâtre + traiteur",
+            typeLabel: "Événement",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Mission bureau national",
+        status: "REJECTED",
+        createdAt: daysAgo(730),
+        submittedAt: daysAgo(727),
+        takenAt: daysAgo(724),
+        takenByAdminId: adminId,
+        beneficiary: treasurerName,
+        lines: [
+          {
+            amountCents: 31_000,
+            expenseName: "Billets de train + hôtel",
+            typeLabel: "Transport",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Weekend ski associatif",
+        status: "FINALIZED",
+        createdAt: daysAgo(1050),
+        submittedAt: daysAgo(1047),
+        takenAt: daysAgo(1044),
+        finalizedAt: daysAgo(1043),
+        takenByAdminId: adminId,
+        beneficiary: { firstname: "Julien", lastname: "Petit" },
+        lines: [
+          {
+            amountCents: 42_000,
+            expenseName: "Location minibus + forfaits",
+            typeLabel: "Transport",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Impression flyers forum des associations",
+        status: "FINALIZED",
+        createdAt: daysAgo(1230),
+        submittedAt: daysAgo(1227),
+        takenAt: daysAgo(1224),
+        finalizedAt: daysAgo(1223),
+        takenByAdminId: adminId,
+        beneficiary: treasurerName,
+        lines: [
+          {
+            amountCents: 5_600,
+            expenseName: "Impression flyers et affiches",
+            typeLabel: "Communication",
+            fundingSource: "CLUB_BALANCE",
+          },
+        ],
+      });
+
+      await createDemoReport({
+        title: "Achat banderole association",
+        status: "FINALIZED",
+        createdAt: daysAgo(1370),
+        submittedAt: daysAgo(1367),
+        takenAt: daysAgo(1364),
+        finalizedAt: daysAgo(1363),
+        takenByAdminId: adminId,
+        beneficiary: { firstname: "Julien", lastname: "Petit" },
+        lines: [
+          {
+            amountCents: 9_200,
+            expenseName: "Banderole grand format",
+            typeLabel: "Communication",
             fundingSource: "CLUB_BALANCE",
           },
         ],

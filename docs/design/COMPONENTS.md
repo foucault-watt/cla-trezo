@@ -52,6 +52,42 @@ Decided over two other options (top navbar + dropdown, sidebar + bottom dock).
   It's the answer to "what's the state of the world" before diving into
   individual rows/cards — always show it, don't gate it behind a mode.
 
+## Notes de frais list (member `[assoSlug]/notes-de-frais`) — grouped by year, no list/grid toggle
+
+Deliberate exception to the list/grid toggle above, once the list started
+spanning several years of archives. Iterated directly in the app (not via
+`/prototype`) across three live variants — a flat list with a toolbar, this
+grouped-by-year layout, and a chip-based year/status switcher — **the
+grouped-by-year layout won**, implemented in `expense-reports-list.tsx`.
+
+- No `ViewToggle` on this page — same reasoning as the Subventions page:
+  grouping by year is the one piece of context that matters once there's
+  more than a year of history, and a flat grid would lose it.
+- A `sticky top-0` toolbar (search input + status `select` + conditional
+  "Réinitialiser") sits above the grouped content, so filters stay visible
+  while scrolling a long multi-year list. The status filter is a plain
+  daisyUI `select`, not the `filter` chip component — tried once, rejected
+  as visually noisy for a single-select field with five options.
+- Content is grouped into year sections (`YearSection`: year, count,
+  subtotal — same header shape as `FundingSourcesPanel`'s Solde/Subvention
+  cards), current year + previous year open by default
+  (`splitRecentAndHistorique`, `report-grouping.ts`). Older years stay
+  behind a single "Historique — avant {année} (N)" button that reveals all
+  of them at once — no per-year `collapse-arrow`, one click covers the
+  whole archive rather than folding/unfolding year by year.
+- Search and status filters apply to both the open sections and the hidden
+  historique in the same pass, so the "Historique" button's count already
+  reflects the active filters instead of always showing the raw total.
+- Reused as-is for the Admin `notes-de-frais` list (`AdminExpenseReportsList`,
+  `app/app/admin/notes-de-frais/_components/`) — same layout, same
+  interactions, only the row swaps the description subtitle for the Asso
+  name (Admin sees every Structure) and drops `DRAFT` from the status
+  `select` (a Note never reaches the Admin list before being submitted).
+  The grouping helpers (`splitRecentAndHistorique`, `groupByYear`,
+  `sumCents`) live in `lib/expense-reports/report-grouping.ts`, generic over
+  both overview shapes, so both pages share one implementation instead of
+  two copies drifting apart.
+
 ## Status/badge placement rule
 
 **Never put a variable-width status badge as the first element of a row.**

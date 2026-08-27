@@ -1,15 +1,7 @@
-import { ViewToggle } from "@/components/nav/view-toggle";
 import { listExpenseReportsForAdmin } from "@/lib/admin/expense-reports";
-import { ListView } from "./_components/list-view";
-import { GridView } from "./_components/grid-view";
+import { AdminExpenseReportsList } from "./_components/expense-reports-list";
 
-export default async function AdminNotesDeFraisPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string }>;
-}) {
-  const { view } = await searchParams;
-  const current = view === "grid" || view === "list" ? view : undefined;
+export default async function AdminNotesDeFraisPage() {
   const reports = await listExpenseReportsForAdmin();
 
   return (
@@ -21,24 +13,12 @@ export default async function AdminNotesDeFraisPage({
             Notes de frais soumises, toutes Assos confondues.
           </p>
         </div>
-        {reports.length > 0 && <ViewToggle current={current} />}
       </div>
 
       {reports.length === 0 ? (
         <p className="text-base-content/70">Aucune Note de frais soumise.</p>
-      ) : current === "list" ? (
-        <ListView reports={reports} />
-      ) : current === "grid" ? (
-        <GridView reports={reports} />
       ) : (
-        <>
-          <div className="sm:hidden">
-            <GridView reports={reports} />
-          </div>
-          <div className="hidden sm:block">
-            <ListView reports={reports} />
-          </div>
-        </>
+        <AdminExpenseReportsList reports={reports} />
       )}
     </div>
   );
