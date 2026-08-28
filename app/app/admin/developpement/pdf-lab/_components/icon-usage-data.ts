@@ -774,10 +774,46 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/layout.tsx",
   },
   {
+    icon: "Archive",
+    visibleText: "Stockage",
+    ariaLabel: null,
+    file: "app/app/admin/layout.tsx",
+  },
+  {
     icon: "FlaskConical",
     visibleText: "Développement",
     ariaLabel: null,
     file: "app/app/admin/layout.tsx",
+  },
+
+  // app/app/admin/stockage/_components/storage-archive-button.tsx
+  {
+    icon: "Download",
+    visibleText: "Télécharger (.zip)",
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-archive-button.tsx",
+    context: "bouton par Structure, ouvre la modale de confirmation d'archive",
+  },
+  {
+    icon: "TriangleAlert",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-archive-button.tsx",
+    context: "modale d'archive, avertissement quand des fichiers sont introuvables sur le disque",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-archive-button.tsx",
+    context: "modale d'archive, bouton d'annulation",
+  },
+  {
+    icon: "Download",
+    visibleText: "Télécharger",
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-archive-button.tsx",
+    context: "modale d'archive, bouton de confirmation du téléchargement",
   },
 
   // app/app/admin/developpement/pdf-lab/_components/pdf-lab-editor.tsx
@@ -1214,14 +1250,28 @@ export const iconUsages: IconUsage[] = [
     context: "déclenche l'aperçu de validation (/valider)",
   },
 
-  // app/app/admin/notes-de-frais/[reportId]/layout.tsx
+  // app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx
   {
     icon: "Download",
     visibleText: "Solde",
     ariaLabel: null,
-    file: "app/app/admin/notes-de-frais/[reportId]/layout.tsx",
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
     context:
       "un bouton par PDF final généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention concernée",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
+    context: "modale \"Fichier introuvable\", bouton d'annulation",
+  },
+  {
+    icon: "RotateCcw",
+    visibleText: "Reconstituer et télécharger",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
+    context: "modale \"Fichier introuvable\", régénère le PDF depuis les données conservées",
   },
 
   // components/ui/toast.tsx

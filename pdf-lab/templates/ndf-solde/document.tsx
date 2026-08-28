@@ -138,6 +138,18 @@ const styles = StyleSheet.create({
   signatureRow: { marginTop: 28, flexDirection: "row" },
   signature: { width: "50%" },
   signatureTitle: { fontWeight: 600, textDecoration: "underline" },
+  reconstitutionBanner: {
+    marginTop: 10,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: line,
+    backgroundColor: "#f5f5f5",
+  },
+  reconstitutionText: {
+    fontSize: 9,
+    fontWeight: 500,
+    textAlign: "center",
+  },
 });
 
 function Header() {
@@ -228,6 +240,14 @@ export function ExpenseBalanceDocument({
         <Text style={styles.title}>NOTE DE FRAIS</Text>
         <Text style={styles.reportDate}>{data.reportDate}</Text>
         <Text style={styles.author}>Par : {data.authorName}</Text>
+
+        {data.reconstitutionNote && (
+          <View style={styles.reconstitutionBanner} wrap={false}>
+            <Text style={styles.reconstitutionText}>
+              {data.reconstitutionNote}
+            </Text>
+          </View>
+        )}
 
         <Text style={styles.paragraph}>Bonjour,</Text>
         <Text style={styles.paragraph}>

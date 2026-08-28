@@ -37,20 +37,6 @@ export function beneficiaryShortName(
   return `${trimmedFirstname} ${trimmedLastname.charAt(0).toUpperCase()}.`;
 }
 
-const reportDateFormatter = new Intl.DateTimeFormat("fr-FR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
-/**
- * Date de création affichée dans les lignes denses des listes de Notes de
- * frais (vues Structure et Admin), format court partagé entre les deux.
- */
-export function formatReportDate(date: Date): string {
-  return reportDateFormatter.format(date);
-}
-
 export const expenseReportStatusLabel: Record<ExpenseReportStatus, string> = {
   DRAFT: "Brouillon",
   SUBMITTED: "Soumise",

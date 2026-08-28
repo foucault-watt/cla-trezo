@@ -23,4 +23,6 @@ export type ExpenseReportPdfData = {
   iban?: string;
   recipientName: string;
   treasurerName: string;
+  /** Présent uniquement sur un document reconstitué après perte du fichier original (cf. regenerate-expense-report-pdf.ts). */
+  reconstitutionNote?: string;
 };

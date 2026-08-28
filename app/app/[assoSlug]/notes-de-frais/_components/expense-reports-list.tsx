@@ -9,7 +9,7 @@ import {
   groupByYear,
   splitRecentAndHistorique,
   type YearGroup,
-} from "@/lib/expense-reports/report-grouping";
+} from "@/lib/year-grouping";
 import { formatCents } from "@/lib/money";
 import { ExpenseReportRow } from "./expense-report-row";
 
@@ -46,13 +46,13 @@ function YearSection({
       <div className="flex items-center gap-3 border-b border-base-300 bg-base-200/50 px-4 py-2">
         <span className="text-base font-semibold">{group.year}</span>
         <span className="text-sm text-base-content/60">
-          {group.reports.length} note(s)
+          {group.items.length} note(s)
         </span>
         <span className="ml-auto text-sm text-base-content/70">
           {formatCents(group.totalCents)}
         </span>
       </div>
-      {group.reports.map((report, i) => (
+      {group.items.map((report, i) => (
         <ExpenseReportRow
           key={report.id}
           assoSlug={assoSlug}
@@ -83,7 +83,7 @@ export function ExpenseReportsList({
   const [showHistorique, setShowHistorique] = useState(false);
 
   const { recent, historique, cutoffYear } = useMemo(
-    () => splitRecentAndHistorique(reports),
+    () => splitRecentAndHistorique(reports, (r) => r.createdAt),
     [reports],
   );
 
@@ -98,15 +98,25 @@ export function ExpenseReportsList({
   );
 
   const recentGroups = useMemo(
-    () => groupByYear(applyFilters(recent)),
+    () =>
+      groupByYear(
+        applyFilters(recent),
+        (r) => r.createdAt,
+        (r) => r.totalAmountCents,
+      ),
     [recent, applyFilters],
   );
   const historiqueGroups = useMemo(
-    () => groupByYear(applyFilters(historique)),
+    () =>
+      groupByYear(
+        applyFilters(historique),
+        (r) => r.createdAt,
+        (r) => r.totalAmountCents,
+      ),
     [historique, applyFilters],
   );
   const historiqueCount = historiqueGroups.reduce(
-    (sum, g) => sum + g.reports.length,
+    (sum, g) => sum + g.items.length,
     0,
   );
 

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { readStoredFile } from "@/lib/storage/file-storage";
 
+const GONE = 410;
+
 function pdfFilename(pdf: {
   fundingSource: FundingSourceType;
   subvention: { reason: string } | null;
@@ -51,7 +53,18 @@ export async function GET(
     return new Response(null, { status: 404 });
   }
 
-  const content = await readStoredFile(pdf.filePath);
+  let content: Buffer;
+  try {
+    content = await readStoredFile(pdf.filePath);
+  } catch (error) {
+    // Le PDF est bien référencé en base mais son fichier a disparu du disque
+    // (ex : perte de stockage) — distinct d'un pdfId inconnu (404), pour que
+    // le client propose une reconstitution plutôt qu'une erreur générique.
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return new Response(null, { status: GONE });
+    }
+    throw error;
+  }
 
   return new Response(new Uint8Array(content), {
     headers: {

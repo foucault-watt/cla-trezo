@@ -105,6 +105,32 @@ describe("buildSubventionPdfData", () => {
     expect(data.paymentMethod).toBe("transfer");
     expect(data.iban).toBe("FR7630006000011234567890189");
   });
+
+  it("laisse reconstitutionNote absent en temps normal, présent lors d'une reconstitution", () => {
+    const normal = buildSubventionPdfData({
+      context,
+      campaignName: "Budget prévisionnel 2025-2026",
+      grantReason: "Achat de matériel",
+      campaignGrantedOn: new Date("2026-01-10T00:00:00+01:00"),
+      campaignSubventions: [{ reason: "Achat de matériel", amountCents: 10000 }],
+      reimbursedHistory: [],
+      linesToReimburse: [],
+    });
+    expect(normal.reconstitutionNote).toBeUndefined();
+
+    const reconstituted = buildSubventionPdfData({
+      context: { ...context, reconstitutionNote: "Document reconstitué le 20/03/2026." },
+      campaignName: "Budget prévisionnel 2025-2026",
+      grantReason: "Achat de matériel",
+      campaignGrantedOn: new Date("2026-01-10T00:00:00+01:00"),
+      campaignSubventions: [{ reason: "Achat de matériel", amountCents: 10000 }],
+      reimbursedHistory: [],
+      linesToReimburse: [],
+    });
+    expect(reconstituted.reconstitutionNote).toBe(
+      "Document reconstitué le 20/03/2026.",
+    );
+  });
 });
 
 describe("buildSoldePdfData", () => {
@@ -134,5 +160,18 @@ describe("buildSoldePdfData", () => {
     expect(data.recipientName).toBe("Camille Martin");
     expect(data.treasurerName).toBe("Baptiste Frenay");
     expect(data.paymentMethod).toBe("transfer");
+  });
+
+  it("laisse reconstitutionNote absent en temps normal, présent lors d'une reconstitution", () => {
+    const normal = buildSoldePdfData({ context, lines: [] });
+    expect(normal.reconstitutionNote).toBeUndefined();
+
+    const reconstituted = buildSoldePdfData({
+      context: { ...context, reconstitutionNote: "Document reconstitué le 20/03/2026." },
+      lines: [],
+    });
+    expect(reconstituted.reconstitutionNote).toBe(
+      "Document reconstitué le 20/03/2026.",
+    );
   });
 });

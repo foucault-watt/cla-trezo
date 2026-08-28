@@ -28,4 +28,5 @@ export const expenseReportPdfDataSchema = z.object({
   iban: optionalText,
   recipientName: requiredText,
   treasurerName: requiredText,
+  reconstitutionNote: optionalText,
 });

@@ -83,10 +83,22 @@ grouped-by-year layout won**, implemented in `expense-reports-list.tsx`.
   interactions, only the row swaps the description subtitle for the Asso
   name (Admin sees every Structure) and drops `DRAFT` from the status
   `select` (a Note never reaches the Admin list before being submitted).
-  The grouping helpers (`splitRecentAndHistorique`, `groupByYear`,
-  `sumCents`) live in `lib/expense-reports/report-grouping.ts`, generic over
-  both overview shapes, so both pages share one implementation instead of
-  two copies drifting apart.
+- Reused a third time for the Admin `subventions` list (Campagnes,
+  `CampaignsList` in `app/app/admin/subventions/_components/`) — same
+  layout again, status `select` swapped for `CampaignStatus`
+  (`Programmée`/`Publiée`, `lib/subventions/status.ts`), row shows
+  `{type} {name}` with no subtitle (a Campagne has no equivalent of the
+  Asso-name/description line). The member-facing `[assoSlug]/subventions`
+  page is a deliberate exception to this pattern (see below) — this
+  grouped-by-year treatment is Admin-only.
+- The grouping helpers (`splitRecentAndHistorique`, `groupByYear`) live in
+  `lib/year-grouping.ts`, generic over any item via a `getDate`/
+  `getAmountCents` accessor (not a fixed `createdAt`/`totalAmountCents`
+  field name) — needed once a third shape (`SubventionCampaignOverview`,
+  dated by `date` not `createdAt`) joined the two Note de frais overviews.
+  All three list pages share one implementation instead of copies
+  drifting apart. The short-date formatter used by every dense row
+  (`formatShortDate`) lives in `lib/dates.ts`, generic for the same reason.
 
 ## Status/badge placement rule
 

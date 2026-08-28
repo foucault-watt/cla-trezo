@@ -5,8 +5,8 @@ import {
   expenseReportStatusBadgeClass,
   expenseReportStatusDotClass,
   expenseReportStatusLabel,
-  formatReportDate,
 } from "@/lib/expense-reports/labels";
+import { formatShortDate } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
 
 /**
@@ -45,7 +45,7 @@ export function ExpenseReportRow({
         )}
       </div>
       <div className="hidden w-24 shrink-0 text-right text-xs text-base-content/60 lg:block">
-        {formatReportDate(report.createdAt)}
+        {formatShortDate(report.createdAt)}
       </div>
       <div className="hidden w-28 shrink-0 truncate text-right text-sm text-base-content/70 md:block">
         {beneficiaryShortName(

@@ -7,6 +7,7 @@ import {
   buildSupportingDocumentPath,
   deleteStoredFile,
   readStoredFile,
+  storedFileExists,
   writeStoredFile,
 } from "./file-storage";
 
@@ -25,17 +26,19 @@ afterEach(async () => {
 });
 
 describe("buildSupportingDocumentPath", () => {
-  it("génère un chemin {assoSlug}/{reportId}/{uuid}.{extension}", () => {
+  it("génère un chemin {assoSlug}/{year}/{reportId}/{uuid}.{extension}", () => {
     const relativePath = buildSupportingDocumentPath({
       assoSlug: "club-info",
       reportId: "report-1",
       extension: "pdf",
+      now: new Date("2024-03-15T00:00:00Z"),
     });
 
     const segments = relativePath.split("/");
     expect(segments[0]).toBe("club-info");
-    expect(segments[1]).toBe("report-1");
-    expect(segments[2]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
+    expect(segments[1]).toBe("2024");
+    expect(segments[2]).toBe("report-1");
+    expect(segments[3]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
   });
 
   it("refuse un assoSlug qui contiendrait un séparateur de chemin", () => {
@@ -50,17 +53,19 @@ describe("buildSupportingDocumentPath", () => {
 });
 
 describe("buildExpenseReportPdfPath", () => {
-  it("génère un chemin {assoSlug}/{reportId}/{uuid}.{extension}", () => {
+  it("génère un chemin {assoSlug}/{year}/{reportId}/{uuid}.{extension}", () => {
     const relativePath = buildExpenseReportPdfPath({
       assoSlug: "club-info",
       reportId: "report-1",
       extension: "pdf",
+      now: new Date("2024-03-15T00:00:00Z"),
     });
 
     const segments = relativePath.split("/");
     expect(segments[0]).toBe("club-info");
-    expect(segments[1]).toBe("report-1");
-    expect(segments[2]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
+    expect(segments[1]).toBe("2024");
+    expect(segments[2]).toBe("report-1");
+    expect(segments[3]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
   });
 
   it("refuse un assoSlug qui contiendrait un séparateur de chemin", () => {
@@ -121,5 +126,21 @@ describe("writeStoredFile / readStoredFile / deleteStoredFile", () => {
     await expect(
       deleteStoredFile("club-info/report-1/absent.pdf"),
     ).resolves.not.toThrow();
+  });
+});
+
+describe("storedFileExists", () => {
+  it("renvoie true pour un fichier présent, false pour un fichier absent", async () => {
+    const relativePath = buildSupportingDocumentPath({
+      assoSlug: "club-info",
+      reportId: "report-1",
+      extension: "pdf",
+    });
+    await writeStoredFile(relativePath, Buffer.from("data"));
+
+    await expect(storedFileExists(relativePath)).resolves.toBe(true);
+    await expect(
+      storedFileExists("club-info/report-1/absent.pdf"),
+    ).resolves.toBe(false);
   });
 });

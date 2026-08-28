@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Download } from "lucide-react";
 import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
@@ -13,6 +12,7 @@ import { updateExpenseReportAsAdminAction } from "@/lib/admin/expense-report-act
 import { GeneralInformationModal } from "@/components/expense-reports/general-information-modal";
 import { AdminExpenseReportStepper } from "./_components/expense-report-stepper";
 import { DeleteExpenseReportAsAdminButton } from "./_components/delete-expense-report-as-admin-button";
+import { PdfDownloadButton } from "./_components/pdf-download-button";
 
 export default async function AdminExpenseReportWizardLayout({
   children,
@@ -76,14 +76,11 @@ export default async function AdminExpenseReportWizardLayout({
           <ul className="mt-2 flex flex-wrap gap-2">
             {report.pdfs.map((pdf) => (
               <li key={pdf.id}>
-                <a
-                  href={`/app/admin/notes-de-frais/${reportId}/pdfs/${pdf.id}`}
-                  className="btn btn-soft btn-sm"
-                >
-                  <Download size={16} />
-                  {pdf.subventionReason ??
-                    fundingSourceLabel[pdf.fundingSource]}
-                </a>
+                <PdfDownloadButton
+                  reportId={reportId}
+                  pdfId={pdf.id}
+                  label={pdf.subventionReason ?? fundingSourceLabel[pdf.fundingSource]}
+                />
               </li>
             ))}
           </ul>

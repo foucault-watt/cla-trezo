@@ -1,16 +1,8 @@
-import { ViewToggle } from "@/components/nav/view-toggle";
 import { listSubventionCampaigns } from "@/lib/admin/subvention-campaigns";
-import { CampaignsListView } from "./_components/campaigns-list-view";
-import { CampaignsGridView } from "./_components/campaigns-grid-view";
+import { CampaignsList } from "./_components/campaigns-list";
 import { NewCampaignModalButton } from "./_components/new-campaign-modal-button";
 
-export default async function AdminSubventionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string }>;
-}) {
-  const { view } = await searchParams;
-  const current = view === "grid" || view === "list" ? view : undefined;
+export default async function AdminSubventionsPage() {
   const campaigns = await listSubventionCampaigns();
 
   return (
@@ -22,29 +14,15 @@ export default async function AdminSubventionsPage({
             Campagnes de subvention et Subventions accordées aux Assos.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <ViewToggle current={current} />
-          <NewCampaignModalButton />
-        </div>
+        <NewCampaignModalButton />
       </div>
 
       {campaigns.length === 0 ? (
         <p className="text-base-content/70">
           Aucune campagne pour l&apos;instant.
         </p>
-      ) : current === "list" ? (
-        <CampaignsListView campaigns={campaigns} />
-      ) : current === "grid" ? (
-        <CampaignsGridView campaigns={campaigns} />
       ) : (
-        <>
-          <div className="sm:hidden">
-            <CampaignsGridView campaigns={campaigns} />
-          </div>
-          <div className="hidden sm:block">
-            <CampaignsListView campaigns={campaigns} />
-          </div>
-        </>
+        <CampaignsList campaigns={campaigns} />
       )}
     </div>
   );

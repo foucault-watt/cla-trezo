@@ -14,6 +14,8 @@ export type PdfBeneficiaryContext = {
   associationName: string;
   iban: string | null;
   treasurerName: string;
+  /** Présent uniquement lors d'une reconstitution suite à une perte du fichier original (cf. regenerate-expense-report-pdf.ts). */
+  reconstitutionNote?: string;
 };
 
 export type SubventionGrantContext = {
@@ -97,6 +99,7 @@ export function buildSubventionPdfData({
     iban: context.iban ?? undefined,
     recipientName: context.beneficiaryName,
     treasurerName: context.treasurerName,
+    reconstitutionNote: context.reconstitutionNote,
   };
 }
 
@@ -122,5 +125,6 @@ export function buildSoldePdfData({
     iban: context.iban ?? undefined,
     recipientName: context.beneficiaryName,
     treasurerName: context.treasurerName,
+    reconstitutionNote: context.reconstitutionNote,
   };
 }

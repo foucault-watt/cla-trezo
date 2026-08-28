@@ -28,4 +28,15 @@ describe("expenseReportPdfDataSchema", () => {
       }),
     ).toThrow();
   });
+
+  it("accepte reconstitutionNote, optionnel", () => {
+    const data = {
+      ...fixture,
+      reconstitutionNote: "Document reconstitué le 20/03/2026.",
+    };
+
+    expect(expenseReportPdfDataSchema.parse(data).reconstitutionNote).toBe(
+      "Document reconstitué le 20/03/2026.",
+    );
+  });
 });

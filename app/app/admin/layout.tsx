@@ -1,4 +1,5 @@
 import {
+  Archive,
   Building2,
   FileCog,
   FileText,
@@ -38,6 +39,11 @@ const navItems = [
     href: "/app/admin/rapports",
     label: "Rapports",
     icon: <FileText size={18} />,
+  },
+  {
+    href: "/app/admin/stockage",
+    label: "Stockage",
+    icon: <Archive size={18} />,
   },
   {
     href: "/app/admin/parametres-pdf",

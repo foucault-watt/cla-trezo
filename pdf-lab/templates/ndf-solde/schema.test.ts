@@ -40,4 +40,15 @@ describe("expenseBalancePdfDataSchema", () => {
       expenseBalancePdfDataSchema.parse({ ...fixture, reportDate: "" }),
     ).toThrow();
   });
+
+  it("accepte reconstitutionNote, optionnel", () => {
+    const data = {
+      ...fixture,
+      reconstitutionNote: "Document reconstitué le 20/03/2026.",
+    };
+
+    expect(expenseBalancePdfDataSchema.parse(data).reconstitutionNote).toBe(
+      "Document reconstitué le 20/03/2026.",
+    );
+  });
 });

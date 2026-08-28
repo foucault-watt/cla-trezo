@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertSafePathSegment } from "./path-segment";
 
@@ -12,27 +12,34 @@ function buildDocumentPath({
   assoSlug,
   reportId,
   extension,
+  now = new Date(),
 }: {
   assoSlug: string;
   reportId: string;
   extension: string;
+  now?: Date;
 }): string {
   assertSafePathSegment(assoSlug, "assoSlug");
   assertSafePathSegment(reportId, "reportId");
   assertSafePathSegment(extension, "extension");
 
+  const year = String(now.getFullYear());
   const filename = `${randomUUID()}.${extension}`;
-  return path.posix.join(assoSlug, reportId, filename);
+  return path.posix.join(assoSlug, year, reportId, filename);
 }
 
 /**
  * Chemin relatif stocké en base (`SupportingDocument.filePath`) : indépendant
- * de la racine de stockage pour pouvoir déplacer celle-ci sans migration.
+ * de la racine de stockage pour pouvoir déplacer celle-ci sans migration. Le
+ * segment `{year}` (année d'upload) sert uniquement la navigation manuelle
+ * sur le disque — la lecture/suppression se fait toujours via ce chemin
+ * stocké tel quel, jamais reconstruit.
  */
 export function buildSupportingDocumentPath(args: {
   assoSlug: string;
   reportId: string;
   extension: string;
+  now?: Date;
 }): string {
   return buildDocumentPath(args);
 }
@@ -45,6 +52,7 @@ export function buildExpenseReportPdfPath(args: {
   assoSlug: string;
   reportId: string;
   extension: string;
+  now?: Date;
 }): string {
   return buildDocumentPath(args);
 }
@@ -71,6 +79,24 @@ export async function writeStoredFile(
 
 export async function readStoredFile(relativePath: string): Promise<Buffer> {
   return readFile(resolveAbsolutePath(relativePath));
+}
+
+/**
+ * Vérifie la présence d'un fichier sans le lire (juste un `stat`) — utilisé
+ * pour prévenir avant coup d'un fichier référencé en base mais absent du
+ * disque (ex : perte disque partielle), plutôt que de le découvrir en
+ * pleine lecture.
+ */
+export async function storedFileExists(relativePath: string): Promise<boolean> {
+  try {
+    await stat(resolveAbsolutePath(relativePath));
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return false;
+    }
+    throw error;
+  }
 }
 
 export async function deleteStoredFile(relativePath: string): Promise<void> {
