@@ -4,6 +4,7 @@ import {
   FileCog,
   FileText,
   FlaskConical,
+  Gauge,
   HandCoins,
   LayoutDashboard,
   Receipt,
@@ -54,6 +55,11 @@ const navItems = [
     href: "/app/admin/developpement/pdf-lab",
     label: "Développement",
     icon: <FlaskConical size={18} />,
+  },
+  {
+    href: "/app/admin/developpement/dashboard-lab",
+    label: "Atelier Dashboard",
+    icon: <Gauge size={18} />,
   },
 ];
 

@@ -125,7 +125,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/recapitulatif/page.tsx",
-    context: "financement par le solde du club (alternative à HandCoins), dans le tableau des dépenses",
+    context:
+      "financement par le solde du club (alternative à HandCoins), dans le tableau des dépenses",
   },
   {
     icon: "TriangleAlert",
@@ -216,7 +217,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/page.tsx",
-    context: "à côté du montant du solde, dans la maquette illustrative de la landing page",
+    context:
+      "à côté du montant du solde, dans la maquette illustrative de la landing page",
   },
   {
     icon: "Wallet",
@@ -267,7 +269,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
-    context: "à côté de l'étape \"Soumettre\" en surbrillance",
+    context: 'à côté de l\'étape "Soumettre" en surbrillance',
   },
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/reimbursements-table.tsx
@@ -276,14 +278,16 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "components/expense-reports/reimbursements-table.tsx",
-    context: "badge de compte d'alertes sur une ligne (aria-label = liste des alertes)",
+    context:
+      "badge de compte d'alertes sur une ligne (aria-label = liste des alertes)",
   },
   {
     icon: "Trash2",
     visibleText: null,
     ariaLabel: null,
     file: "components/expense-reports/reimbursements-table.tsx",
-    context: "bouton icône seul sur une ligne, aria-label dynamique \"Supprimer {nom de la dépense}\"",
+    context:
+      'bouton icône seul sur une ligne, aria-label dynamique "Supprimer {nom de la dépense}"',
   },
   {
     icon: "X",
@@ -336,7 +340,8 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "TriangleAlert",
-    visibleText: "dépense(s) comportent une alerte. Cela ne bloque pas la soumission.",
+    visibleText:
+      "dépense(s) comportent une alerte. Cela ne bloque pas la soumission.",
     ariaLabel: null,
     file: "components/expense-reports/reimbursements-table.tsx",
     context: "bandeau de synthèse en pied de tableau",
@@ -362,21 +367,21 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Moins de 365 jours",
     ariaLabel: null,
     file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: "aria-hidden, panneau \"Règle d'usage\"",
+    context: 'aria-hidden, panneau "Règle d\'usage"',
   },
   {
     icon: "Clock3",
     visibleText: "Entre 1 et 2 ans",
     ariaLabel: null,
     file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: "aria-hidden, panneau \"Règle d'usage\"",
+    context: 'aria-hidden, panneau "Règle d\'usage"',
   },
   {
     icon: "Archive",
     visibleText: "Plus de 2 ans",
     ariaLabel: null,
     file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: "aria-hidden, panneau \"Règle d'usage\"",
+    context: 'aria-hidden, panneau "Règle d\'usage"',
   },
   {
     icon: "History",
@@ -482,7 +487,8 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "CheckCircle2",
-    visibleText: "IBAN enregistré pour {bénéficiaire} / Bénéficiaire et IBAN à compléter",
+    visibleText:
+      "IBAN enregistré pour {bénéficiaire} / Bénéficiaire et IBAN à compléter",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
     context: "liste de complétude, texte conditionnel",
@@ -540,7 +546,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: "Ouvrir le menu",
     file: "components/nav/sidebar-drawer.tsx",
-    context: "bouton hamburger, symétrique du \"Fermer le menu\" sur l'overlay",
+    context: 'bouton hamburger, symétrique du "Fermer le menu" sur l\'overlay',
   },
 
   // components/nav/back-to-app-link.tsx
@@ -608,19 +614,39 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/page.tsx
   {
-    icon: "Building2",
-    visibleText: null,
+    icon: "ShieldUser",
+    visibleText: "Administration",
     ariaLabel: null,
     file: "app/app/page.tsx",
-    context:
-      "dans une carte de sélection de structure, à côté du nom de la structure (×2 dans ce fichier : Assos où l'utilisateur a un rôle, et pour l'Admin, Assos accessibles sans rôle)",
+    context: 'bouton d\'en-tête, à droite du "Bonjour {prénom}"',
   },
   {
     icon: "ShieldUser",
-    visibleText: "Autres Assos, accessibles en vue Admin (vous n'y avez pas de rôle)",
+    visibleText: "Autres Assos, accessibles en vue Admin",
     ariaLabel: null,
     file: "app/app/page.tsx",
-    context: "titre de la section listant toutes les Assos pour un Admin sans rôle dedans",
+    context:
+      "titre du panneau repliable listant les Assos pour un Admin sans rôle dedans ; le texte visible inclut aussi le compte entre parenthèses",
+  },
+
+  // app/app/_components/member-asso-card.tsx
+  {
+    icon: "Building2",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/_components/member-asso-card.tsx",
+    context:
+      "carte d'une Asso où l'utilisateur a un rôle, à côté du badge de type",
+  },
+
+  // app/app/_components/other-asso-card.tsx
+  {
+    icon: "Building2",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/_components/other-asso-card.tsx",
+    context:
+      "carte d'une Asso accessible en vue Admin sans rôle, cohérent avec member-asso-card.tsx",
   },
 
   // app/app/admin/subventions/[campaignId]/page.tsx
@@ -629,7 +655,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/page.tsx",
-    context: "à côté du nom d'une association, liste des conventions à préparer",
+    context:
+      "à côté du nom d'une association, liste des conventions à préparer",
   },
 
   // app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx
@@ -644,7 +671,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx",
-    context: "aria-label dynamique \"Supprimer le représentant {n}\"",
+    context: 'aria-label dynamique "Supprimer le représentant {n}"',
   },
   {
     icon: "Download",
@@ -660,14 +687,15 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: "Modifier la Subvention",
     file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
     context:
-      "bouton icône seul qui bascule vers l'icône X en mode édition, mais garde le même aria-label \"Modifier la Subvention\"",
+      'bouton icône seul qui bascule vers l\'icône X en mode édition, mais garde le même aria-label "Modifier la Subvention"',
   },
   {
     icon: "Trash2",
     visibleText: null,
     ariaLabel: "Supprimer la Subvention",
     file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
-    context: "bouton icône seul, ouvre la modale de confirmation de suppression",
+    context:
+      "bouton icône seul, ouvre la modale de confirmation de suppression",
   },
   {
     icon: "Check",
@@ -686,7 +714,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Annuler",
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx",
-    context: "modale de confirmation de suppression, cohérent avec delete-campaign-button.tsx",
+    context:
+      "modale de confirmation de suppression, cohérent avec delete-campaign-button.tsx",
   },
   {
     icon: "Trash2",
@@ -724,7 +753,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/parametres-pdf/_components/convention-settings-form.tsx",
-    context: "aria-label dynamique \"Supprimer le représentant {n}\"",
+    context: 'aria-label dynamique "Supprimer le représentant {n}"',
   },
   {
     icon: "Save",
@@ -799,7 +828,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/stockage/_components/storage-archive-button.tsx",
-    context: "modale d'archive, avertissement quand des fichiers sont introuvables sur le disque",
+    context:
+      "modale d'archive, avertissement quand des fichiers sont introuvables sur le disque",
   },
   {
     icon: "X",
@@ -828,7 +858,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/developpement/pdf-lab/_components/pdf-lab-editor.tsx",
-    context: "aria-label dynamique \"Supprimer la ligne {n}\"",
+    context: 'aria-label dynamique "Supprimer la ligne {n}"',
   },
   {
     icon: "Download",
@@ -850,7 +880,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/developpement/pdf-lab/_components/ndf-solde-pdf-lab-editor.tsx",
-    context: "aria-label dynamique \"Supprimer la ligne {n}\"",
+    context: 'aria-label dynamique "Supprimer la ligne {n}"',
   },
   {
     icon: "Download",
@@ -872,7 +902,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/developpement/pdf-lab/_components/financement-pdf-lab-editor.tsx",
-    context: "aria-label dynamique \"Supprimer la ligne {n}\"",
+    context: 'aria-label dynamique "Supprimer la ligne {n}"',
   },
   {
     icon: "Download",
@@ -900,14 +930,14 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/developpement/pdf-lab/_components/convention-pdf-lab-editor.tsx",
-    context: "aria-label dynamique \"Supprimer le représentant {n}\"",
+    context: 'aria-label dynamique "Supprimer le représentant {n}"',
   },
   {
     icon: "Trash2",
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/developpement/pdf-lab/_components/convention-pdf-lab-editor.tsx",
-    context: "aria-label dynamique \"Supprimer la ligne {n}\"",
+    context: 'aria-label dynamique "Supprimer la ligne {n}"',
   },
   {
     icon: "Download",
@@ -957,7 +987,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/_components/dashboard/activity-list.tsx",
-    context: "icône d'activité pour l'événement \"note_finalisee\", accolée à un texte d'événement dynamique",
+    context:
+      "icône d'activité pour l'événement \"note_finalisee\", accolée à un texte d'événement dynamique",
   },
   {
     icon: "FileText",
@@ -987,21 +1018,24 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "components/ui/date-picker.tsx",
-    context: "à côté de la date sélectionnée ou du placeholder, dans le bouton du sélecteur",
+    context:
+      "à côté de la date sélectionnée ou du placeholder, dans le bouton du sélecteur",
   },
   {
     icon: "ChevronLeft",
     visibleText: null,
     ariaLabel: null,
     file: "components/ui/date-picker.tsx",
-    context: "navigation mois précédent du calendrier (slot du Web Component Cally, pas d'aria-label)",
+    context:
+      "navigation mois précédent du calendrier (slot du Web Component Cally, pas d'aria-label)",
   },
   {
     icon: "ChevronRight",
     visibleText: null,
     ariaLabel: null,
     file: "components/ui/date-picker.tsx",
-    context: "navigation mois suivant du calendrier (slot du Web Component Cally, pas d'aria-label)",
+    context:
+      "navigation mois suivant du calendrier (slot du Web Component Cally, pas d'aria-label)",
   },
 
   // app/app/admin/subventions/[campaignId]/_components/subventions-table.tsx
@@ -1020,7 +1054,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/asso-select.tsx",
-    context: "chevron de dropdown, à côté du nom de l'asso sélectionnée ou d'un placeholder",
+    context:
+      "chevron de dropdown, à côté du nom de l'asso sélectionnée ou d'un placeholder",
   },
 
   // app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx
@@ -1036,21 +1071,23 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context: "dans la liste des décisions possibles (\"La valide telle quelle.\")",
+    context:
+      'dans la liste des décisions possibles ("La valide telle quelle.")',
   },
   {
     icon: "Pencil",
     visibleText: null,
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context: "dans la liste des décisions possibles (\"La modifie, puis la valide.\")",
+    context:
+      'dans la liste des décisions possibles ("La modifie, puis la valide.")',
   },
   {
     icon: "XCircle",
     visibleText: null,
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context: "dans la liste des décisions possibles (\"La rejette...\")",
+    context: 'dans la liste des décisions possibles ("La rejette...")',
   },
 
   // Boutons complétés le 2026-08-23 pour homogénéiser avec le reste du site
@@ -1091,21 +1128,22 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Soumettre la note",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
-    context: "confirmation dans la modale, cohérent avec submit-expense-report-form.tsx",
+    context:
+      "confirmation dans la modale, cohérent avec submit-expense-report-form.tsx",
   },
   {
     icon: "Pencil",
     visibleText: "Modifier",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/edit-expense-report-form.tsx",
-    context: "bouton toggle, bascule vers X + \"Annuler\" en édition",
+    context: 'bouton toggle, bascule vers X + "Annuler" en édition',
   },
   {
     icon: "X",
     visibleText: "Annuler",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/edit-expense-report-form.tsx",
-    context: "bouton toggle, même bouton que Pencil + \"Modifier\" hors édition",
+    context: 'bouton toggle, même bouton que Pencil + "Modifier" hors édition',
   },
   {
     icon: "Save",
@@ -1170,7 +1208,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Ajoutez une dépense et un justificatif pour continuer",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/remboursements/page.tsx",
-    context: "état désactivé, cohérent avec le bouton actif \"Choisir le bénéficiaire\"",
+    context:
+      'état désactivé, cohérent avec le bouton actif "Choisir le bénéficiaire"',
   },
 
   // components/expense-reports/pdf-field-editors.tsx
@@ -1186,7 +1225,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: null,
     ariaLabel: null,
     file: "components/expense-reports/pdf-field-editors.tsx",
-    context: "aria-label dynamique \"Supprimer la ligne {n}\", cohérent avec pdf-lab-editor.tsx",
+    context:
+      'aria-label dynamique "Supprimer la ligne {n}", cohérent avec pdf-lab-editor.tsx',
   },
 
   // app/app/admin/notes-de-frais/[reportId]/valider/_components/subvention-pdf-fields.tsx
@@ -1220,7 +1260,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Confirmer",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
-    context: "bouton de confirmation dans la modale \"Valider cette Note de frais ?\"",
+    context:
+      'bouton de confirmation dans la modale "Valider cette Note de frais ?"',
   },
   {
     icon: "Download",
@@ -1228,7 +1269,7 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
     context:
-      "modale de succès, un lien par PDF généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention, cohérent avec layout.tsx",
+      'modale de succès, un lien par PDF généré ; texte visible dynamique, "Solde" ou la raison de la Subvention, cohérent avec layout.tsx',
   },
 
   // app/app/admin/notes-de-frais/[reportId]/remboursements/page.tsx
@@ -1257,21 +1298,22 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
     context:
-      "un bouton par PDF final généré ; texte visible dynamique, \"Solde\" ou la raison de la Subvention concernée",
+      'un bouton par PDF final généré ; texte visible dynamique, "Solde" ou la raison de la Subvention concernée',
   },
   {
     icon: "X",
     visibleText: "Annuler",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
-    context: "modale \"Fichier introuvable\", bouton d'annulation",
+    context: 'modale "Fichier introuvable", bouton d\'annulation',
   },
   {
     icon: "RotateCcw",
     visibleText: "Reconstituer et télécharger",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/_components/pdf-download-button.tsx",
-    context: "modale \"Fichier introuvable\", régénère le PDF depuis les données conservées",
+    context:
+      'modale "Fichier introuvable", régénère le PDF depuis les données conservées',
   },
 
   // components/ui/toast.tsx
@@ -1380,5 +1422,97 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/delete-campaign-button.tsx",
     context: "bouton de confirmation dans la modale",
+  },
+
+  // app/app/admin/layout.tsx
+  {
+    icon: "Gauge",
+    visibleText: "Atelier Dashboard",
+    ariaLabel: null,
+    file: "app/app/admin/layout.tsx",
+    context: "lien de navigation Admin vers l'atelier Dashboard",
+  },
+
+  // app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx
+  {
+    icon: "Wallet",
+    visibleText: "Solde actuel",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
+    context: "figure de la tuile stat Solde actuel (Club uniquement)",
+  },
+  {
+    icon: "Receipt",
+    visibleText: "Notes de frais en attente",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
+    context: "figure de la tuile stat Notes de frais",
+  },
+  {
+    icon: "HandCoins",
+    visibleText: "Subventions restantes",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
+    context: "figure de la tuile stat Subventions",
+  },
+
+  // app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx
+  {
+    icon: "Wallet",
+    visibleText: "Solde actuel",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
+    context: "carte Solde de la grille (Club uniquement)",
+  },
+  {
+    icon: "Receipt",
+    visibleText: "Notes de frais",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
+    context: "carte Notes de frais de la grille",
+  },
+  {
+    icon: "HandCoins",
+    visibleText: "Subventions",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
+    context: "carte Subventions de la grille",
+  },
+  {
+    icon: "History",
+    visibleText: "Dernière activité",
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
+    context: "carte Dernière activité de la grille",
+  },
+  {
+    icon: "ArrowRight",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
+    context: "chevron décoratif en bas des cartes Notes de frais / Subventions",
+  },
+
+  // app/app/[assoSlug]/page.tsx
+  {
+    icon: "Wallet",
+    visibleText: "Solde actuel",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/page.tsx",
+    context: "figure de la tuile stat Solde actuel (Club uniquement)",
+  },
+  {
+    icon: "Receipt",
+    visibleText: "Notes de frais en attente",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/page.tsx",
+    context: "figure de la tuile stat Notes de frais",
+  },
+  {
+    icon: "HandCoins",
+    visibleText: "Subventions restantes",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/page.tsx",
+    context: "figure de la tuile stat Subventions",
   },
 ];
