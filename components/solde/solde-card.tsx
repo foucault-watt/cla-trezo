@@ -2,19 +2,14 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { formatCents } from "@/lib/money";
 import type { SoldeView } from "@/lib/solde/solde";
+import { SoldeMovementRow } from "./solde-movement-row";
+import { SoldeNotInitializedAlert } from "./solde-not-initialized-alert";
 
-const currency = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-});
 const monthFormat = new Intl.DateTimeFormat("fr-FR", {
   month: "long",
   year: "numeric",
-});
-const dayFormat = new Intl.DateTimeFormat("fr-FR", {
-  day: "2-digit",
-  month: "short",
 });
 
 const BATCH_SIZE = 10;
@@ -36,12 +31,7 @@ export function SoldeCard({
       <div className="card mt-2 border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">
           <h2 className="card-title">Solde</h2>
-          <div role="alert" className="alert alert-info alert-soft">
-            <span>
-              Le solde de ce Club n&apos;a pas encore été initialisé par un
-              administrateur.
-            </span>
-          </div>
+          <SoldeNotInitializedAlert />
         </div>
       </div>
     );
@@ -67,7 +57,7 @@ export function SoldeCard({
           <div className="stat px-0">
             <div className="stat-title">Solde actuel</div>
             <div className="stat-value">
-              {currency.format(solde.balanceCents / 100)}
+              {formatCents(solde.balanceCents)}
             </div>
           </div>
         </div>
@@ -87,20 +77,7 @@ export function SoldeCard({
                       {monthFormat.format(m.createdAt)}
                     </div>
                   )}
-                  <div className="grid grid-cols-[3.5rem_1fr_auto] items-start gap-x-3 py-1.5">
-                    <span className="pt-0.5 text-xs whitespace-nowrap text-base-content/50">
-                      {dayFormat.format(m.createdAt)}
-                    </span>
-                    <span className="text-sm">
-                      {m.description ?? m.category ?? "Mouvement"}
-                    </span>
-                    <span
-                      className={`text-right text-sm font-medium tabular-nums ${m.movementType === "CREDIT" ? "text-success" : "text-error"}`}
-                    >
-                      {m.movementType === "CREDIT" ? "+" : "-"}
-                      {currency.format(m.amountCents / 100)}
-                    </span>
-                  </div>
+                  <SoldeMovementRow movement={m} />
                 </li>
               ))}
             </ul>

@@ -1,14 +1,9 @@
 "use client";
 
+import { SoldeMovementRow } from "@/components/solde/solde-movement-row";
 import type { YearGroup } from "@/lib/dashboard/dashboard-overview";
-import { formatCents } from "@/lib/money";
 import type { SoldeMovement } from "@/lib/solde/solde";
 import { useOpenGroups } from "./use-open-groups";
-
-const dayFormat = new Intl.DateTimeFormat("fr-FR", {
-  day: "2-digit",
-  month: "short",
-});
 
 export function SoldeHistoryAccordion({
   groups,
@@ -46,22 +41,8 @@ export function SoldeHistoryAccordion({
             <div className="collapse-content">
               <ul className="flex flex-col">
                 {group.items.map((m) => (
-                  <li
-                    key={m.id}
-                    className="grid grid-cols-[3.5rem_1fr_auto] items-start gap-x-3 py-1.5"
-                  >
-                    <span className="pt-0.5 text-xs whitespace-nowrap text-base-content/50">
-                      {dayFormat.format(m.createdAt)}
-                    </span>
-                    <span className="text-sm">
-                      {m.description ?? m.category ?? "Mouvement"}
-                    </span>
-                    <span
-                      className={`text-right text-sm font-medium tabular-nums ${m.movementType === "CREDIT" ? "text-success" : "text-error"}`}
-                    >
-                      {m.movementType === "CREDIT" ? "+" : "-"}
-                      {formatCents(m.amountCents)}
-                    </span>
+                  <li key={m.id}>
+                    <SoldeMovementRow movement={m} />
                   </li>
                 ))}
               </ul>

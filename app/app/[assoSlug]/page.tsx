@@ -1,6 +1,7 @@
 import { HandCoins, Receipt, Wallet } from "lucide-react";
 import { RecentActivityAccordion } from "@/components/dashboard/recent-activity-accordion";
 import { SoldeHistoryAccordion } from "@/components/dashboard/solde-history-accordion";
+import { SoldeNotInitializedAlert } from "@/components/solde/solde-not-initialized-alert";
 import { getDashboardOverview } from "@/lib/dashboard/dashboard-overview";
 import { formatCents } from "@/lib/money";
 
@@ -63,12 +64,7 @@ export default async function DashboardPage({
       </div>
 
       {solde.status === "not_initialized" && (
-        <div role="alert" className="alert alert-info alert-soft mt-6">
-          <span>
-            Le solde de ce Club n&apos;a pas encore été initialisé par un
-            administrateur.
-          </span>
-        </div>
+        <SoldeNotInitializedAlert className="mt-6" />
       )}
 
       {solde.status === "ready" && (
