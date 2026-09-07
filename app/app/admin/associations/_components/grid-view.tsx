@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { assoStatusBadgeClass, assoStatusLabel } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
-import { AssoSoldeCell } from "./asso-solde-cell";
+import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 import { AssoTypeAlert } from "./asso-type-alert";
 
 export function GridView({ associations }: { associations: AssoOverview[] }) {
@@ -26,7 +26,7 @@ export function GridView({ associations }: { associations: AssoOverview[] }) {
               </div>
             )}
             <p className="text-2xl">
-              <AssoSoldeCell solde={asso.solde} />
+              <AssoSoldeBadge solde={asso.solde} />
             </p>
             <p className="text-sm text-base-content/70">
               {asso.subventionsPubliees} subvention(s) publiée(s) ·{" "}

@@ -12,7 +12,7 @@ import {
   assoStatusLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
-import { AssoSoldeCell } from "./asso-solde-cell";
+import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 import { AssoTypeAlert } from "./asso-type-alert";
 
 export function ListView({ associations }: { associations: AssoOverview[] }) {
@@ -47,7 +47,7 @@ export function ListView({ associations }: { associations: AssoOverview[] }) {
             {asso.notesDeFraisEnAttente} note(s) de frais
           </div>
           <div className="w-28 shrink-0 text-right">
-            <AssoSoldeCell solde={asso.solde} />
+            <AssoSoldeBadge solde={asso.solde} />
           </div>
           <span
             className={`badge shrink-0 ${assoStatusBadgeClass[asso.status]}`}

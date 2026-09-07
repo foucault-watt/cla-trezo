@@ -1,18 +1,24 @@
+import { formatCents } from "@/lib/money";
 import type { SoldeView } from "@/lib/solde/solde";
 
-const currency = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-});
-
-export function AssoSoldeCell({ solde }: { solde: SoldeView }) {
+export function AssoSoldeBadge({
+  solde,
+  size = "md",
+}: {
+  solde: SoldeView;
+  size?: "sm" | "md";
+}) {
   if (solde.status === "type_undefined" || solde.status === "not_applicable") {
     return <span className="text-base-content/40">—</span>;
   }
 
   if (solde.status === "not_initialized") {
     return (
-      <span className="badge badge-warning badge-outline">Non initialisé</span>
+      <span
+        className={`badge badge-warning badge-outline ${size === "sm" ? "badge-sm" : ""}`}
+      >
+        Non initialisé
+      </span>
     );
   }
 
@@ -20,7 +26,7 @@ export function AssoSoldeCell({ solde }: { solde: SoldeView }) {
     <span
       className={`font-semibold ${solde.balanceCents < 0 ? "text-error" : ""}`}
     >
-      {currency.format(solde.balanceCents / 100)}
+      {formatCents(solde.balanceCents)}
     </span>
   );
 }

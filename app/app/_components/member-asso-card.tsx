@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
 import { assoTypeLabel } from "@/lib/admin/asso-labels";
-import { AssoSoldeInline } from "./asso-solde-inline";
+import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 import type { MemberAssoCard as MemberAssoCardData } from "./home-types";
 
 export function MemberAssoCard({ card }: { card: MemberAssoCardData }) {
@@ -25,7 +25,7 @@ export function MemberAssoCard({ card }: { card: MemberAssoCardData }) {
         <p className="text-xs text-base-content/60">{card.role}</p>
         {card.overview && (
           <p className="text-lg">
-            <AssoSoldeInline solde={card.overview.solde} />
+            <AssoSoldeBadge solde={card.overview.solde} size="sm" />
           </p>
         )}
         <div className="card-actions mt-1">

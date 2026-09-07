@@ -9,7 +9,7 @@ import {
   assoTypeLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
-import { AssoSoldeInline } from "./asso-solde-inline";
+import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 
 export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
   return (
@@ -37,7 +37,7 @@ export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
           </div>
         )}
         <p className="mt-1 text-lg">
-          <AssoSoldeInline solde={asso.solde} />
+          <AssoSoldeBadge solde={asso.solde} size="sm" />
         </p>
         <p className="text-xs text-base-content/60">
           {asso.subventionsPubliees} subvention(s) publiée(s) ·{" "}

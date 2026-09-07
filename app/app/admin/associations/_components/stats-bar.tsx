@@ -1,9 +1,5 @@
 import type { AssoOverview } from "@/lib/admin/associations";
-
-const currency = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-});
+import { formatCents } from "@/lib/money";
 
 export function StatsBar({ associations }: { associations: AssoOverview[] }) {
   const totalSoldeCents = associations.reduce(
@@ -24,7 +20,7 @@ export function StatsBar({ associations }: { associations: AssoOverview[] }) {
       <div className="stat">
         <div className="stat-title">Solde total des Clubs</div>
         <div className="stat-value text-2xl">
-          {currency.format(totalSoldeCents / 100)}
+          {formatCents(totalSoldeCents)}
         </div>
       </div>
       {typesNonDefinis > 0 && (
