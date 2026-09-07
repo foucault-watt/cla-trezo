@@ -44,7 +44,7 @@ export function SubventionsTable({
   }
 
   return (
-    <div className="rounded-box border border-base-300 bg-base-100">
+    <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
       <table className="table table-zebra">
         <thead>
           <tr>

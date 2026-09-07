@@ -1,23 +1,9 @@
-import type { FundingSourceType } from "@/app/generated/prisma/enums";
+import { buildExpenseReportPdfFilename } from "@/lib/expense-reports/expense-report-pdf-filename";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { readStoredFile } from "@/lib/storage/file-storage";
 
 const GONE = 410;
-
-function pdfFilename(pdf: {
-  fundingSource: FundingSourceType;
-  subvention: { reason: string } | null;
-}): string {
-  if (pdf.fundingSource === "CLUB_BALANCE") {
-    return "note-de-frais-solde.pdf";
-  }
-  const slug = (pdf.subvention?.reason ?? "subvention")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase();
-  return `note-de-frais-${slug || "subvention"}.pdf`;
-}
 
 /**
  * Sert le contenu d'un PDF final (issue #20), pour l'Admin, toutes
@@ -69,7 +55,7 @@ export async function GET(
   return new Response(new Uint8Array(content), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${pdfFilename(pdf)}"`,
+      "Content-Disposition": `attachment; filename="${buildExpenseReportPdfFilename(pdf)}"`,
       "Cache-Control": "private, max-age=0, no-cache",
     },
   });

@@ -27,6 +27,18 @@ export type SupportingDocumentDetail = {
   createdAt: Date;
 };
 
+/**
+ * Un PDF final (issue #20), un par source de financement distincte, généré
+ * uniquement à la Validation (ADR-0006). Partagé par les vues Structure et
+ * Admin — chacune le charge à part de `mapExpenseReportToDetail` (pas
+ * toujours pertinent, ex : hors du statut Validée).
+ */
+export type ExpenseReportPdfDetail = {
+  id: string;
+  fundingSource: FundingSourceType;
+  subventionReason: string | null;
+};
+
 export type ExpenseReportDetail = {
   id: string;
   title: string;

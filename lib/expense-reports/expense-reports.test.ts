@@ -138,6 +138,8 @@ describe("getExpenseReportDetail", () => {
       status: "DRAFT",
       createdAt: new Date(),
       lines: [],
+      supportingDocuments: [],
+      pdfs: [],
     });
 
     await expect(
@@ -175,6 +177,18 @@ describe("getExpenseReportDetail", () => {
           createdAt: new Date("2026-01-02"),
         },
       ],
+      pdfs: [
+        {
+          id: "pdf-1",
+          fundingSource: "SUBVENTION",
+          subvention: { reason: "Achat de matériel" },
+        },
+        {
+          id: "pdf-2",
+          fundingSource: "CLUB_BALANCE",
+          subvention: null,
+        },
+      ],
     });
     typeDepenseFindManyMock.mockResolvedValue([
       { id: "type-1", label: "Transport" },
@@ -208,6 +222,10 @@ describe("getExpenseReportDetail", () => {
         createdAt: new Date("2026-01-02"),
       },
     ]);
+    expect(result.pdfs).toEqual([
+      { id: "pdf-1", fundingSource: "SUBVENTION", subventionReason: "Achat de matériel" },
+      { id: "pdf-2", fundingSource: "CLUB_BALANCE", subventionReason: null },
+    ]);
   });
 
   it("exclut du panneau de sélection les Subventions dont la Campagne date de plus de deux ans", async () => {
@@ -220,6 +238,7 @@ describe("getExpenseReportDetail", () => {
       createdAt: new Date("2026-01-01"),
       lines: [],
       supportingDocuments: [],
+      pdfs: [],
     });
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
@@ -272,6 +291,7 @@ describe("getExpenseReportDetail", () => {
       beneficiaryIban: "FR7630006000011234567890189",
       lines: [],
       supportingDocuments: [],
+      pdfs: [],
     });
 
     const result = await getExpenseReportDetail("club-info", "report-1");

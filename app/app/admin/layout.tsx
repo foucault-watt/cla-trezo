@@ -2,7 +2,6 @@ import {
   Archive,
   Building2,
   FileCog,
-  FileText,
   FlaskConical,
   Gauge,
   HandCoins,
@@ -37,11 +36,6 @@ const navItems = [
     icon: <HandCoins size={18} />,
   },
   {
-    href: "/app/admin/rapports",
-    label: "Rapports",
-    icon: <FileText size={18} />,
-  },
-  {
     href: "/app/admin/stockage",
     label: "Stockage",
     icon: <Archive size={18} />,
@@ -51,6 +45,9 @@ const navItems = [
     label: "Paramètres PDF",
     icon: <FileCog size={18} />,
   },
+];
+
+const devNavItems = [
   {
     href: "/app/admin/developpement/pdf-lab",
     label: "Développement",
@@ -83,11 +80,16 @@ export default async function AdminLayout({
   return (
     <SidebarDrawer
       navItems={navItems}
+      secondaryNavItems={devNavItems}
+      secondaryLabel="Outils internes"
       rootLabel="Administration"
       footerSlot={footerSlot}
       edgeGlow
     >
-      <SectionBreadcrumbs root="Administration" items={navItems} />
+      <SectionBreadcrumbs
+        root="Administration"
+        items={[...navItems, ...devNavItems]}
+      />
       {children}
     </SidebarDrawer>
   );

@@ -142,6 +142,14 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/recapitulatif/page.tsx",
     context: "à côté du nom d'un justificatif (lien de téléchargement)",
   },
+  {
+    icon: "Download",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/recapitulatif/page.tsx",
+    context:
+      "à côté du nom d'un PDF final, dans la section Documents finaux (Note Validée)",
+  },
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/general-information-modal.tsx
   {
@@ -806,12 +814,6 @@ export const iconUsages: IconUsage[] = [
     context: "cohérent avec le nav membre",
   },
   {
-    icon: "FileText",
-    visibleText: "Rapports",
-    ariaLabel: null,
-    file: "app/app/admin/layout.tsx",
-  },
-  {
     icon: "FileCog",
     visibleText: "Paramètres PDF",
     ariaLabel: null,
@@ -1368,6 +1370,14 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: "Fermer",
     file: "components/ui/toast.tsx",
     context: "bouton icône seul de fermeture manuelle d'un toast",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/_components/take-over-button.tsx
+  {
+    icon: "ClipboardCheck",
+    visibleText: "Prendre en charge",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/_components/take-over-button.tsx",
   },
 
   // app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx

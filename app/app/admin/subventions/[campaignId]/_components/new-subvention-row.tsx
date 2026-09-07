@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import {
   addSubventionAction,
   type AddSubventionState,
 } from "@/lib/admin/subvention-actions";
+import { useToast } from "@/components/ui/toast";
 import { AssoSelect } from "./asso-select";
 
 const initialState: AddSubventionState = { ok: false };
@@ -21,6 +22,7 @@ export function NewSubventionRow({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const { push: pushToast } = useToast();
   const [assoId, setAssoId] = useState("");
   const [state, formAction, pending] = useActionState(
     addSubventionAction,
@@ -34,6 +36,12 @@ export function NewSubventionRow({
       onSaved();
     }
   }
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({ type: "success", message: "Subvention ajoutée." });
+    }
+  }, [state, pushToast]);
 
   return (
     <tr>

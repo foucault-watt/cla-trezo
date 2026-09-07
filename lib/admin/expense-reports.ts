@@ -10,6 +10,7 @@ import {
 import { mapExpenseReportToDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import type {
   ExpenseReportLineDetail,
+  ExpenseReportPdfDetail,
   SupportingDocumentDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
 import { attachLineWarnings } from "@/lib/expense-reports/line-warnings";
@@ -18,11 +19,7 @@ import { listVisibleSubventionsForAdmin } from "@/lib/subventions/visible-subven
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import { getClubSoldeForAdmin } from "@/lib/solde/actions";
 import type { SoldeView } from "@/lib/solde/solde";
-import type {
-  AssoType,
-  ExpenseReportStatus,
-  FundingSourceType,
-} from "@/app/generated/prisma/enums";
+import type { AssoType, ExpenseReportStatus } from "@/app/generated/prisma/enums";
 export type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 
 export type ExpenseReportOverviewForAdmin = {
@@ -75,12 +72,6 @@ export async function listExpenseReportsForAdmin(): Promise<
     ),
   }));
 }
-
-export type ExpenseReportPdfDetail = {
-  id: string;
-  fundingSource: FundingSourceType;
-  subventionReason: string | null;
-};
 
 export type ExpenseReportDetailForAdmin = {
   id: string;

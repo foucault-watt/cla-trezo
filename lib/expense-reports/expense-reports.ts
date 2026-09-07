@@ -12,6 +12,7 @@ import {
 import {
   mapExpenseReportToDetail,
   type ExpenseReportDetail,
+  type ExpenseReportPdfDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
 import {
   attachLineWarnings,
@@ -21,6 +22,7 @@ export type {
   ExpenseReportLineDetail,
   SupportingDocumentDetail,
   ExpenseReportDetail,
+  ExpenseReportPdfDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
 
 export type ExpenseReportOverview = {
@@ -75,6 +77,8 @@ export type ExpenseReportDetailContext = {
   assoType: AssoType | null;
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
+  /** Un PDF par source de financement distincte (issue #20). Vide tant que la Note n'est pas Validée. */
+  pdfs: ExpenseReportPdfDetail[];
 };
 
 /**
@@ -102,6 +106,10 @@ export async function getExpenseReportDetail(
         },
         supportingDocuments: {
           orderBy: { createdAt: "asc" },
+        },
+        pdfs: {
+          orderBy: { createdAt: "asc" },
+          include: { subvention: { select: { reason: true } } },
         },
       },
     }),
@@ -141,5 +149,10 @@ export async function getExpenseReportDetail(
     visibleSubventions: visibleSubventions.filter((s) =>
       isSubventionWithinFundingWindow(s.campaignDate, now),
     ),
+    pdfs: report.pdfs.map((pdf) => ({
+      id: pdf.id,
+      fundingSource: pdf.fundingSource,
+      subventionReason: pdf.subvention?.reason ?? null,
+    })),
   };
 }

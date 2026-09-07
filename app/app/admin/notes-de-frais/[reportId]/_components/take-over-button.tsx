@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { ClipboardCheck } from "lucide-react";
 import {
   takeOverExpenseReportAction,
   type TakeOverExpenseReportState,
@@ -28,7 +29,10 @@ export function TakeOverButton({ reportId }: { reportId: string }) {
         {pending ? (
           <span className="loading loading-spinner loading-sm" />
         ) : (
-          "Prendre en charge"
+          <>
+            <ClipboardCheck size={16} />
+            Prendre en charge
+          </>
         )}
       </button>
     </form>

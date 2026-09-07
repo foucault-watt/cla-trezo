@@ -15,12 +15,16 @@ type SidebarDrawerNavItem = {
 // behave the same way on mobile.
 export function SidebarDrawer({
   navItems,
+  secondaryNavItems,
+  secondaryLabel,
   rootLabel,
   footerSlot,
   children,
   edgeGlow = false,
 }: {
   navItems: SidebarDrawerNavItem[];
+  secondaryNavItems?: SidebarDrawerNavItem[];
+  secondaryLabel?: string;
   rootLabel: string;
   footerSlot: ReactNode;
   children: ReactNode;
@@ -64,6 +68,14 @@ export function SidebarDrawer({
               <NavLink key={item.href} {...item} />
             ))}
           </ul>
+          {secondaryNavItems && secondaryNavItems.length > 0 && (
+            <ul className="menu w-full gap-1 border-t border-base-200 pt-2">
+              {secondaryLabel && <li className="menu-title">{secondaryLabel}</li>}
+              {secondaryNavItems.map((item) => (
+                <NavLink key={item.href} {...item} />
+              ))}
+            </ul>
+          )}
           <div className="border-t border-base-200 pt-2">{footerSlot}</div>
         </aside>
       </div>

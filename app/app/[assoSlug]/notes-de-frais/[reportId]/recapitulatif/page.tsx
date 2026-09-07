@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  Download,
   FileText,
   HandCoins,
   Pencil,
@@ -7,6 +8,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { formatCents } from "@/lib/money";
+import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import {
   expenseReportStepHref,
   guardExpenseReportSummary,
@@ -187,6 +189,24 @@ export default async function ExpenseReportSummaryPage({
           ))}
         </ul>
       </SummarySection>
+
+      {context.pdfs.length > 0 && (
+        <SummarySection title="Documents finaux">
+          <ul className="space-y-2">
+            {context.pdfs.map((pdf) => (
+              <li key={pdf.id}>
+                <a
+                  className="link link-hover flex items-center gap-2"
+                  href={`/app/${assoSlug}/notes-de-frais/${reportId}/pdfs/${pdf.id}`}
+                >
+                  <Download size={16} />
+                  {pdf.subventionReason ?? fundingSourceLabel[pdf.fundingSource]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </SummarySection>
+      )}
     </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import {
   updateSubventionAction,
@@ -9,6 +9,7 @@ import {
   type DeleteSubventionState,
 } from "@/lib/admin/subvention-actions";
 import { Modal, useModalAutoClose, type ModalHandle } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import { formatCents } from "@/lib/money";
 
 const initialUpdateState: UpdateSubventionState = { ok: false };
@@ -27,6 +28,7 @@ export function SubventionRow({
     commentary: string | null;
   };
 }) {
+  const { push: pushToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(
     updateSubventionAction,
@@ -38,6 +40,12 @@ export function SubventionRow({
   );
   const deleteModalRef = useRef<ModalHandle>(null);
   useModalAutoClose(deleteModalRef, deleteState.ok);
+
+  useEffect(() => {
+    if (state.ok) {
+      pushToast({ type: "success", message: "Subvention mise à jour." });
+    }
+  }, [state, pushToast]);
 
   // Ferme le panneau d'édition dès que la mise à jour réussit, sans passer
   // par un effet (cf. règle react-hooks/set-state-in-effect) : on ajuste
