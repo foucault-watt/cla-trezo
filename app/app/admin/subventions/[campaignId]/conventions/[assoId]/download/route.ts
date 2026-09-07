@@ -82,11 +82,16 @@ export async function POST(
       data: parsed.data,
     }) as unknown as Parameters<typeof renderToBuffer>[0];
     const pdf = await renderToBuffer(document);
+    const assoSlug = preparation.assoName
+      .normalize("NFD")
+      .replace(/\p{Mn}/gu, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
     return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition":
-          'attachment; filename="convention-de-subvention.pdf"',
+        "Content-Disposition": `attachment; filename="convention-de-subvention-${assoSlug || "structure"}.pdf"`,
         "Cache-Control": "private, no-store",
       },
     });

@@ -46,7 +46,13 @@ export async function GET(
       expenseReportId: true,
       fundingSource: true,
       subvention: { select: { reason: true } },
-      expenseReport: { select: { assoId: true } },
+      expenseReport: {
+        select: {
+          assoId: true,
+          beneficiaryFirstname: true,
+          beneficiaryLastname: true,
+        },
+      },
     },
   });
 

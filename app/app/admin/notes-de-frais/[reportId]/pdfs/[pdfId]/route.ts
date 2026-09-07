@@ -32,6 +32,12 @@ export async function GET(
       expenseReportId: true,
       fundingSource: true,
       subvention: { select: { reason: true } },
+      expenseReport: {
+        select: {
+          beneficiaryFirstname: true,
+          beneficiaryLastname: true,
+        },
+      },
     },
   });
 
