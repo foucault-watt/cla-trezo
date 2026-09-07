@@ -1,8 +1,20 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { HandCoins, LogIn, Receipt, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { DemoLoginButton } from "@/components/demo/demo-login-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { SITE_URL } from "@/lib/site";
+
+// Seule page du site destinée au référencement : le reste (derrière SSO)
+// reste en noindex, hérité du layout racine.
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 const features = [
   {

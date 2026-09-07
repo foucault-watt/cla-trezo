@@ -12,7 +12,7 @@ export function DemoLoginButton({
     <form action={demoLoginAction}>
       <button type="submit" className={className}>
         {icon}
-        Mode démo
+        Démo
       </button>
     </form>
   );
