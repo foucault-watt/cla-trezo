@@ -258,3 +258,50 @@ content: list view OR grid view, switched via ?view=list|grid
 
 This shape is meant to be reused for the other admin sections (notes de
 frais, subventions, rapports) rather than reinvented per page.
+
+## Home page (`/app`) — enriched cards, admin section as a collapsible grid
+
+Iterated directly in the app across three live variants switched via
+`?variant=a|b|c` (A: enriched card grid + `collapse-arrow` Admin section; B:
+personal `stats` bar + native tabs between "Mes Assos"/"Toutes les Assos"; C:
+`hero` banner with avatar/date + horizontally-scrollable member cards +
+compact Admin "gateway" panel) — the final page is a deliberate mix, not a
+single variant:
+
+- Header row from **B**: `Bonjour {prénom}` + subtitle on the left, the
+  Admin button (`ShieldUser`, "Administration") on the right, stacking on
+  mobile (`flex-col sm:flex-row sm:items-center sm:justify-between`). B's
+  `stats` bar and tabs were dropped — decided as unneeded chrome for this
+  page once the header alone did the job.
+- "Mes Assos" cards from **C**: `Building2` + type badge top-right, name,
+  role, Solde, and an explicit `btn btn-primary btn-block` "Ouvrir" pseudo-
+  button (a `pointer-events-none` span, not nested inside the card's own
+  `Link`). Laid out as a horizontally snap-scrolling row on mobile
+  (`snap-x snap-mandatory`, cards `min-w-64 shrink-0 snap-start`) and a
+  regular `grid sm:grid-cols-2 md:grid-cols-3` from `sm`. C's `hero` avatar
+  (initials) and today's date were cut — reviewed as decorative, not useful
+  information for this page.
+- Admin "Autres Assos" section from **A**, not C: a `collapse-arrow`
+  accordion (closed by default) titled "Autres Assos, accessibles en vue
+  Admin (N)", opening onto the *same enriched card grid* as the member cards
+  above it — type + status badges (status only shown when not `ACTIVE`,
+  trailing per the badge-placement rule), Solde, and the
+  subventions/notes-de-frais counts — dashed border to distinguish
+  no-role Assos from the member's own. C's compact "gateway" summary (a few
+  numbers + a link out to `/app/admin/associations`) was rejected here:
+  once the grid Assos are shown anyway, a smaller summary duplicating the
+  same data with less detail added a step rather than saving one.
+- `MemberAssoCard` / `OtherAssoCard` (`app/app/_components/`) and the tiny
+  `AssoSoldeInline` amount formatter are deliberately separate from the
+  admin `associations` page's `AssoSoldeCell` — same ~10-line formatting
+  logic, kept local rather than importing across an unrelated route's
+  `_components` folder.
+- Data: **one** `listAssociations()` call for both the member's own cards
+  and the Admin's "other Assos" (a `Map` keyed by slug), not a per-Structure
+  `getAssociationOverview` in `Promise.all` — that fired one query per
+  Structure concurrently and exhausted the Neon dev connection pool
+  ("Unable to start a transaction in the given time"). The one downside:
+  `club-demo` (excluded from `listAssociations` via `EXCLUDE_DEMO_ASSO`)
+  never resolves to an overview, so the demo user's own card falls back to
+  the bare name/role display with no Solde/type — acceptable since it only
+  affects the demo login.

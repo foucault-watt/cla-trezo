@@ -1,0 +1,49 @@
+// Carte d'une Asso où l'Admin n'a pas de rôle (bordure en pointillés pour la
+// distinguer des Assos où l'utilisateur est membre) — type, statut, Solde et
+// compteurs, pour donner à l'Admin une vraie vue d'ensemble avant d'y entrer.
+import Link from "next/link";
+import { Building2 } from "lucide-react";
+import {
+  assoStatusBadgeClass,
+  assoStatusLabel,
+  assoTypeLabel,
+} from "@/lib/admin/asso-labels";
+import type { AssoOverview } from "@/lib/admin/associations";
+import { AssoSoldeInline } from "./asso-solde-inline";
+
+export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
+  return (
+    <Link
+      href={`/app/${asso.slug}`}
+      className="card min-h-48 items-center justify-center border border-dashed border-base-300 bg-base-100 text-center shadow-sm transition hover:shadow-md"
+    >
+      <div className="card-body items-center justify-center gap-1.5">
+        <Building2 className="text-base-content/60" size={28} />
+        <h2 className="card-title">{asso.name}</h2>
+        {(asso.type || asso.status !== "ACTIVE") && (
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {asso.type && (
+              <span className="badge badge-outline badge-sm">
+                {assoTypeLabel[asso.type]}
+              </span>
+            )}
+            {asso.status !== "ACTIVE" && (
+              <span
+                className={`badge badge-sm ${assoStatusBadgeClass[asso.status]}`}
+              >
+                {assoStatusLabel[asso.status]}
+              </span>
+            )}
+          </div>
+        )}
+        <p className="mt-1 text-lg">
+          <AssoSoldeInline solde={asso.solde} />
+        </p>
+        <p className="text-xs text-base-content/60">
+          {asso.subventionsPubliees} subvention(s) publiée(s) ·{" "}
+          {asso.notesDeFraisEnAttente} note(s) en attente
+        </p>
+      </div>
+    </Link>
+  );
+}

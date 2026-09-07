@@ -1,81 +1,97 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Building2, ShieldUser } from "lucide-react";
+import { ShieldUser } from "lucide-react";
 import { getSession } from "@/lib/session";
-import { listAssoDirectory } from "@/lib/admin/associations";
+import { listAssociations } from "@/lib/admin/associations";
+import { MemberAssoCard } from "./_components/member-asso-card";
+import { OtherAssoCard } from "./_components/other-asso-card";
+import type { MemberAssoCard as MemberAssoCardData } from "./_components/home-types";
 
 export default async function AppHomePage() {
   const session = await getSession();
   const user = session.user!;
 
   const memberSlugs = new Set(user.structures.map((s) => s.slug));
+
+  // Une seule requête pour tout le monde : club-demo n'apparaît jamais ici
+  // (EXCLUDE_DEMO_ASSO), et un appel par Structure en Promise.all a déjà fait
+  // dépasser le pool de connexions Neon en dev ("Unable to start a
+  // transaction").
+  const allAssos = await listAssociations();
+  const overviewBySlug = new Map(allAssos.map((asso) => [asso.slug, asso]));
+
+  const memberCards: MemberAssoCardData[] = user.structures.map((structure) => ({
+    ...structure,
+    overview: overviewBySlug.get(structure.slug) ?? null,
+  }));
+
   const otherAssos = user.isAdmin
-    ? (await listAssoDirectory()).filter((asso) => !memberSlugs.has(asso.slug))
+    ? allAssos.filter((asso) => !memberSlugs.has(asso.slug))
     : [];
 
   return (
-    <div className="flex flex-1 flex-col items-center gap-8 bg-base-200 p-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold">Bonjour {user.firstname}</h1>
-        <p className="mt-2 text-base-content/70">
-          Choisissez une Asso pour continuer.
-        </p>
+    <div className="flex flex-1 flex-col bg-base-200">
+      <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3">
+        <Image src="/logo.png" alt="" width={24} height={24} className="rounded-sm" />
+        <span className="font-semibold">CLA Trézo</span>
       </div>
 
-      {user.isAdmin && (
-        <Link href="/app/admin" className="btn btn-outline">
-          Accéder à l&apos;administration
-        </Link>
-      )}
-
-      {user.structures.length === 0 ? (
-        <p className="text-base-content/70">
-          Vous n&apos;êtes membre d&apos;aucune Asso pour le moment.
-        </p>
-      ) : (
-        <div className="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {user.structures.map((structure) => (
-            <Link
-              key={structure.assoId}
-              href={`/app/${structure.slug}`}
-              className="card min-h-40 items-center justify-center border border-base-300 bg-base-100 text-center shadow-md transition hover:shadow-lg"
-            >
-              <div className="card-body items-center justify-center">
-                <Building2 className="text-base-content/60" size={28} />
-                <h2 className="card-title">{structure.name}</h2>
-                <p className="text-sm text-base-content/70">
-                  {structure.role}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {user.isAdmin && otherAssos.length > 0 && (
-        <div className="w-full max-w-3xl">
-          <div className="mb-3 flex items-center gap-2 text-base-content/70">
-            <ShieldUser size={18} />
-            <p className="text-sm">
-              Autres Assos, accessibles en vue Admin (vous n&apos;y avez pas
-              de rôle)
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {otherAssos.map((asso) => (
-              <Link
-                key={asso.id}
-                href={`/app/${asso.slug}`}
-                className="card min-h-40 items-center justify-center border border-dashed border-base-300 bg-base-100 text-center shadow-sm transition hover:shadow-md"
-              >
-                <div className="card-body items-center justify-center">
-                  <Building2 className="text-base-content/60" size={28} />
-                  <h2 className="card-title">{asso.name}</h2>
-                </div>
+      <div className="flex flex-1 flex-col p-4 sm:p-6">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+          <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold sm:text-3xl">
+                Bonjour {user.firstname}
+              </h1>
+              <p className="mt-1 text-sm text-base-content/70">
+                Choisissez une Asso pour continuer.
+              </p>
+            </div>
+            {user.isAdmin && (
+              <Link href="/app/admin" className="btn btn-outline btn-sm">
+                <ShieldUser size={16} />
+                Administration
               </Link>
-            ))}
+            )}
           </div>
+
+          <div>
+            <h2 className="mb-3 text-sm font-medium text-base-content/70">
+              Mes Assos
+            </h2>
+            {memberCards.length === 0 ? (
+              <p className="text-base-content/70">
+                Vous n&apos;êtes membre d&apos;aucune Asso pour le moment.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {memberCards.map((card) => (
+                  <MemberAssoCard key={card.assoId} card={card} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {user.isAdmin && otherAssos.length > 0 && (
+            <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-md">
+              <input type="checkbox" />
+              <div className="collapse-title flex items-center gap-2 text-base-content/70">
+                <ShieldUser size={18} />
+                <span className="text-sm font-medium">
+                  Autres Assos, accessibles en vue Admin ({otherAssos.length})
+                </span>
+              </div>
+              <div className="collapse-content">
+                <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 md:grid-cols-3">
+                  {otherAssos.map((asso) => (
+                    <OtherAssoCard key={asso.id} asso={asso} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
