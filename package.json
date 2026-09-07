@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "test": "vitest",
     "pdf:render": "tsx pdf-lab/render.tsx",
-    "pdf:preview": "tsx pdf-lab/preview.ts"
+    "pdf:preview": "tsx pdf-lab/preview.ts",
+    "docs:export": "tsx scripts/export-docs.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

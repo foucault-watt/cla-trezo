@@ -55,3 +55,6 @@ next-env.d.ts
 # uploaded invoice/receipt files (local disk storage)
 /uploads/*
 !/uploads/.gitkeep
+
+# generated documentation export (regenerate with `npm run docs:export`)
+/docs/export/

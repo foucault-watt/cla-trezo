@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trézo
 
-## Getting Started
+Application de gestion financière de Centrale Lille Associations (CLA) :
+soldes de clubs, campagnes de subvention et notes de frais. Voir
+[PRODUCT.md](PRODUCT.md) pour le contexte produit et [CONTEXT.md](CONTEXT.md)
+pour le vocabulaire métier.
 
-First, run the development server:
+## Démarrage local
 
 ```bash
+npm install
+cp .env.example .env
+# puis compléter .env : DATABASE_URL (Neon), CLA_AUTH_*, SESSION_SECRET —
+# voir les commentaires dans .env.example pour le détail de chaque variable.
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Autres commandes utiles :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test           # tests unitaires (Vitest)
+npm run lint        # ESLint
+npm run format       # Prettier
+```
 
-## Learn More
+## Hébergement & exploitation
 
-To learn more about Next.js, take a look at the following resources:
+Application hébergée par Rézoléo (association de l'École Centrale de Lille).
+Voir [docs/handover.md](docs/handover.md) pour les accès, comptes et
+contacts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [PRODUCT.md](PRODUCT.md) — pourquoi le produit existe, qui l'utilise
+- [CONTEXT.md](CONTEXT.md) — vocabulaire métier et statuts
+- [docs/adr/](docs/adr/) — décisions d'architecture (le *pourquoi* des choix techniques)
+- [docs/handover.md](docs/handover.md) — hébergement, comptes, contacts
+- [DESIGN.md](DESIGN.md) et [docs/design/COMPONENTS.md](docs/design/COMPONENTS.md) — design system
+- [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) et [docs/agents/](docs/agents/) — conventions pour les agents IA qui travaillent sur ce repo (ce projet est en grande partie développé avec leur aide — voir ces fichiers avant de coder, humain ou agent)
 
-## Deploy on Vercel
+Pour obtenir un instantané de toute cette documentation en un seul fichier
+(à remettre à quelqu'un qui ne clonera pas le repo) :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx tsx scripts/export-docs.ts
+# écrit docs/export/dossier-trezo.md
+```
