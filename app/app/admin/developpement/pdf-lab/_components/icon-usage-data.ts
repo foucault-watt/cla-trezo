@@ -221,7 +221,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "Sparkles",
-    visibleText: "Mode démo",
+    visibleText: "Démo",
     ariaLabel: null,
     file: "app/page.tsx",
     context:
