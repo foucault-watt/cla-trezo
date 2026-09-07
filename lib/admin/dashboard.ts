@@ -3,6 +3,7 @@ import {
   EXCLUDE_DEMO_ASSO_RELATION,
   EXCLUDE_DEMO_CAMPAIGN,
 } from "@/lib/auth/demo-config";
+import { mergeActivityEvents } from "@/lib/dashboard/activity-feed";
 import { prisma } from "@/lib/prisma";
 import { getCampaignStatus } from "@/lib/subventions/status";
 
@@ -121,9 +122,7 @@ export function buildActivityFeed(
   events: ActivityEvent[],
   limit: number,
 ): ActivityEvent[] {
-  return [...events]
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, limit);
+  return mergeActivityEvents(events).slice(0, limit);
 }
 
 type ReportForActivity = {

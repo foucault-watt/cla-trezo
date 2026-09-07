@@ -1,5 +1,10 @@
 import { requireStructureAccess } from "@/lib/auth/guards";
 import {
+  groupByYear,
+  mergeActivityEvents,
+  type YearGroup,
+} from "@/lib/dashboard/activity-feed";
+import {
   listExpenseReports,
   type ExpenseReportOverview,
 } from "@/lib/expense-reports/expense-reports";
@@ -22,7 +27,7 @@ import {
  */
 const WINDOW_DAYS = 365;
 
-export type YearGroup<T> = { key: string; label: string; items: T[] };
+export type { YearGroup };
 
 export type DashboardActivity = {
   id: string;
@@ -47,22 +52,6 @@ export type DashboardOverview = {
   };
   recentActivityByYear: YearGroup<DashboardActivity>[];
 };
-
-function groupByYear<T>(
-  items: T[],
-  getDate: (item: T) => Date,
-): YearGroup<T>[] {
-  const groups = new Map<string, T[]>();
-  for (const item of items) {
-    const key = String(getDate(item).getFullYear());
-    const list = groups.get(key);
-    if (list) list.push(item);
-    else groups.set(key, [item]);
-  }
-  return [...groups.entries()]
-    .map(([key, items]) => ({ key, label: key, items }))
-    .sort((a, b) => b.key.localeCompare(a.key));
-}
 
 function beneficiaryLabel(report: {
   beneficiaryFirstname: string | null;
@@ -141,9 +130,7 @@ function buildRecentActivity(
     });
   }
 
-  return [...reportEvents, ...subventionEvents].sort(
-    (a, b) => b.date.getTime() - a.date.getTime(),
-  );
+  return mergeActivityEvents([...reportEvents, ...subventionEvents]);
 }
 
 export async function getDashboardOverview(
