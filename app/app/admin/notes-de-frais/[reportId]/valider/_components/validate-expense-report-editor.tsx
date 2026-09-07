@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Save } from "lucide-react";
+import { CheckCircle2, Download, Save, X } from "lucide-react";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import {
@@ -203,6 +203,7 @@ export function ValidateExpenseReportEditor({
             onClick={() => confirmModalRef.current?.close()}
             disabled={pending}
           >
+            <X size={18} />
             Annuler
           </button>
           <button
@@ -240,6 +241,7 @@ export function ValidateExpenseReportEditor({
         </ul>
         <div className="modal-action">
           <button type="button" className="btn btn-primary" onClick={finish}>
+            <CheckCircle2 size={18} />
             Terminer
           </button>
         </div>

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileDown } from "lucide-react";
+import { FileDown, FileText } from "lucide-react";
 import {
   getSubventionCampaign,
   listAssosForSelect,
@@ -149,6 +149,7 @@ export default async function AdminSubventionCampaignDetailPage({
                   href={`/app/admin/subventions/${campaign.id}/conventions/${group.assoId}`}
                   className="btn btn-sm"
                 >
+                  <FileText size={16} />
                   Préparer le PDF
                 </Link>
               </li>

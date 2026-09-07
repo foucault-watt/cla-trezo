@@ -1,7 +1,7 @@
 // Carte d'une Asso où l'utilisateur a un rôle. Une colonne sur mobile,
 // grille classique à partir de sm.
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+import { ArrowRight, Building2 } from "lucide-react";
 import { assoTypeLabel } from "@/lib/admin/asso-labels";
 import { AssoSoldeInline } from "./asso-solde-inline";
 import type { MemberAssoCard as MemberAssoCardData } from "./home-types";
@@ -30,6 +30,7 @@ export function MemberAssoCard({ card }: { card: MemberAssoCardData }) {
         )}
         <div className="card-actions mt-1">
           <span className="btn btn-primary btn-sm btn-block pointer-events-none">
+            <ArrowRight size={16} />
             Ouvrir
           </span>
         </div>

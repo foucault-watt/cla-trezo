@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 // React 19 résout les éléments JSX via `React.JSX` (dans "react/index.d.ts"),
 // pas via le namespace global `JSX` : on augmente donc le module "react"
@@ -155,6 +155,7 @@ export function DatePicker({
               popoverRef.current?.hidePopover();
             }}
           >
+            <X size={16} />
             Vider
           </button>
         )}

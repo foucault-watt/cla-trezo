@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HandCoins, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { HandCoins, LogIn, Receipt, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { DemoLoginButton } from "@/components/demo/demo-login-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -51,9 +51,10 @@ export default function Home() {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link href="/login" className="btn btn-primary w-full max-w-xs h-10">
+                <LogIn size={18} />
                 Se connecter
               </Link>
-              <DemoLoginButton />
+              <DemoLoginButton icon={<Sparkles size={18} />} />
             </div>
           </div>
 

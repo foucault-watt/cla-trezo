@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { SoldeView } from "@/lib/solde/solde";
 
 const currency = new Intl.NumberFormat("fr-FR", {
@@ -111,6 +112,7 @@ export function SoldeCard({
                   className="btn btn-outline btn-sm"
                   onClick={() => setVisibleCount((c) => c + BATCH_SIZE)}
                 >
+                  <ChevronDown size={16} />
                   Charger 10 mouvements de plus (
                   {movements.length - visibleCount} restants)
                 </button>
@@ -121,6 +123,7 @@ export function SoldeCard({
                   className="btn btn-ghost btn-sm"
                   onClick={() => setVisibleCount(BATCH_SIZE)}
                 >
+                  <ChevronUp size={16} />
                   Réduire
                 </button>
               )}

@@ -213,6 +213,21 @@ export const iconUsages: IconUsage[] = [
 
   // app/page.tsx
   {
+    icon: "LogIn",
+    visibleText: "Se connecter",
+    ariaLabel: null,
+    file: "app/page.tsx",
+    context: "landing page, symétrique du LogOut utilisé pour la déconnexion",
+  },
+  {
+    icon: "Sparkles",
+    visibleText: "Mode démo",
+    ariaLabel: null,
+    file: "app/page.tsx",
+    context:
+      "landing page, icône passée en prop à DemoLoginButton, cohérent avec app/app/[assoSlug]/layout.tsx",
+  },
+  {
     icon: "TrendingUp",
     visibleText: null,
     ariaLabel: null,
@@ -1491,6 +1506,74 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
     context: "chevron décoratif en bas des cartes Notes de frais / Subventions",
+  },
+
+  // app/app/_components/member-asso-card.tsx (suite)
+  {
+    icon: "ArrowRight",
+    visibleText: "Ouvrir",
+    ariaLabel: null,
+    file: "app/app/_components/member-asso-card.tsx",
+    context: "faux bouton décoratif dans la carte d'une Asso membre, accueil",
+  },
+
+  // components/solde/solde-card.tsx
+  {
+    icon: "ChevronDown",
+    visibleText: "Charger 10 mouvements de plus",
+    ariaLabel: null,
+    file: "components/solde/solde-card.tsx",
+  },
+  {
+    icon: "ChevronUp",
+    visibleText: "Réduire",
+    ariaLabel: null,
+    file: "components/solde/solde-card.tsx",
+    context: "symétrique du ChevronDown ci-dessus",
+  },
+
+  // components/ui/date-picker.tsx (suite)
+  {
+    icon: "X",
+    visibleText: "Vider",
+    ariaLabel: null,
+    file: "components/ui/date-picker.tsx",
+    context: "bouton d'effacement de la date sélectionnée, popover du calendrier",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+    context: "modale de confirmation de validation",
+  },
+  {
+    icon: "CheckCircle2",
+    visibleText: "Terminer",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
+    context: "modale de succès après validation",
+  },
+
+  // app/app/admin/associations/_components/grid-view.tsx
+  {
+    icon: "Eye",
+    visibleText: "Voir le détail",
+    ariaLabel: null,
+    file: "app/app/admin/associations/_components/grid-view.tsx",
+    context: "carte d'une Asso, vue grille admin",
+  },
+
+  // app/app/admin/subventions/[campaignId]/page.tsx (suite)
+  {
+    icon: "FileText",
+    visibleText: "Préparer le PDF",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/page.tsx",
+    context:
+      "bouton par Asso, liste des conventions à préparer (la ligne a déjà FileDown en icône décorative)",
   },
 
   // app/app/[assoSlug]/page.tsx

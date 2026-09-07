@@ -2,6 +2,7 @@
 // contrast against the page canvas (bg-base-200, set at the layout level in
 // SidebarDrawer) for each card to read as a distinct elevated object.
 import Link from "next/link";
+import { Eye } from "lucide-react";
 import { assoStatusBadgeClass, assoStatusLabel } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
 import { AssoSoldeCell } from "./asso-solde-cell";
@@ -36,6 +37,7 @@ export function GridView({ associations }: { associations: AssoOverview[] }) {
                 href={`/app/admin/associations/${asso.slug}`}
                 className="btn btn-sm"
               >
+                <Eye size={16} />
                 Voir le détail
               </Link>
             </div>
