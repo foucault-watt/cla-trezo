@@ -1,4 +1,4 @@
-import { History, Info, TriangleAlert } from "lucide-react";
+import { History, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
@@ -83,7 +83,7 @@ function progressValue(campaign: Campaign) {
 
 function PageHeading({ isDemo = false }: { isDemo?: boolean }) {
   return (
-    <header className="max-w-3xl">
+    <header>
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold text-balance">
           Suivi des subventions
@@ -94,9 +94,8 @@ function PageHeading({ isDemo = false }: { isDemo?: boolean }) {
           </span>
         )}
       </div>
-      <p className="mt-1 max-w-2xl text-sm text-base-content/60">
-        Suivez ce qui a déjà été utilisé et ce qui reste disponible. Les
-        montants tiennent compte des notes de frais validées.
+      <p className="mt-1 text-sm text-base-content/70">
+        Montants accordés, utilisés et restants par campagne.
       </p>
     </header>
   );
@@ -136,9 +135,7 @@ function DesktopCampaignList({
     <div className="hidden space-y-4 md:block">
       {campaigns.map((campaign) => (
         <article
-          className={`overflow-hidden rounded-box border bg-base-100 shadow-sm ${
-            old ? "border-warning/40" : "border-base-300"
-          }`}
+          className="overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm"
           key={campaign.id}
         >
           <div className="grid grid-cols-[minmax(0,1fr)_minmax(15rem,25rem)] items-center gap-8 px-5 py-4">
@@ -189,11 +186,6 @@ function DesktopCampaignList({
                       <span className="font-medium text-base-content/75">
                         {subvention.reason}
                       </span>
-                      {subvention.commentary && (
-                        <span className="ml-2 text-xs text-base-content/50">
-                          {subvention.commentary}
-                        </span>
-                      )}
                     </td>
                     <td className="px-5 py-2 text-right tabular-nums text-base-content/70">
                       {formatCents(subvention.totalAmountCents)}
@@ -240,11 +232,6 @@ function CompactSubventionLines({
         >
           <p className="truncate text-sm font-medium text-base-content/75">
             {subvention.reason}
-            {subvention.commentary && (
-              <span className="ml-2 text-xs font-normal text-base-content/50">
-                {subvention.commentary}
-              </span>
-            )}
           </p>
           <div className="mt-1 grid grid-cols-3 gap-3 text-right text-xs">
             <span className="tabular-nums text-base-content/70">
@@ -340,15 +327,7 @@ function LedgerContent({
 
       <section className="mt-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-bold">Campagnes récentes</h2>
-              <span className="badge badge-success badge-sm">365 jours</span>
-            </div>
-            <p className="mt-1 text-sm text-base-content/60">
-              Les montants qui peuvent être engagés normalement.
-            </p>
-          </div>
+          <h2 className="text-base font-semibold">Campagnes récentes</h2>
           <div className="flex gap-6 text-sm">
             <div>
               <p className="text-xs text-base-content/50">Accordé</p>
@@ -390,47 +369,27 @@ function HistoryList({ campaigns }: { campaigns: Campaign[] }) {
   return (
     <div className="divide-y divide-base-300">
       {campaigns.map((campaign) => (
-        <div className="py-3.5" key={campaign.id}>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="font-medium">{campaign.name}</p>
-              <p className="mt-0.5 text-xs text-base-content/50">
-                {subventionTypeLabel[campaign.type]}
-              </p>
-            </div>
-            <div className="w-full shrink-0 sm:w-40">
-              <div className="mb-1 flex justify-between gap-2 text-[0.6875rem] tabular-nums text-base-content/60">
-                <span>{formatCents(campaign.usedAmountCents)} utilisés</span>
-                <span>
-                  {formatCents(campaign.remainingAmountCents)} restants
-                </span>
-              </div>
-              <progress
-                className="progress h-2 w-full"
-                value={progressValue(campaign)}
-                max={100}
-                aria-label={`${Math.round(progressValue(campaign))} % utilisés pour ${campaign.name}`}
-              />
-            </div>
+        <div
+          className="flex items-center justify-between gap-4 py-3"
+          key={campaign.id}
+        >
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{campaign.name}</p>
+            <p className="text-xs text-base-content/50">
+              {subventionTypeLabel[campaign.type]}
+            </p>
           </div>
-          <div className="-mx-5 mt-3">
-            <CompactSubventionLines campaign={campaign} />
-          </div>
+          <p className="shrink-0 text-sm tabular-nums">
+            <span className="text-base-content/80">
+              {formatCents(campaign.usedAmountCents)}
+            </span>{" "}
+            <span className="text-base-content/40">
+              utilisés sur {formatCents(campaign.totalAmountCents)}
+            </span>
+          </p>
         </div>
       ))}
     </div>
-  );
-}
-
-function HistoryBody({ campaigns }: { campaigns: Campaign[] }) {
-  return (
-    <>
-      <p className="flex items-start gap-2 text-xs text-base-content/60">
-        <Info aria-hidden="true" className="mt-0.5 shrink-0" size={14} />À ne
-        plus utiliser pour une nouvelle dépense.
-      </p>
-      <HistoryList campaigns={campaigns} />
-    </>
   );
 }
 
@@ -445,26 +404,16 @@ function OldCampaignsSection({ campaigns }: { campaigns: Campaign[] }) {
     <section className="mt-6">
       <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-sm">
         <input type="checkbox" />
-        <div className="collapse-title">
-          <div className="flex items-start gap-3">
-            <TriangleAlert
-              aria-hidden="true"
-              className="mt-0.5 shrink-0 text-base-content/50"
-              size={18}
-            />
-            <span className="min-w-0 flex-1">
-              <span className="flex flex-wrap items-center gap-2 font-semibold">
-                <span>Subventions anciennes</span>
-                <span className="text-xs font-medium text-base-content/60">
-                  {pluralizeCampaign(campaigns.length)} · 1 à 2 ans
-                </span>
-              </span>
-              <span className="mt-1 block text-sm font-normal text-base-content/60">
-                Toujours possibles, mais à utiliser seulement en dernier
-                recours.
-              </span>
-            </span>
-          </div>
+        <div className="collapse-title flex items-center gap-2 font-semibold">
+          <TriangleAlert
+            aria-hidden="true"
+            className="shrink-0 text-base-content/50"
+            size={18}
+          />
+          Subventions anciennes
+          <span className="font-normal text-base-content/60">
+            ({pluralizeCampaign(campaigns.length)})
+          </span>
         </div>
         <div className="collapse-content">
           <div className="border-t border-base-300 pt-4">
@@ -491,7 +440,7 @@ function HistorySection({ campaigns }: { campaigns: Campaign[] }) {
         </div>
         <div className="collapse-content">
           <div className="border-t border-base-300 pt-4">
-            <HistoryBody campaigns={campaigns} />
+            <HistoryList campaigns={campaigns} />
           </div>
         </div>
       </div>
