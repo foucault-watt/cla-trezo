@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Nécessaire pour le build Docker : produit .next/standalone, un serveur
+  // Node autonome qui n'embarque que les dépendances réellement utilisées.
+  output: "standalone",
   experimental: {
     serverActions: {
       // Jusqu'à 10 Justificatifs de 10 Mo par soumission (cf. T10), plus la
