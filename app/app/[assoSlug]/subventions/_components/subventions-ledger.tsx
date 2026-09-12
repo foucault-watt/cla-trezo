@@ -1,12 +1,4 @@
-import {
-  Archive,
-  CalendarDays,
-  CircleCheck,
-  Clock3,
-  History,
-  Info,
-  TriangleAlert,
-} from "lucide-react";
+import { History, Info, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
@@ -77,14 +69,6 @@ function splitCampaigns(subventions: VisibleSubvention[]) {
   return result;
 }
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function pluralizeCampaign(count: number) {
   return `${count} campagne${count > 1 ? "s" : ""}`;
 }
@@ -110,7 +94,7 @@ function PageHeading({ isDemo = false }: { isDemo?: boolean }) {
           </span>
         )}
       </div>
-      <p className="mt-2 max-w-2xl text-sm text-base-content/70">
+      <p className="mt-1 max-w-2xl text-sm text-base-content/60">
         Suivez ce qui a déjà été utilisé et ce qui reste disponible. Les
         montants tiennent compte des notes de frais validées.
       </p>
@@ -129,10 +113,6 @@ function CampaignIdentity({ campaign }: { campaign: Campaign }) {
           {campaign.name}
         </h3>
       </div>
-      <span className="mt-2 flex items-center gap-1 text-xs text-base-content/60">
-        <CalendarDays aria-hidden="true" size={13} />
-        Publiée le {formatDate(campaign.publicationDate)}
-      </span>
     </div>
   );
 }
@@ -355,123 +335,45 @@ function LedgerContent({
   );
 
   return (
-    <div className="max-w-7xl pb-24">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start">
-        <div>
-          <PageHeading isDemo={isDemo} />
+    <div className="max-w-4xl pb-24">
+      <PageHeading isDemo={isDemo} />
 
-          <section className="mt-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-bold">Campagnes récentes</h2>
-                  <span className="badge badge-success badge-sm">
-                    365 jours
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-base-content/60">
-                  Les montants qui peuvent être engagés normalement.
-                </p>
-              </div>
-              <div className="flex gap-6 text-sm">
-                <div>
-                  <p className="text-xs text-base-content/50">Accordé</p>
-                  <p className="mt-1 font-medium tabular-nums">
-                    {formatCents(totalGranted)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-base-content/50">
-                    Montant disponible
-                  </p>
-                  <p className="mt-1 font-semibold tabular-nums text-success">
-                    {formatCents(totalGranted - totalUsed)}
-                  </p>
-                </div>
-              </div>
+      <section className="mt-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-bold">Campagnes récentes</h2>
+              <span className="badge badge-success badge-sm">365 jours</span>
             </div>
-            <div className="mt-4">
-              <DesktopCampaignList campaigns={bands.recent} />
-              <MobileCampaignList campaigns={bands.recent} />
-            </div>
-          </section>
-
-          <section className="mt-8">
-            <div className="flex items-start gap-3 rounded-box border border-warning/50 bg-warning/10 px-5 py-4">
-              <TriangleAlert
-                aria-hidden="true"
-                className="mt-0.5 shrink-0 text-warning-content"
-                size={18}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-center justify-between gap-2 font-semibold">
-                  <span>Subventions anciennes</span>
-                  <span className="text-xs font-medium text-warning-content">
-                    {pluralizeCampaign(bands.old.length)} · 1 à 2 ans
-                  </span>
-                </span>
-                <span className="mt-1 block text-sm font-normal text-base-content/60">
-                  Toujours possibles, mais à utiliser seulement en dernier
-                  recours.
-                </span>
-              </span>
-            </div>
-            <div className="mt-4">
-              <DesktopCampaignList campaigns={bands.old} old />
-              <MobileCampaignList campaigns={bands.old} old />
-            </div>
-          </section>
-        </div>
-
-        <aside className="xl:sticky xl:top-6">
-          <div className="rounded-box border border-base-300 bg-base-100 p-5 shadow-sm">
-            <h2 className="font-bold">Règle d’usage</h2>
-            <ol className="mt-4 space-y-4 text-sm">
-              <li className="flex gap-3">
-                <CircleCheck
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-success"
-                  size={17}
-                />
-                <div>
-                  <p className="font-medium">Moins de 365 jours</p>
-                  <p className="mt-0.5 text-xs text-base-content/60">
-                    Utilisation normale
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <Clock3
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-warning-content"
-                  size={17}
-                />
-                <div>
-                  <p className="font-medium">Entre 1 et 2 ans</p>
-                  <p className="mt-0.5 text-xs text-base-content/60">
-                    À éviter, risque de refus
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <Archive
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-base-content/50"
-                  size={17}
-                />
-                <div>
-                  <p className="font-medium">Plus de 2 ans</p>
-                  <p className="mt-0.5 text-xs text-base-content/60">
-                    Consultation uniquement
-                  </p>
-                </div>
-              </li>
-            </ol>
+            <p className="mt-1 text-sm text-base-content/60">
+              Les montants qui peuvent être engagés normalement.
+            </p>
           </div>
+          <div className="flex gap-6 text-sm">
+            <div>
+              <p className="text-xs text-base-content/50">Accordé</p>
+              <p className="mt-1 font-medium tabular-nums">
+                {formatCents(totalGranted)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-base-content/50">
+                Montant disponible
+              </p>
+              <p className="mt-1 font-semibold tabular-nums text-success">
+                {formatCents(totalGranted - totalUsed)}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <DesktopCampaignList campaigns={bands.recent} />
+          <MobileCampaignList campaigns={bands.recent} />
+        </div>
+      </section>
 
-          <HistorySection campaigns={bands.history} />
-        </aside>
-      </div>
+      <OldCampaignsSection campaigns={bands.old} />
+      <HistorySection campaigns={bands.history} />
     </div>
   );
 }
@@ -493,8 +395,7 @@ function HistoryList({ campaigns }: { campaigns: Campaign[] }) {
             <div className="min-w-0">
               <p className="font-medium">{campaign.name}</p>
               <p className="mt-0.5 text-xs text-base-content/50">
-                {subventionTypeLabel[campaign.type]} · publiée le{" "}
-                {formatDate(campaign.publicationDate)}
+                {subventionTypeLabel[campaign.type]}
               </p>
             </div>
             <div className="w-full shrink-0 sm:w-40">
@@ -521,24 +422,78 @@ function HistoryList({ campaigns }: { campaigns: Campaign[] }) {
   );
 }
 
+function HistoryBody({ campaigns }: { campaigns: Campaign[] }) {
+  return (
+    <>
+      <p className="flex items-start gap-2 text-xs text-base-content/60">
+        <Info aria-hidden="true" className="mt-0.5 shrink-0" size={14} />À ne
+        plus utiliser pour une nouvelle dépense.
+      </p>
+      <HistoryList campaigns={campaigns} />
+    </>
+  );
+}
+
+/**
+ * "Subventions anciennes" et "Historique" sont deux onglets rétractables
+ * l'un sous l'autre dans le flux principal (plus de colonne latérale) :
+ * repliés par défaut, ce sont des zones secondaires qu'on consulte au besoin
+ * plutôt que du contenu à afficher en permanence.
+ */
+function OldCampaignsSection({ campaigns }: { campaigns: Campaign[] }) {
+  return (
+    <section className="mt-6">
+      <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-sm">
+        <input type="checkbox" />
+        <div className="collapse-title">
+          <div className="flex items-start gap-3">
+            <TriangleAlert
+              aria-hidden="true"
+              className="mt-0.5 shrink-0 text-base-content/50"
+              size={18}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-center gap-2 font-semibold">
+                <span>Subventions anciennes</span>
+                <span className="text-xs font-medium text-base-content/60">
+                  {pluralizeCampaign(campaigns.length)} · 1 à 2 ans
+                </span>
+              </span>
+              <span className="mt-1 block text-sm font-normal text-base-content/60">
+                Toujours possibles, mais à utiliser seulement en dernier
+                recours.
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className="collapse-content">
+          <div className="border-t border-base-300 pt-4">
+            <DesktopCampaignList campaigns={campaigns} old />
+            <MobileCampaignList campaigns={campaigns} old />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HistorySection({ campaigns }: { campaigns: Campaign[] }) {
   return (
-    <section className="mt-4 rounded-box border border-base-300 bg-base-100 shadow-sm">
-      <div className="px-5 py-4">
-        <span className="flex items-center gap-2 font-semibold">
+    <section className="mt-3">
+      <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-sm">
+        <input type="checkbox" />
+        <div className="collapse-title flex items-center gap-2 font-semibold">
           <History aria-hidden="true" size={17} />
           Historique
-        </span>
-        <span className="mt-1 block text-xs font-normal text-base-content/60">
-          {pluralizeCampaign(campaigns.length)} de plus de 2 ans
-        </span>
-      </div>
-      <div className="border-t border-base-300 px-5">
-        <p className="flex items-start gap-2 pt-4 text-xs text-base-content/60">
-          <Info aria-hidden="true" className="mt-0.5 shrink-0" size={14} />À ne
-          plus utiliser pour une nouvelle dépense.
-        </p>
-        <HistoryList campaigns={campaigns} />
+          <span className="font-normal text-base-content/60">
+            ({pluralizeCampaign(campaigns.length)})
+          </span>
+        </div>
+        <div className="collapse-content">
+          <div className="border-t border-base-300 pt-4">
+            <HistoryBody campaigns={campaigns} />
+          </div>
+        </div>
       </div>
     </section>
   );
