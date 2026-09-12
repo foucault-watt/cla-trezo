@@ -14,21 +14,20 @@ export default async function NotesDeFraisPage({
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Notes de frais</h1>
-          <p className="mt-1 text-sm text-base-content/70">
-            Demandes de remboursement de l&apos;association.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <NewExpenseReportModalButton assoSlug={assoSlug} />
-        </div>
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold">Notes de frais</h1>
+        <p className="mt-1 text-sm text-base-content/70">
+          Demandes de remboursement de l&apos;association.
+        </p>
       </div>
 
       <ExpenseReportGuide />
 
       <StatsBar reports={reports} />
+
+      <div className="mb-6">
+        <NewExpenseReportModalButton assoSlug={assoSlug} />
+      </div>
 
       {reports.length === 0 ? (
         <p className="text-base-content/70">
