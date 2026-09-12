@@ -2,72 +2,14 @@ import { History, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
+import {
+  splitSubventionCampaignsByAge,
+  type SubventionAgeBand,
+  type SubventionCampaignGroup,
+} from "@/lib/subventions/subvention-campaigns";
 
-type AgeBand = "recent" | "old" | "history";
-
-type Campaign = {
-  id: string;
-  name: string;
-  type: VisibleSubvention["type"];
-  publicationDate: Date;
-  subventions: VisibleSubvention[];
-  totalAmountCents: number;
-  usedAmountCents: number;
-  remainingAmountCents: number;
-};
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function getAgeBand(publicationDate: Date, now: Date): AgeBand {
-  const ageInDays = (now.getTime() - publicationDate.getTime()) / DAY_MS;
-  if (ageInDays <= 365) return "recent";
-  if (ageInDays <= 730) return "old";
-  return "history";
-}
-
-function groupByCampaign(subventions: VisibleSubvention[]): Campaign[] {
-  const groups = new Map<string, Campaign>();
-
-  for (const subvention of subventions) {
-    const existing = groups.get(subvention.campaignId);
-    if (existing) {
-      existing.subventions.push(subvention);
-      existing.totalAmountCents += subvention.totalAmountCents;
-      existing.usedAmountCents += subvention.usedAmountCents;
-      existing.remainingAmountCents += subvention.remainingAmountCents;
-      continue;
-    }
-
-    groups.set(subvention.campaignId, {
-      id: subvention.campaignId,
-      name: subvention.campaignName,
-      type: subvention.type,
-      publicationDate: subvention.publicationDate,
-      subventions: [subvention],
-      totalAmountCents: subvention.totalAmountCents,
-      usedAmountCents: subvention.usedAmountCents,
-      remainingAmountCents: subvention.remainingAmountCents,
-    });
-  }
-
-  return Array.from(groups.values()).sort(
-    (a, b) => b.publicationDate.getTime() - a.publicationDate.getTime(),
-  );
-}
-
-function splitCampaigns(subventions: VisibleSubvention[]) {
-  const now = new Date();
-  const result: Record<AgeBand, Campaign[]> = {
-    recent: [],
-    old: [],
-    history: [],
-  };
-
-  for (const campaign of groupByCampaign(subventions)) {
-    result[getAgeBand(campaign.publicationDate, now)].push(campaign);
-  }
-  return result;
-}
+type AgeBand = SubventionAgeBand;
+type Campaign = SubventionCampaignGroup;
 
 function pluralizeCampaign(count: number) {
   return `${count} campagne${count > 1 ? "s" : ""}`;
@@ -148,7 +90,7 @@ function DesktopCampaignList({
                 </span>
                 <span
                   className={`shrink-0 font-medium ${
-                    old ? "text-warning-content" : "text-success"
+                    old ? "text-warning" : "text-success"
                   }`}
                 >
                   Restant : {formatCents(campaign.remainingAmountCents)}
@@ -195,7 +137,7 @@ function DesktopCampaignList({
                     </td>
                     <td
                       className={`px-5 py-2 text-right font-medium tabular-nums ${
-                        old ? "text-warning-content" : "text-success"
+                        old ? "text-warning" : "text-success"
                       }`}
                     >
                       {formatCents(subvention.remainingAmountCents)}
@@ -242,7 +184,7 @@ function CompactSubventionLines({
             </span>
             <span
               className={`font-medium tabular-nums ${
-                old ? "text-warning-content" : "text-success"
+                old ? "text-warning" : "text-success"
               }`}
             >
               {formatCents(subvention.remainingAmountCents)}
@@ -282,7 +224,7 @@ function MobileCampaignList({
                 </span>
                 <span
                   className={`shrink-0 font-medium ${
-                    old ? "text-warning-content" : "text-success"
+                    old ? "text-warning" : "text-success"
                   }`}
                 >
                   Restant : {formatCents(campaign.remainingAmountCents)}
@@ -322,11 +264,11 @@ function LedgerContent({
   );
 
   return (
-    <div className="max-w-4xl pb-24">
+    <div className="pb-24">
       <PageHeading isDemo={isDemo} />
 
       <section className="mt-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-base font-semibold">Campagnes récentes</h2>
           <div className="flex gap-6 text-sm">
             <div>
@@ -455,6 +397,6 @@ export function SubventionsLedger({
   subventions: VisibleSubvention[];
   isDemo?: boolean;
 }) {
-  const bands = splitCampaigns(subventions);
+  const bands = splitSubventionCampaignsByAge(subventions);
   return <LedgerContent bands={bands} isDemo={isDemo} />;
 }
