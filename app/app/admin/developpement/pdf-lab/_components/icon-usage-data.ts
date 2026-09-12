@@ -549,20 +549,6 @@ export const iconUsages: IconUsage[] = [
     context: "bouton icône seul, aria-label ET title identiques",
   },
 
-  // components/nav/view-toggle.tsx
-  {
-    icon: "List",
-    visibleText: "Liste",
-    ariaLabel: null,
-    file: "components/nav/view-toggle.tsx",
-  },
-  {
-    icon: "LayoutGrid",
-    visibleText: "Grille",
-    ariaLabel: null,
-    file: "components/nav/view-toggle.tsx",
-  },
-
   // components/nav/sidebar-drawer.tsx
   {
     icon: "Menu",
@@ -1565,15 +1551,6 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
     context: "modale de succès après validation",
-  },
-
-  // app/app/admin/associations/_components/grid-view.tsx
-  {
-    icon: "Eye",
-    visibleText: "Voir le détail",
-    ariaLabel: null,
-    file: "app/app/admin/associations/_components/grid-view.tsx",
-    context: "carte d'une Asso, vue grille admin",
   },
 
   // app/app/admin/subventions/[campaignId]/page.tsx (suite)
