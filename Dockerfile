@@ -16,6 +16,11 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Le client Prisma est généré vers app/generated/prisma (cf. schema.prisma),
+# donc hors node_modules : celui produit par le postinstall du stage `deps`
+# est écrasé par le `COPY . .` ci-dessus. On le régénère ici, une fois la
+# source complète (et donc prisma/schema.prisma) en place.
+RUN npx prisma generate
 RUN npm run build
 
 # 3) runner
@@ -33,8 +38,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma CLI/migrations pour lancer `prisma migrate deploy` depuis le conteneur
-# (le client généré est déjà inclus dans standalone via node_modules/.prisma)
+# Prisma CLI/migrations pour lancer `prisma migrate deploy` depuis le conteneur.
+# Le client généré (app/generated/prisma) est un module applicatif normal :
+# il est déjà inclus dans .next/standalone via le tracing de Next.js.
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
