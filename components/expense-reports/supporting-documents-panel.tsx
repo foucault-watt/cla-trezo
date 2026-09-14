@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
+  ExternalLink,
   FileText,
   Receipt,
   ScrollText,
@@ -46,6 +47,9 @@ const documentTypeLabel: Record<SupportingDocumentType, string> = {
   RECEIPT: "Facture",
   HONOR_STATEMENT: "Attestation sur l'honneur",
 };
+
+const HONOR_STATEMENT_TEMPLATE_URL =
+  "https://docs.google.com/document/d/1r6n8XVEiLW2rPLTs1TIcyMVSenYB9dp8wu9GZnOcWrY/edit?usp=sharing";
 
 function RemoveDocumentButton({
   assoSlug,
@@ -391,6 +395,20 @@ export function SupportingDocumentsPanel({
               )}
             </div>
           )}
+
+          {lockedType === null &&
+            showTypeToggle &&
+            chosenType === "HONOR_STATEMENT" && (
+              <a
+                href={HONOR_STATEMENT_TEMPLATE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
+              >
+                <ExternalLink size={13} />
+                Template d&apos;attestation sur l&apos;honneur à dupliquer
+              </a>
+            )}
 
           <UploadForm
             key={activeType}

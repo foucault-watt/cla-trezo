@@ -103,6 +103,14 @@ export const iconUsages: IconUsage[] = [
     context:
       "bouton de confirmation dans la modale d'attestation, cohérent avec l'icône de la carte \"Attestation sur l'honneur\" plus haut dans ce fichier",
   },
+  {
+    icon: "ExternalLink",
+    visibleText: "Template d'attestation sur l'honneur à dupliquer",
+    ariaLabel: null,
+    file: "components/expense-reports/supporting-documents-panel.tsx",
+    context:
+      "lien vers le Google Doc modèle (lecture seule, à dupliquer), affiché quand \"Attestation sur l'honneur\" est sélectionné avant l'envoi du justificatif",
+  },
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/recapitulatif/page.tsx
   {
@@ -1534,7 +1542,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Vider",
     ariaLabel: null,
     file: "components/ui/date-picker.tsx",
-    context: "bouton d'effacement de la date sélectionnée, popover du calendrier",
+    context:
+      "bouton d'effacement de la date sélectionnée, popover du calendrier",
   },
 
   // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
@@ -1584,5 +1593,53 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/[assoSlug]/page.tsx",
     context: "figure de la tuile stat Subventions",
+  },
+
+  // components/asso/member-login-badge.tsx
+  {
+    icon: "LogIn",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/asso/member-login-badge.tsx",
+    context:
+      'texte visible dynamique "Connecté·e le {date}" ; badge neutre affiché quand la dernière connexion du Membre est récente (cf. lib/asso/member-login.ts)',
+  },
+  {
+    icon: "TriangleAlert",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/asso/member-login-badge.tsx",
+    context:
+      'texte visible dynamique "Vu·e le {date}" ; badge orange avec tooltip explicatif quand la dernière connexion dépasse STALE_LOGIN_DAYS',
+  },
+
+  // app/app/admin/associations/[assoSlug]/_components/asso-detail-tabs.tsx
+  {
+    icon: "Building2 / Landmark / Scale",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/associations/[assoSlug]/_components/asso-detail-tabs.tsx",
+    context:
+      "icône d'en-tête selon le Type de l'Asso, cohérent avec asso-type-picker.tsx",
+  },
+
+  // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx
+  {
+    icon: "FileText",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/associations/[assoSlug]/_components/documents-list.tsx",
+    context:
+      "aria-hidden, à côté du libellé du document (Convention de subvention ou Ordre de financement)",
+  },
+
+  // app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx
+  {
+    icon: "TriangleAlert",
+    visibleText: "Subventions anciennes",
+    ariaLabel: null,
+    file: "app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx",
+    context:
+      "aria-hidden, en-tête de section, cohérent avec subventions-ledger.tsx",
   },
 ];
