@@ -29,7 +29,16 @@ ENV SESSION_SECRET="build-time-placeholder-do-not-use-in-prod-32chars"
 RUN npx prisma generate
 RUN npm run build
 
-# 3) runner
+# 3) migrator
+# Image dédiée aux migrations, à lancer comme job one-shot (`prisma migrate
+# deploy`) avant de faire tourner la nouvelle image `runner`. Contrairement au
+# runner en mode standalone, ce stage garde le node_modules complet du build
+# (CLI prisma, dotenv, tsx) ainsi que prisma.config.ts et prisma/ : c'est le
+# seul endroit de l'image où `prisma migrate deploy` peut réellement tourner.
+FROM builder AS migrator
+CMD ["npx", "prisma", "migrate", "deploy"]
+
+# 4) runner
 FROM node:20-bullseye-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
@@ -44,11 +53,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma CLI/migrations pour lancer `prisma migrate deploy` depuis le conteneur.
-# Le client généré (app/generated/prisma) est un module applicatif normal :
-# il est déjà inclus dans .next/standalone via le tracing de Next.js.
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
+# Le client Prisma généré (app/generated/prisma) est un module applicatif
+# normal : il est déjà inclus dans .next/standalone via le tracing de
+# Next.js. Le CLI prisma et les migrations, eux, ne sont PAS utilisables
+# depuis ce conteneur (mode standalone minimal) : voir le stage `migrator`
+# ci-dessus, à lancer séparément avant de déployer cette image.
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
