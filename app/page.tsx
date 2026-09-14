@@ -61,7 +61,7 @@ export default function Home() {
               L&apos;application de CLA pour les Clubs, Commissions et Associations
               loi 1901 : soldes, subventions et notes de frais au même endroit.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:items-stretch lg:justify-start">
               <Link href="/login" className="btn btn-primary w-full max-w-xs h-10">
                 <LogIn size={18} />
                 Se connecter
