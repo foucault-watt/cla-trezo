@@ -53,11 +53,16 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Le client Prisma généré (app/generated/prisma) est un module applicatif
-# normal : il est déjà inclus dans .next/standalone via le tracing de
-# Next.js. Le CLI prisma et les migrations, eux, ne sont PAS utilisables
-# depuis ce conteneur (mode standalone minimal) : voir le stage `migrator`
-# ci-dessus, à lancer séparément avant de déployer cette image.
+# Le node_modules tracé par Next.js n'inclut pas le CLI prisma (rien ne
+# l'importe statiquement). On le remplace par le node_modules complet du
+# build pour que la route cachée /api/internal/migrate-db (voir ce fichier)
+# puisse lancer `prisma migrate deploy` depuis ce même conteneur — utile
+# quand on n'a pas d'accès shell au serveur pour lancer l'image `migrator`
+# séparément.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
