@@ -35,7 +35,10 @@ const features = [
 ];
 
 export default function Home() {
-  const gitSha = process.env.GIT_SHA;
+  // GIT_SHA/BUILD_DATE viennent du build-arg Docker (voir Dockerfile) ;
+  // VERCEL_GIT_COMMIT_SHA est injecté automatiquement par Vercel côté
+  // build/serveur, sans configuration, mais sans date de build associée.
+  const gitSha = process.env.GIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA;
   const buildDate = process.env.BUILD_DATE;
   const buildLabel = gitSha && gitSha !== "unknown" ? gitSha.slice(0, 7) : null;
 
