@@ -429,6 +429,15 @@ export const iconUsages: IconUsage[] = [
     context: "aria-hidden, note dans la section Historique",
   },
 
+  // app/app/[assoSlug]/subventions/_components/grant-documents-list.tsx
+  {
+    icon: "Download",
+    visibleText: "Télécharger",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/subventions/_components/grant-documents-list.tsx",
+    context: "télécharge un Document d'octroi de la Structure",
+  },
+
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/delete-expense-report-button.tsx
   {
     icon: "Trash2",
@@ -676,25 +685,29 @@ export const iconUsages: IconUsage[] = [
       "à côté du nom d'une association, liste des conventions à préparer",
   },
 
-  // app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx
+  // app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/convention-preparation-form.tsx
   {
     icon: "Plus",
     visibleText: "Ajouter un représentant",
     ariaLabel: null,
-    file: "app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx",
+    file: "app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/convention-preparation-form.tsx",
   },
   {
     icon: "Trash2",
     visibleText: null,
     ariaLabel: null,
-    file: "app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx",
+    file: "app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/convention-preparation-form.tsx",
     context: 'aria-label dynamique "Supprimer le représentant {n}"',
   },
+
+  // app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/generate-grant-document-button.tsx
   {
-    icon: "Download",
-    visibleText: "Télécharger la convention",
+    icon: "FileCheck",
+    visibleText: "Générer / Régénérer la convention · l’ordre de financement",
     ariaLabel: null,
-    file: "app/app/admin/subventions/[campaignId]/conventions/[assoId]/_components/convention-preparation-form.tsx",
+    file: "app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/generate-grant-document-button.tsx",
+    context:
+      "page de préparation d'un Document d'octroi, libellé selon le type de document et l'existence d'une génération précédente",
   },
 
   // app/app/admin/subventions/[campaignId]/_components/subvention-row.tsx

@@ -106,10 +106,14 @@ _Avoid_: trésorier (dans le code — c'est un synonyme d'usage, pas un rôle di
 Document PDF officiel généré à la validation d'une Note de frais, remis comme justificatif de remboursement. Une Note de frais peut mélanger plusieurs sources de financement entre ses Remboursements ; la validation génère un PDF final par source distincte — un par Subvention concernée, plus un regroupant tous les Remboursements financés par le Solde s'il y en a. Une Note produit donc un ou plusieurs PDF finaux, jamais un PDF unique combinant toutes les sources.
 _Avoid_: le PDF, la note en PDF
 
+**Document d'octroi**:
+Terme générique pour le document PDF officiel remis à une Structure bénéficiaire d'une Campagne de subvention publiée : Convention de subvention ou Ordre de financement selon le type de la Structure. Un seul Document d'octroi par couple Campagne × Structure, regroupant toutes les Subventions accordées à cette Structure dans la Campagne. Généré manuellement par l'Admin, stocké, régénérable : le dernier document généré fait foi (cf. ADR-0007).
+_Avoid_: financement (seul), convention (pour un Club ou une Commission)
+
 **Convention de subvention**:
-Document PDF officiel généré lors de l'octroi d'une Subvention à une Association loi 1901. Correspond toujours à une seule Subvention.
+Document d'octroi d'une Association loi 1901. Couvre toutes les Subventions de l'Association dans une Campagne de subvention.
 _Avoid_: courrier, convention (seul)
 
 **Ordre de financement**:
-Équivalent de la Convention de subvention pour un Club ou une Commission bénéficiaire d'une Subvention. Document PDF officiel généré lors de l'octroi d'une Subvention, toujours lié à une seule Subvention.
+Document d'octroi d'un Club ou d'une Commission. Couvre toutes les Subventions de la Structure dans une Campagne de subvention.
 _Avoid_: convention (réservé à l'Association loi 1901)

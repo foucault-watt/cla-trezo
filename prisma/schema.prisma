@@ -60,6 +60,12 @@ enum SubventionType {
   CA_EXCEPTIONNEL
 }
 
+/// Type de Document d'octroi, déduit du type de la Structure (ADR-0007).
+enum GrantDocumentKind {
+  CONVENTION
+  ORDRE_DE_FINANCEMENT
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -104,6 +110,7 @@ model Asso {
   expenseReports     ExpenseReport[]
   subventions        Subvention[]
   financialMovements FinancialMovement[]
+  grantDocuments     GrantDocument[]
 
   @@map("asso")
 }
@@ -141,7 +148,8 @@ model SubventionCampaign {
   publicationDate DateTime?      @map("publication_date")
   createdAt       DateTime       @default(now()) @map("created_at")
 
-  subventions Subvention[]
+  subventions    Subvention[]
+  grantDocuments GrantDocument[]
 
   @@map("subvention_campaign")
 }
@@ -154,6 +162,9 @@ model Subvention {
   amountCents Int      @map("amount_cents")
   commentary  String?
   createdAt   DateTime @default(now()) @map("created_at")
+  /// Sert à repérer un Document d'octroi à régénérer (Subvention modifiée
+  /// après sa génération).
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   campaign           SubventionCampaign  @relation(fields: [campaignId], references: [id])
   asso               Asso                @relation(fields: [assoId], references: [id])
@@ -274,6 +285,27 @@ model ExpenseReportPdf {
   subvention    Subvention?   @relation(fields: [subventionId], references: [id])
 
   @@map("expense_report_pdf")
+}
+
+/// Document d'octroi (Convention de subvention ou Ordre de financement) : un
+/// seul par couple Campagne × Structure, remplacé à chaque régénération
+/// (ADR-0007).
+model GrantDocument {
+  id              String            @id @default(uuid()) @db.Uuid
+  campaignId      String            @map("campaign_id") @db.Uuid
+  assoId          String            @map("asso_id") @db.Uuid
+  kind            GrantDocumentKind
+  filePath        String            @map("file_path")
+  generatedAt     DateTime          @map("generated_at")
+  /// Nombre de Subventions couvertes à la génération : un écart avec le
+  /// nombre actuel signale une Subvention supprimée depuis (à régénérer).
+  subventionCount Int               @map("subvention_count")
+
+  campaign SubventionCampaign @relation(fields: [campaignId], references: [id])
+  asso     Asso               @relation(fields: [assoId], references: [id])
+
+  @@unique([campaignId, assoId])
+  @@map("grant_document")
 }
 
 model FinancialMovement {

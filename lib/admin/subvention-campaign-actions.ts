@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
+import { deleteStoredFile } from "@/lib/storage/file-storage";
 import {
   parseSubventionCampaignForm,
   parseSubventionCampaignUpdateForm,
@@ -105,7 +106,7 @@ export async function deleteSubventionCampaignAction(
 
   const campaign = await prisma.subventionCampaign.findUnique({
     where: { id: parsed.data.id },
-    select: { id: true },
+    select: { id: true, grantDocuments: { select: { filePath: true } } },
   });
   if (!campaign) {
     return { ok: false, error: "Campagne introuvable." };
@@ -128,10 +129,18 @@ export async function deleteSubventionCampaignAction(
     };
   }
 
+  // Les Documents d'octroi ne sont pas figés (ADR-0007) : ils disparaissent
+  // avec leur Campagne, fichiers compris une fois la suppression validée.
   await prisma.$transaction([
+    prisma.grantDocument.deleteMany({ where: { campaignId: campaign.id } }),
     prisma.subvention.deleteMany({ where: { campaignId: campaign.id } }),
     prisma.subventionCampaign.delete({ where: { id: campaign.id } }),
   ]);
+  await Promise.allSettled(
+    campaign.grantDocuments.map((document) =>
+      deleteStoredFile(document.filePath),
+    ),
+  );
 
   revalidatePath("/app/admin/subventions");
 

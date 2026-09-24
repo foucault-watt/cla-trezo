@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   buildExpenseReportPdfPath,
+  buildGrantDocumentPath,
   buildSupportingDocumentPath,
   deleteStoredFile,
   readStoredFile,
@@ -75,6 +76,31 @@ describe("buildExpenseReportPdfPath", () => {
         reportId: "report-1",
         extension: "pdf",
       }),
+    ).toThrow();
+  });
+});
+
+describe("buildGrantDocumentPath", () => {
+  it("génère un chemin {assoSlug}/{year}/octroi/{campaignId}/{uuid}.pdf", () => {
+    const relativePath = buildGrantDocumentPath({
+      assoSlug: "club-info",
+      campaignId: "campaign-1",
+      now: new Date("2026-04-15T12:00:00Z"),
+    });
+
+    const segments = relativePath.split("/");
+    expect(segments.slice(0, 4)).toEqual([
+      "club-info",
+      "2026",
+      "octroi",
+      "campaign-1",
+    ]);
+    expect(segments[4]).toMatch(/^[0-9a-f-]{36}\.pdf$/);
+  });
+
+  it("refuse un campaignId qui contiendrait un séparateur de chemin", () => {
+    expect(() =>
+      buildGrantDocumentPath({ assoSlug: "club-info", campaignId: "../x" }),
     ).toThrow();
   });
 });

@@ -10,12 +10,9 @@ import { groupSubventionsByCampaign } from "@/lib/subventions/subvention-campaig
  * subvention pour une Association loi 1901, Ordre de financement pour un
  * Club/Commission (cf. CONTEXT.md).
  *
- * La Convention se prépare puis se télécharge depuis une vraie route de
- * production (/app/admin/subventions/[campaignId]/conventions/[assoId]) — on
- * y renvoie donc un lien réel. L'Ordre de financement n'a en revanche aucune
- * route de génération en dehors du pdf-lab (labo de dev, jamais exposé en
- * production) : on l'affiche donc sans lien cliquable, avec une mention
- * explicite plutôt que de fabriquer un lien qui ne mènerait nulle part.
+ * Chaque Document d'octroi se prépare, se génère puis se télécharge depuis
+ * la page de la Campagne (/app/admin/subventions/[campaignId]/octroi/[assoId],
+ * cf. ADR-0007).
  */
 export function DocumentsList({
   assoId,
@@ -62,18 +59,12 @@ export function DocumentsList({
             </div>
           </div>
 
-          {isAssociation1901 ? (
-            <Link
-              href={`/app/admin/subventions/${campaign.id}/conventions/${assoId}`}
-              className="link flex items-center gap-1 text-xs"
-            >
-              Préparer le PDF
-            </Link>
-          ) : (
-            <span className="badge badge-ghost badge-sm">
-              PDF non encore disponible en téléchargement
-            </span>
-          )}
+          <Link
+            href={`/app/admin/subventions/${campaign.id}/octroi/${assoId}`}
+            className="link flex items-center gap-1 text-xs"
+          >
+            Préparer le document
+          </Link>
         </li>
       ))}
     </ul>

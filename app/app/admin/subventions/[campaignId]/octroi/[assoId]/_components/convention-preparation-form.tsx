@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus, Trash2 } from "lucide-react";
-import { useToast } from "@/components/ui/toast";
+import { Plus, Trash2 } from "lucide-react";
 import { representativesForPrimarySection } from "@/lib/admin/convention-preparation-fields";
-import { formatCents } from "@/lib/money";
+import { formatCentsForPdf } from "@/lib/money";
+import { GenerateGrantDocumentButton } from "./generate-grant-document-button";
 import type {
   ConventionParty,
   ConventionRepresentative,
@@ -195,17 +195,17 @@ function SignatureFields({
 export function ConventionPreparationForm({
   campaignId,
   assoId,
-  publicationDateMissing,
+  canGenerate,
+  label,
   initialData,
 }: {
   campaignId: string;
   assoId: string;
-  publicationDateMissing: boolean;
+  canGenerate: boolean;
+  label: string;
   initialData: SubsidyConventionPdfData;
 }) {
   const [data, setData] = useState(initialData);
-  const [pending, setPending] = useState(false);
-  const { push: pushToast } = useToast();
 
   function updateParty(
     key: "firstParty" | "secondParty",
@@ -229,15 +229,17 @@ export function ConventionPreparationForm({
       const totalAmount = amounts.every(
         (amount): amount is number => amount !== null,
       )
-        ? formatCents(amounts.reduce((total, amount) => total + amount, 0))
+        ? formatCentsForPdf(
+            amounts.reduce((total, amount) => total + amount, 0),
+          )
         : current.totalAmount;
       return { ...current, expenses, totalAmount };
     });
   }
 
   function validationError() {
-    if (publicationDateMissing) {
-      return "Publiez d’abord la campagne pour calculer la période de la convention.";
+    if (!canGenerate) {
+      return "Publiez d’abord la Campagne pour générer la convention.";
     }
     if (!data.secondParty.address.trim()) {
       return "Renseignez l’adresse du siège de l’association bénéficiaire.";
@@ -254,68 +256,14 @@ export function ConventionPreparationForm({
     return null;
   }
 
-  async function downloadPdf() {
-    const invalid = validationError();
-    if (invalid) {
-      pushToast({ type: "error", message: invalid });
-      return;
-    }
-
-    setPending(true);
-    try {
-      const response = await fetch(
-        `/app/admin/subventions/${campaignId}/conventions/${assoId}/download`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        throw new Error(
-          payload?.error ?? "La génération de la convention a échoué.",
-        );
-      }
-
-      const url = URL.createObjectURL(await response.blob());
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `convention-${data.secondParty.associationName}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (downloadError) {
-      pushToast({
-        type: "error",
-        message:
-          downloadError instanceof Error
-            ? downloadError.message
-            : "La génération de la convention a échoué.",
-      });
-    } finally {
-      setPending(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
-      {publicationDateMissing && (
-        <div role="alert" className="alert alert-warning alert-soft">
-          <span>
-            Cette campagne n’est pas encore publiée. Sa date de publication est
-            nécessaire pour calculer la période et la date des lignes.
-          </span>
-        </div>
-      )}
-
       <div className="card card-border bg-base-100">
         <div className="card-body gap-5">
           <div>
             <h2 className="card-title">Informations bénéficiaire</h2>
             <p className="text-sm text-base-content/60">
-              L’adresse reprend celle de CLA par défaut. Le président et le
+              L’adresse est à saisir pour chaque convention. Le président et le
               trésorier sont préremplis depuis les membres actifs lorsqu’ils
               sont trouvés.
             </p>
@@ -502,21 +450,13 @@ export function ConventionPreparationForm({
         </div>
       </details>
 
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={pending}
-          onClick={downloadPdf}
-        >
-          {pending ? (
-            <span className="loading loading-spinner loading-sm" />
-          ) : (
-            <Download size={18} />
-          )}
-          {pending ? "Génération…" : "Télécharger la convention"}
-        </button>
-      </div>
+      <GenerateGrantDocumentButton
+        campaignId={campaignId}
+        assoId={assoId}
+        data={data}
+        label={label}
+        validationError={validationError}
+      />
     </div>
   );
 }

@@ -8,6 +8,8 @@ const {
   campaignDeleteMock,
   subventionCountMock,
   subventionDeleteManyMock,
+  grantDocumentDeleteManyMock,
+  deleteStoredFileMock,
   transactionMock,
   revalidatePathMock,
   redirectMock,
@@ -19,6 +21,8 @@ const {
   campaignDeleteMock: vi.fn(),
   subventionCountMock: vi.fn(),
   subventionDeleteManyMock: vi.fn(),
+  grantDocumentDeleteManyMock: vi.fn(),
+  deleteStoredFileMock: vi.fn(),
   transactionMock: vi.fn((operations: unknown[]) => Promise.all(operations)),
   revalidatePathMock: vi.fn(),
   redirectMock: vi.fn(() => {
@@ -39,8 +43,12 @@ vi.mock("@/lib/prisma", () => ({
       count: subventionCountMock,
       deleteMany: subventionDeleteManyMock,
     },
+    grantDocument: { deleteMany: grantDocumentDeleteManyMock },
     $transaction: transactionMock,
   },
+}));
+vi.mock("@/lib/storage/file-storage", () => ({
+  deleteStoredFile: deleteStoredFileMock,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
@@ -83,6 +91,8 @@ beforeEach(() => {
   campaignDeleteMock.mockReset();
   subventionCountMock.mockReset();
   subventionDeleteManyMock.mockReset();
+  grantDocumentDeleteManyMock.mockReset();
+  deleteStoredFileMock.mockReset().mockResolvedValue(undefined);
   transactionMock.mockClear();
   revalidatePathMock.mockReset();
   redirectMock.mockClear();
@@ -91,6 +101,7 @@ beforeEach(() => {
   updateMock.mockResolvedValue({ id: "11111111-1111-1111-8111-111111111111" });
   campaignFindUniqueMock.mockResolvedValue({
     id: "11111111-1111-1111-8111-111111111111",
+    grantDocuments: [],
   });
   subventionCountMock.mockResolvedValue(0);
 });
@@ -127,7 +138,10 @@ describe("createSubventionCampaignAction", () => {
       },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
-    expect(result).toEqual({ ok: true, campaignId: "11111111-1111-1111-8111-111111111111" });
+    expect(result).toEqual({
+      ok: true,
+      campaignId: "11111111-1111-1111-8111-111111111111",
+    });
   });
 
   it("crée la Campagne sans date de publication (reste Programmée)", async () => {
@@ -145,13 +159,13 @@ describe("createSubventionCampaignAction", () => {
 });
 
 describe("updateSubventionCampaignAction", () => {
-  const validUpdate = { ...valid, campaignId: "11111111-1111-1111-8111-111111111111" };
+  const validUpdate = {
+    ...valid,
+    campaignId: "11111111-1111-1111-8111-111111111111",
+  };
 
   it("exige un Admin", async () => {
-    await updateSubventionCampaignAction(
-      { ok: false },
-      formData(validUpdate),
-    );
+    await updateSubventionCampaignAction({ ok: false }, formData(validUpdate));
 
     expect(requireAdminMock).toHaveBeenCalled();
   });
@@ -209,7 +223,10 @@ describe("deleteSubventionCampaignAction", () => {
 
   it("exige un Admin", async () => {
     await expect(
-      deleteSubventionCampaignAction({ ok: false }, formData({ id: campaignId })),
+      deleteSubventionCampaignAction(
+        { ok: false },
+        formData({ id: campaignId }),
+      ),
     ).rejects.toThrow("REDIRECT");
 
     expect(requireAdminMock).toHaveBeenCalled();
@@ -255,7 +272,10 @@ describe("deleteSubventionCampaignAction", () => {
 
   it("supprime la Campagne et ses Subventions puis redirige avec un toast", async () => {
     await expect(
-      deleteSubventionCampaignAction({ ok: false }, formData({ id: campaignId })),
+      deleteSubventionCampaignAction(
+        { ok: false },
+        formData({ id: campaignId }),
+      ),
     ).rejects.toThrow("REDIRECT");
 
     expect(transactionMock).toHaveBeenCalled();
@@ -269,5 +289,41 @@ describe("deleteSubventionCampaignAction", () => {
     expect(redirectMock).toHaveBeenCalledWith(
       expect.stringContaining("/app/admin/subventions?toast="),
     );
+  });
+
+  it("supprime aussi les Documents d'octroi de la Campagne et leurs fichiers", async () => {
+    campaignFindUniqueMock.mockResolvedValue({
+      id: campaignId,
+      grantDocuments: [{ filePath: "club-info/2026/octroi/c/doc.pdf" }],
+    });
+
+    await expect(
+      deleteSubventionCampaignAction(
+        { ok: false },
+        formData({ id: campaignId }),
+      ),
+    ).rejects.toThrow("REDIRECT");
+
+    expect(grantDocumentDeleteManyMock).toHaveBeenCalledWith({
+      where: { campaignId },
+    });
+    expect(deleteStoredFileMock).toHaveBeenCalledWith(
+      "club-info/2026/octroi/c/doc.pdf",
+    );
+  });
+
+  it("garde les fichiers si la Campagne ne peut pas être supprimée", async () => {
+    subventionCountMock.mockResolvedValue(1);
+    campaignFindUniqueMock.mockResolvedValue({
+      id: campaignId,
+      grantDocuments: [{ filePath: "club-info/2026/octroi/c/doc.pdf" }],
+    });
+
+    await deleteSubventionCampaignAction(
+      { ok: false },
+      formData({ id: campaignId }),
+    );
+
+    expect(deleteStoredFileMock).not.toHaveBeenCalled();
   });
 });

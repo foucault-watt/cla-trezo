@@ -1,15 +1,8 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { formatCentsForPdf } from "@/lib/money";
-import type {
-  ConventionRepresentative,
-  SubsidyConventionPdfData,
-} from "@/pdf-lab/templates/convention/types";
-import { getConventionPdfSettings } from "./convention-pdf-settings";
+import type { ConventionRepresentative } from "@/pdf-lab/templates/convention/types";
 
 const PARIS_TIME_ZONE = "Europe/Paris";
 
-function parisDateParts(date: Date) {
+export function parisDateParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: PARIS_TIME_ZONE,
     year: "numeric",
@@ -70,118 +63,19 @@ export function beneficiaryRepresentativesFromMembers(
   ];
 }
 
-export type ConventionPreparation = {
-  campaignId: string;
-  campaignName: string;
-  assoId: string;
-  assoName: string;
-  publicationDate: Date | null;
-  data: SubsidyConventionPdfData;
-};
-
-export async function getConventionPreparation(
-  campaignId: string,
-  assoId: string,
-): Promise<ConventionPreparation | null> {
-  const [campaign, settings] = await Promise.all([
-    prisma.subventionCampaign.findUnique({
-      where: { id: campaignId },
-      select: {
-        id: true,
-        name: true,
-        publicationDate: true,
-        subventions: {
-          where: { assoId },
-          orderBy: { createdAt: "asc" },
-          select: {
-            reason: true,
-            amountCents: true,
-            asso: {
-              select: {
-                id: true,
-                name: true,
-                memberships: {
-                  where: { isActive: true },
-                  select: {
-                    role: true,
-                    user: { select: { firstname: true, lastname: true } },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }),
-    getConventionPdfSettings(),
-  ]);
-
-  const firstLine = campaign?.subventions[0];
-  if (!campaign || !firstLine) return null;
-
-  const publicationDate = campaign.publicationDate;
-  const generatedOn = new Date();
-  const signatureDate = formatConventionDate(generatedOn);
-  const representatives = beneficiaryRepresentativesFromMembers(
-    firstLine.asso.memberships.map((membership) => ({
-      ...membership.user,
-      role: membership.role,
-    })),
-  );
-  const totalAmountCents = campaign.subventions.reduce(
-    (total, line) => total + line.amountCents,
-    0,
-  );
-
-  return {
-    campaignId: campaign.id,
-    campaignName: campaign.name,
-    assoId: firstLine.asso.id,
-    assoName: firstLine.asso.name,
-    publicationDate,
-    data: {
-      period: publicationDate
-        ? conventionPeriodForPublicationDate(publicationDate)
-        : "",
-      firstParty: {
-        associationName: settings.claAssociationName,
-        address: settings.claAddress,
-        representatives: settings.claRepresentatives,
-      },
-      secondParty: {
-        associationName: firstLine.asso.name,
-        address: settings.claAddress,
-        representatives,
-      },
-      expenses: campaign.subventions.map((line) => ({
-        grantedOn: publicationDate ? formatConventionDate(publicationDate) : "",
-        description: line.reason,
-        amount: formatCentsForPdf(line.amountCents),
-      })),
-      totalAmount: formatCentsForPdf(totalAmountCents),
-      firstPartySignature: {
-        associationName: settings.claAssociationName,
-        signatoryName: settings.claSignatoryName,
-        signatoryRole: settings.claSignatoryRole,
-        city: settings.claSignatureCity,
-        date: signatureDate,
-      },
-      secondPartySignature: {
-        associationName: firstLine.asso.name,
-        signatoryName: "",
-        signatoryRole: "",
-        city: "",
-        date: signatureDate,
-      },
-    },
-  };
-}
-
-export async function requireConventionPreparation(
-  campaignId: string,
-  assoId: string,
-) {
-  const preparation = await getConventionPreparation(campaignId, assoId);
-  if (!preparation) notFound();
-  return preparation;
+/**
+ * « Responsable de l'association » signataire d'un Ordre de financement :
+ * présidence en priorité, sinon un rôle contenant « responsable ».
+ */
+export function responsibleNameFromMembers(members: ActiveMember[]): string {
+  const member =
+    members.find((candidate) =>
+      normalizeRole(candidate.role).includes("president"),
+    ) ??
+    members.find((candidate) =>
+      normalizeRole(candidate.role).includes("responsable"),
+    );
+  return member
+    ? `${member.firstname} ${member.lastname.toLocaleUpperCase("fr-FR")}`
+    : "";
 }

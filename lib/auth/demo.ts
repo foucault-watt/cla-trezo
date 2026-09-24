@@ -141,6 +141,7 @@ async function resetDemoData(
         where: { expenseReport: { assoId } },
       });
       await tx.expenseReport.deleteMany({ where: { assoId } });
+      await tx.grantDocument.deleteMany({ where: { assoId } });
       await tx.subvention.deleteMany({ where: { assoId } });
       await tx.financialMovement.deleteMany({ where: { assoId } });
 

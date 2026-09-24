@@ -146,7 +146,7 @@ export default async function AdminSubventionCampaignDetailPage({
                   </p>
                 </div>
                 <Link
-                  href={`/app/admin/subventions/${campaign.id}/conventions/${group.assoId}`}
+                  href={`/app/admin/subventions/${campaign.id}/octroi/${group.assoId}`}
                   className="btn btn-sm"
                 >
                   <FileText size={16} />

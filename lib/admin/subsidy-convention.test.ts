@@ -1,29 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const { campaignFindUniqueMock, settingsFindUniqueMock } = vi.hoisted(() => ({
-  campaignFindUniqueMock: vi.fn(),
-  settingsFindUniqueMock: vi.fn(),
-}));
-
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    subventionCampaign: { findUnique: campaignFindUniqueMock },
-    conventionPdfSettings: { findUnique: settingsFindUniqueMock },
-  },
-}));
-
+import { describe, expect, it } from "vitest";
 import {
   beneficiaryRepresentativesFromMembers,
   conventionPeriodForPublicationDate,
   formatConventionDate,
-  getConventionPreparation,
+  responsibleNameFromMembers,
 } from "./subsidy-convention";
-
-beforeEach(() => {
-  campaignFindUniqueMock.mockReset();
-  settingsFindUniqueMock.mockReset();
-  settingsFindUniqueMock.mockResolvedValue(null);
-});
 
 describe("conventionPeriodForPublicationDate", () => {
   it("fait commencer la période le 1er septembre", () => {
@@ -80,64 +61,26 @@ describe("beneficiaryRepresentativesFromMembers", () => {
   });
 });
 
-describe("getConventionPreparation", () => {
-  it("regroupe toutes les lignes de la campagne pour la même association", async () => {
-    campaignFindUniqueMock.mockResolvedValue({
-      id: "campaign-1",
-      name: "CA Event octobre",
-      publicationDate: new Date("2025-10-15T12:00:00+02:00"),
-      subventions: [
-        {
-          reason: "WEAC",
-          amountCents: 65000,
-          asso: {
-            id: "asso-1",
-            name: "AEEC Lille",
-            memberships: [
-              {
-                role: "Présidente",
-                user: { firstname: "Yasmine", lastname: "Semiane" },
-              },
-            ],
-          },
-        },
-        {
-          reason: "Journée de l'Institut",
-          amountCents: 66000,
-          asso: {
-            id: "asso-1",
-            name: "AEEC Lille",
-            memberships: [],
-          },
-        },
-      ],
-    });
+describe("responsibleNameFromMembers", () => {
+  it("préfère la présidence, sinon un rôle de responsable", () => {
+    expect(
+      responsibleNameFromMembers([
+        { firstname: "Oscar", lastname: "Durand", role: "Responsable com" },
+        { firstname: "Lina", lastname: "Martin", role: "Présidente" },
+      ]),
+    ).toBe("Lina MARTIN");
+    expect(
+      responsibleNameFromMembers([
+        { firstname: "Oscar", lastname: "Durand", role: "Responsable" },
+      ]),
+    ).toBe("Oscar DURAND");
+  });
 
-    const preparation = await getConventionPreparation("campaign-1", "asso-1");
-
-    expect(preparation?.data.period).toBe("2025-2026");
-    expect(preparation?.data.expenses).toEqual([
-      {
-        grantedOn: "15/10/2025",
-        description: "WEAC",
-        amount: expect.stringContaining("650,00"),
-      },
-      {
-        grantedOn: "15/10/2025",
-        description: "Journée de l'Institut",
-        amount: expect.stringContaining("660,00"),
-      },
-    ]);
-    expect(preparation?.data.totalAmount).toContain("1 310,00");
-    expect(preparation?.data.secondParty.address).toBe(
-      preparation?.data.firstParty.address,
-    );
-    expect(preparation?.data.secondParty.representatives).toEqual([
-      { name: "Yasmine SEMIANE", role: "Présidente" },
-      { name: "", role: "Trésorier" },
-    ]);
-    expect(preparation?.data.firstPartySignature.date).toBe(
-      preparation?.data.secondPartySignature.date,
-    );
+  it("laisse le champ vide quand aucun rôle ne correspond", () => {
+    expect(
+      responsibleNameFromMembers([
+        { firstname: "Lou", lastname: "Petit", role: "Secrétaire" },
+      ]),
+    ).toBe("");
   });
 });

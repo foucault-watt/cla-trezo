@@ -57,6 +57,34 @@ export function buildExpenseReportPdfPath(args: {
   return buildDocumentPath(args);
 }
 
+/**
+ * Chemin relatif stocké en base (`GrantDocument.filePath`) :
+ * `{assoSlug}/{year}/octroi/{campaignId}/{uuid}.pdf`. Un nouveau nom à chaque
+ * génération, pour écrire le nouveau fichier avant de supprimer l'ancien
+ * (ADR-0007).
+ */
+export function buildGrantDocumentPath({
+  assoSlug,
+  campaignId,
+  now = new Date(),
+}: {
+  assoSlug: string;
+  campaignId: string;
+  now?: Date;
+}): string {
+  assertSafePathSegment(assoSlug, "assoSlug");
+  assertSafePathSegment(campaignId, "campaignId");
+
+  const year = String(now.getFullYear());
+  return path.posix.join(
+    assoSlug,
+    year,
+    "octroi",
+    campaignId,
+    `${randomUUID()}.pdf`,
+  );
+}
+
 function resolveAbsolutePath(relativePath: string): string {
   const root = resolveStorageRoot();
   const absolute = path.resolve(root, relativePath);
