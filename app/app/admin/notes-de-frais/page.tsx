@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
+import { Receipt } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { listExpenseReportsForAdmin } from "@/lib/admin/expense-reports";
 import { AdminExpenseReportsList } from "./_components/expense-reports-list";
+
+export const metadata: Metadata = {
+  title: "Notes de frais",
+};
 
 export default async function AdminNotesDeFraisPage() {
   const reports = await listExpenseReportsForAdmin();
@@ -16,7 +23,11 @@ export default async function AdminNotesDeFraisPage() {
       </div>
 
       {reports.length === 0 ? (
-        <p className="text-base-content/70">Aucune Note de frais soumise.</p>
+        <EmptyState
+          icon={<Receipt size={24} />}
+          title="Aucune Note de frais soumise"
+          description="Les Notes de frais apparaîtront ici dès qu'une Asso en soumettra une."
+        />
       ) : (
         <AdminExpenseReportsList reports={reports} />
       )}

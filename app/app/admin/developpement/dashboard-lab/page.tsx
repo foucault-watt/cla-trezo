@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { DashboardLabTabs } from "./_components/dashboard-lab-tabs";
+
+export const metadata: Metadata = {
+  title: "Atelier Dashboard",
+};
 
 export default function DashboardLabPage() {
   return (

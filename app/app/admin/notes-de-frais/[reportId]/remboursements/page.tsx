@@ -15,7 +15,6 @@ import { ReimbursementsTable } from "@/components/expense-reports/reimbursements
 import { SupportingDocumentsPanel } from "@/components/expense-reports/supporting-documents-panel";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { TakeOverButton } from "../_components/take-over-button";
 
 export default async function AdminReimbursementsPage({
   params,
@@ -31,15 +30,19 @@ export default async function AdminReimbursementsPage({
       <div className="mb-5">
         <h2 className="text-xl font-semibold">Dépenses et justificatifs</h2>
         <p className="mt-1 text-sm text-base-content/70">
-          Corrigez les dépenses et les justificatifs de cette Note de frais.
+          {editable
+            ? "Corrigez les dépenses et les justificatifs de cette Note de frais."
+            : "Dépenses et justificatifs de cette Note de frais, en lecture seule."}
         </p>
       </div>
       <section className="rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
         <div className="mb-4">
           <h3 className="font-semibold">Dépenses</h3>
-          <p className="text-xs text-base-content/60">
-            Ajoutez et corrigez les dépenses directement dans le tableau.
-          </p>
+          {editable && (
+            <p className="text-xs text-base-content/60">
+              Ajoutez et corrigez les dépenses directement dans le tableau.
+            </p>
+          )}
         </div>
         <ReimbursementsTable
           assoSlug={report.assoSlug}
@@ -59,9 +62,12 @@ export default async function AdminReimbursementsPage({
       <section className="rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
         <div className="mb-4">
           <h3 className="font-semibold">Justificatifs</h3>
-          <p className="text-xs text-base-content/60">
-            Ajoutez ou retirez des factures, ou une Attestation sur l&apos;honneur.
-          </p>
+          {editable && (
+            <p className="text-xs text-base-content/60">
+              Ajoutez ou retirez des factures, ou une Attestation sur
+              l&apos;honneur.
+            </p>
+          )}
         </div>
         <SupportingDocumentsPanel
           reportId={reportId}
@@ -72,18 +78,13 @@ export default async function AdminReimbursementsPage({
           removeAction={removeSupportingDocumentAsAdminAction}
         />
       </section>
-      {report.status === "SUBMITTED" && (
-        <div className="flex justify-end pt-1">
-          <TakeOverButton reportId={reportId} />
-        </div>
-      )}
       {report.status === "TAKEN_OVER" && (
         <div className="flex justify-end pt-1">
           <Link
             href={`/app/admin/notes-de-frais/${reportId}/beneficiaire`}
             className="btn btn-soft"
           >
-            Vérifier la deuxième étape
+            Étape suivante : Bénéficiaire
             <ArrowRight size={18} />
           </Link>
         </div>

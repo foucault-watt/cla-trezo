@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
+import { Ban } from "lucide-react";
 import { BackLink } from "@/components/nav/back-link";
+import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
 import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
@@ -7,6 +10,16 @@ import { loadExpenseReportWizard } from "@/lib/expense-reports/expense-report-wi
 import { updateExpenseReportAction } from "@/lib/expense-reports/expense-report-actions";
 import { ExpenseReportStepper } from "./_components/expense-report-stepper";
 import { GeneralInformationModal } from "@/components/expense-reports/general-information-modal";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ assoSlug: string; reportId: string }>;
+}): Promise<Metadata> {
+  const { assoSlug, reportId } = await params;
+  const { report } = await getExpenseReportDetail(assoSlug, reportId);
+  return { title: report.title };
+}
 
 export default async function ExpenseReportWizardLayout({
   children,
@@ -55,6 +68,24 @@ export default async function ExpenseReportWizardLayout({
         <div role="status" className="alert alert-info alert-soft mt-5">
           L&apos;Admin CLA traite désormais cette Note de frais. Elle est
           disponible en lecture seule.
+        </div>
+      )}
+      {report.status === "REJECTED" && (
+        <div
+          role="status"
+          className="alert alert-error alert-soft mt-5 items-start"
+        >
+          <Ban size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium">
+              Cette Note de frais a été rejetée par l&apos;Admin CLA.
+            </p>
+            {report.rejectionReason && (
+              <p className="mt-1 whitespace-pre-line text-sm">
+                Motif : {report.rejectionReason}
+              </p>
+            )}
+          </div>
         </div>
       )}
       {context.editable && (

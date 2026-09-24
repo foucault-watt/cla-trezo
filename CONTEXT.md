@@ -63,7 +63,7 @@ L'Admin a commencé à traiter la note. La Structure perd définitivement la mai
 Le ou les PDF finaux ont été générés (cf. PDF final). La note est immuable (cf. ADR-0003), le Solde et les Subventions concernées sont mis à jour, l'IBAN est supprimé (cf. ADR-0002).
 
 **Rejetée**:
-L'Admin refuse la note après Prise en charge. Statut terminal : accessible uniquement depuis Prise en charge, jamais depuis Brouillon ou Soumise directement, et non modifiable ensuite (pas de retour en Brouillon).
+L'Admin refuse la note après Prise en charge, en indiquant obligatoirement un motif visible par la Structure. Statut terminal : accessible uniquement depuis Prise en charge, jamais depuis Brouillon ou Soumise directement, et non modifiable ensuite (pas de retour en Brouillon).
 
 ## Statuts d'une Campagne de subvention
 

@@ -238,7 +238,7 @@ export async function rejectExpenseReportAction(
 
   await prisma.expenseReport.update({
     where: { id: report.id },
-    data: { status: "REJECTED" },
+    data: { status: "REJECTED", rejectionReason: parsed.data.reason },
   });
 
   revalidatePath(`/app/admin/notes-de-frais/${report.id}`);

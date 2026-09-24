@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { formatShortDate } from "@/lib/dates";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
@@ -53,8 +53,8 @@ export function SubventionsTab({
         <div className="collapse-arrow collapse border border-warning/30 bg-warning/5">
           <input type="checkbox" />
           <div className="collapse-title flex items-center gap-2 text-sm font-medium text-warning">
-            <TriangleAlert size={14} aria-hidden="true" />
-            Subventions anciennes ({bands.old.length})
+            <Clock3 size={14} aria-hidden="true" />
+            Subventions de plus d&apos;un an ({bands.old.length})
           </div>
           <div className="collapse-content">
             <div className="flex flex-col gap-3">

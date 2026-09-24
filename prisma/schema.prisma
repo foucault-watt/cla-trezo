@@ -206,6 +206,7 @@ model ExpenseReport {
   takenAt              DateTime?           @map("taken_at")
   submittedAt          DateTime?           @map("submitted_at")
   finalizedAt          DateTime?           @map("finalized_at")
+  rejectionReason      String?             @map("rejection_reason")
   beneficiaryUserId    String?             @map("beneficiary_user_id") @db.Uuid
   beneficiaryFirstname String?             @map("beneficiary_firstname")
   beneficiaryLastname  String?             @map("beneficiary_lastname")

@@ -21,7 +21,10 @@ vi.mock("@/lib/prisma", () => ({
     asso: { count: assoCountMock },
     subvention: { findMany: subventionFindManyMock },
     financialMovement: { findMany: financialMovementFindManyMock },
-    expenseReport: { count: expenseReportCountMock, findMany: expenseReportFindManyMock },
+    expenseReport: {
+      count: expenseReportCountMock,
+      findMany: expenseReportFindManyMock,
+    },
     subventionCampaign: { findMany: subventionCampaignFindManyMock },
   },
 }));
@@ -31,6 +34,7 @@ const {
   sumInWindow,
   selectCampaignInfo,
   daysSince,
+  waitingLabel,
   buildActivityFeed,
   getDashboardData,
 } = await import("./dashboard");
@@ -79,6 +83,14 @@ describe("sumInWindow", () => {
 describe("daysSince", () => {
   it("compte le nombre de jours entiers écoulés", () => {
     expect(daysSince(new Date("2026-08-12T12:00:00Z"), NOW)).toBe(7);
+  });
+});
+
+describe("waitingLabel", () => {
+  it("dit « aujourd'hui », « hier », puis « il y a N j »", () => {
+    expect(waitingLabel(0)).toBe("aujourd'hui");
+    expect(waitingLabel(1)).toBe("hier");
+    expect(waitingLabel(7)).toBe("il y a 7 j");
   });
 });
 
@@ -137,9 +149,30 @@ describe("buildActivityFeed", () => {
   it("trie par date décroissante et tronque à la limite", () => {
     const result = buildActivityFeed(
       [
-        { id: "a", type: "mouvement", assoName: "A", label: "", date: new Date("2026-01-01") },
-        { id: "b", type: "mouvement", assoName: "B", label: "", date: new Date("2026-03-01") },
-        { id: "c", type: "mouvement", assoName: "C", label: "", date: new Date("2026-02-01") },
+        {
+          id: "a",
+          type: "mouvement",
+          assoName: "A",
+          label: "",
+          date: new Date("2026-01-01"),
+          href: "",
+        },
+        {
+          id: "b",
+          type: "mouvement",
+          assoName: "B",
+          label: "",
+          date: new Date("2026-03-01"),
+          href: "",
+        },
+        {
+          id: "c",
+          type: "mouvement",
+          assoName: "C",
+          label: "",
+          date: new Date("2026-02-01"),
+          href: "",
+        },
       ],
       2,
     );
@@ -154,7 +187,14 @@ describe("getDashboardData", () => {
     subventionFindManyMock
       .mockResolvedValueOnce([{ amountCents: 500, createdAt: NOW }]) // fenêtre 365j
       .mockResolvedValueOnce([
-        { id: "s1", createdAt: NOW, reason: "Événement", amountCents: 500, asso: { name: "Club Photo" } },
+        {
+          id: "s1",
+          createdAt: NOW,
+          reason: "Événement",
+          amountCents: 500,
+          campaignId: "c1",
+          asso: { name: "Club Photo" },
+        },
       ]); // activité récente
     financialMovementFindManyMock
       .mockResolvedValueOnce([{ amountCents: 200, createdAt: NOW }]) // fenêtre 365j
@@ -164,7 +204,7 @@ describe("getDashboardData", () => {
           createdAt: NOW,
           movementType: "CREDIT",
           amountCents: 300,
-          asso: { name: "Club Robotique" },
+          asso: { name: "Club Robotique", slug: "club-robotique" },
         },
       ]); // mouvements manuels
     expenseReportCountMock.mockResolvedValue(3);
@@ -190,7 +230,12 @@ describe("getDashboardData", () => {
     expect(result.assosActives).toBe(12);
     expect(result.subventionsAccordeesCents365j).toBe(500);
     expect(result.montantRembourseCents365j).toBe(200);
-    expect(result.notesTraiteesCeMois).toBe(3);
+    expect(result.notesValideesCeMois).toBe(3);
+    expect(expenseReportCountMock).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        finalizedAt: { gte: new Date(2026, 7, 1) },
+      }),
+    });
     expect(result.queue).toEqual([
       {
         id: "r1",
@@ -205,8 +250,11 @@ describe("getDashboardData", () => {
       name: "CA Budget",
       publicationDate: new Date("2026-09-01"),
     });
-    expect(result.recentActivity.map((e) => e.id)).toEqual(
-      expect.arrayContaining(["subvention-s1", "movement-m1"]),
+    expect(result.recentActivity.map((e) => [e.id, e.href])).toEqual(
+      expect.arrayContaining([
+        ["subvention-s1", "/app/admin/subventions/c1"],
+        ["movement-m1", "/app/admin/associations/club-robotique"],
+      ]),
     );
   });
 });

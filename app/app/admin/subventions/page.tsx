@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
+import { HandCoins } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { listSubventionCampaigns } from "@/lib/admin/subvention-campaigns";
 import { CampaignsList } from "./_components/campaigns-list";
 import { NewCampaignModalButton } from "./_components/new-campaign-modal-button";
+
+export const metadata: Metadata = {
+  title: "Subventions",
+};
 
 export default async function AdminSubventionsPage() {
   const campaigns = await listSubventionCampaigns();
@@ -18,9 +25,11 @@ export default async function AdminSubventionsPage() {
       </div>
 
       {campaigns.length === 0 ? (
-        <p className="text-base-content/70">
-          Aucune campagne pour l&apos;instant.
-        </p>
+        <EmptyState
+          icon={<HandCoins size={24} />}
+          title="Aucune campagne de subvention"
+          description="Créez une campagne pour y accorder des Subventions aux Assos."
+        />
       ) : (
         <CampaignsList campaigns={campaigns} />
       )}

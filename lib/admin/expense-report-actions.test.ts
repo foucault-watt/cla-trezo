@@ -207,7 +207,24 @@ describe("takeOverExpenseReportAction", () => {
 });
 
 describe("rejectExpenseReportAction", () => {
-  const valid = { id: "33333333-3333-3333-8333-333333333333" };
+  const valid = {
+    id: "33333333-3333-3333-8333-333333333333",
+    reason: "  Justificatif illisible.  ",
+  };
+
+  it("exige un motif de rejet", async () => {
+    const result = await rejectExpenseReportAction(
+      { ok: false },
+      formData({ ...valid, reason: "   " }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Indiquez le motif du rejet.",
+    });
+    expect(reportFindUniqueMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
 
   it("refuse une Note introuvable", async () => {
     reportFindUniqueMock.mockResolvedValue(null);
@@ -239,7 +256,7 @@ describe("rejectExpenseReportAction", () => {
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
-  it("passe une Note Prise en charge à Rejetée", async () => {
+  it("passe une Note Prise en charge à Rejetée avec son motif", async () => {
     reportFindUniqueMock.mockResolvedValue({
       id: valid.id,
       status: "TAKEN_OVER",
@@ -252,7 +269,7 @@ describe("rejectExpenseReportAction", () => {
 
     expect(reportUpdateMock).toHaveBeenCalledWith({
       where: { id: valid.id },
-      data: { status: "REJECTED" },
+      data: { status: "REJECTED", rejectionReason: "Justificatif illisible." },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/admin/notes-de-frais/${valid.id}`,
@@ -420,7 +437,10 @@ describe("updateExpenseReportAsAdminAction", () => {
   });
 
   it("refuse tant que la Note n'est pas Prise en charge (Soumise)", async () => {
-    reportFindUniqueMock.mockResolvedValue({ id: valid.id, status: "SUBMITTED" });
+    reportFindUniqueMock.mockResolvedValue({
+      id: valid.id,
+      status: "SUBMITTED",
+    });
 
     const result = await updateExpenseReportAsAdminAction(
       { ok: false },

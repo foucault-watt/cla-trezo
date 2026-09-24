@@ -1,4 +1,4 @@
-import { History, TriangleAlert } from "lucide-react";
+import { Clock3, History } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { pluralize } from "@/lib/plural";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
@@ -24,9 +24,7 @@ function PageHeading({ isDemo = false }: { isDemo?: boolean }) {
   return (
     <header>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold text-balance">
-          Suivi des subventions
-        </h1>
+        <h1 className="text-2xl font-semibold text-balance">Subventions</h1>
         {isDemo && (
           <span className="badge badge-outline badge-sm">
             Scénario de démonstration
@@ -275,9 +273,7 @@ function LedgerContent({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-base-content/50">
-                Montant disponible
-              </p>
+              <p className="text-xs text-base-content/50">Montant disponible</p>
               <p className="mt-1 font-semibold tabular-nums text-success">
                 {formatCents(totalGranted - totalUsed)}
               </p>
@@ -344,12 +340,12 @@ function OldCampaignsSection({ campaigns }: { campaigns: Campaign[] }) {
       <div className="collapse-arrow collapse border border-base-300 bg-base-100 shadow-sm">
         <input type="checkbox" />
         <div className="collapse-title flex items-center gap-2 font-semibold">
-          <TriangleAlert
+          <Clock3
             aria-hidden="true"
             className="shrink-0 text-base-content/50"
             size={18}
           />
-          Subventions anciennes
+          Subventions de plus d&apos;un an
           <span className="font-normal text-base-content/60">
             ({pluralize(campaigns.length, "campagne")})
           </span>

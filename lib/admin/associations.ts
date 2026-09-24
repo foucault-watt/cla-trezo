@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { AssoStatus, AssoType } from "@/app/generated/prisma/enums";
 import { EXCLUDE_DEMO_ASSO } from "@/lib/auth/demo-config";
 import {
@@ -132,9 +133,10 @@ export type AssoDetail = AssoOverview & {
  * Aperçu/Solde/Subventions/Notes de frais/Documents) — étend AssoOverview
  * (déjà utilisée pour la liste) avec les données propres à chaque onglet.
  * Séparée de getAssociationOverview pour ne pas alourdir listAssociations,
- * qui n'a besoin que du résumé.
+ * qui n'a besoin que du résumé. Enveloppée dans `cache()` : la page et son
+ * generateMetadata la chargent dans un même rendu.
  */
-export async function getAssociationDetail(
+export const getAssociationDetail = cache(async function (
   slug: string,
 ): Promise<AssoDetail | null> {
   const overview = await getAssociationOverview(slug);
@@ -147,4 +149,4 @@ export async function getAssociationDetail(
   ]);
 
   return { ...overview, members, subventions, notesDeFrais };
-}
+});

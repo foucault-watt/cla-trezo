@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import type {
   AssoType,
   ExpenseReportStatus,
@@ -86,8 +87,11 @@ export type ExpenseReportDetailContext = {
  * elle-même, le type de la Structure (pour savoir si "Solde" est une option
  * de source, cf. T11), la liste des Types de dépense, et les Subventions
  * Publiées visibles par la Structure.
+ *
+ * Enveloppé dans `cache()` : le layout du wizard, generateMetadata et la page
+ * de l'étape courante la chargent chacun pour la même Note dans un même rendu.
  */
-export async function getExpenseReportDetail(
+export const getExpenseReportDetail = cache(async function (
   assoSlug: string,
   reportId: string,
 ): Promise<ExpenseReportDetailContext> {
@@ -155,4 +159,4 @@ export async function getExpenseReportDetail(
       subventionReason: pdf.subvention?.reason ?? null,
     })),
   };
-}
+});

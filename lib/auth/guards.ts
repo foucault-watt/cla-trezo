@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 import {
   resolveStructureAccess,
   type StructureAccess,
@@ -19,8 +20,11 @@ async function lookupAssoBySlug(slug: string) {
  * vers /login si non connecté, 404 si la structure n'existe pas ou n'est pas
  * accessible à l'utilisateur. Retourne aussi l'utilisateur pour éviter un
  * second appel à getSession() côté appelant.
+ *
+ * Enveloppé dans `cache()` : layout, page et generateMetadata l'appellent
+ * pour la même Asso dans un même rendu.
  */
-export async function requireStructureAccess(
+export const requireStructureAccess = cache(async function (
   assoSlug: string,
 ): Promise<{ structure: StructureAccess; user: SessionUser }> {
   // L'Asso démo vit sur son propre cookie de session (cf. lib/session.ts) et
@@ -58,7 +62,7 @@ export async function requireStructureAccess(
 
   const { ok: _ok, ...structure } = result;
   return { structure, user: session.user! };
-}
+});
 
 /**
  * Garde-fou minimal pour les Server Actions qui n'ont pas besoin de scoping

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeftRight,
@@ -16,6 +17,21 @@ import { LastStructureTracker } from "@/components/nav/last-structure-tracker";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { requireStructureAccess } from "@/lib/auth/guards";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ assoSlug: string }>;
+}): Promise<Metadata> {
+  const { assoSlug } = await params;
+  const { structure } = await requireStructureAccess(assoSlug);
+  return {
+    title: {
+      default: structure.name,
+      template: `%s · ${structure.name} · CLA Trézo`,
+    },
+  };
+}
 
 export default async function MemberLayout({
   children,
@@ -75,10 +91,12 @@ export default async function MemberLayout({
         />
       ) : (
         <>
-          <DemoLoginButton
-            className="btn btn-ghost btn-sm w-full justify-start gap-2"
-            icon={<Sparkles size={18} />}
-          />
+          {user.isAdmin && (
+            <DemoLoginButton
+              className="btn btn-ghost btn-sm w-full justify-start gap-2"
+              icon={<Sparkles size={18} />}
+            />
+          )}
           <LogoutButton />
         </>
       )}

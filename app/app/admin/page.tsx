@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { getDashboardData } from "@/lib/admin/dashboard";
 import { ActivityList } from "./_components/dashboard/activity-list";
 import { QueueList } from "./_components/dashboard/queue-list";
 import { StatsBar } from "./_components/dashboard/stats-bar";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function AdminDashboardPage() {
   const data = await getDashboardData();

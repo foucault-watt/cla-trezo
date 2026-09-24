@@ -40,7 +40,8 @@ export default async function ExpenseReportSummaryPage({
       <div>
         <h2 className="text-xl font-semibold">Récapitulatif</h2>
         <p className="mt-1 text-sm text-base-content/70">
-          Vérifiez toutes les informations avant de soumettre la Note de frais.
+          Contenu de la Note de frais telle qu&apos;elle a été soumise. Elle
+          n&apos;est plus modifiable.
         </p>
       </div>
 

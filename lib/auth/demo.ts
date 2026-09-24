@@ -243,6 +243,7 @@ async function resetDemoData(
         takenAt?: Date;
         finalizedAt?: Date;
         takenByAdminId?: string;
+        rejectionReason?: string;
         lines: DemoLineFixture[];
       }) =>
         tx.expenseReport.create({
@@ -257,6 +258,7 @@ async function resetDemoData(
             takenAt: params.takenAt,
             finalizedAt: params.finalizedAt,
             takenByAdminId: params.takenByAdminId,
+            rejectionReason: params.rejectionReason,
             beneficiaryFirstname: params.beneficiary.firstname,
             beneficiaryLastname: params.beneficiary.lastname,
             lines: {
@@ -336,6 +338,8 @@ async function resetDemoData(
         submittedAt: daysAgo(20),
         takenAt: daysAgo(18),
         takenByAdminId: adminId,
+        rejectionReason:
+          "Le devis joint ne correspond pas à la facture : merci de refaire une Note avec la facture finale du prestataire.",
         beneficiary: treasurerName,
         lines: [
           {
@@ -414,6 +418,8 @@ async function resetDemoData(
         submittedAt: daysAgo(727),
         takenAt: daysAgo(724),
         takenByAdminId: adminId,
+        rejectionReason:
+          "Déplacement non prévu au budget voté en CA : à financer par le bureau national.",
         beneficiary: treasurerName,
         lines: [
           {

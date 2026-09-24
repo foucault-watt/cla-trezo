@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { listStructureGrantDocuments } from "@/lib/subventions/grant-documents";
 import { listVisibleSubventions } from "@/lib/subventions/visible-subventions";
-import { createSubventionAgeDemoData } from "./_components/subventions-demo-data";
 import { GrantDocumentsList } from "./_components/grant-documents-list";
+import { createSubventionAgeDemoData } from "./_components/subventions-demo-data";
 import { SubventionsLedger } from "./_components/subventions-ledger";
+
+export const metadata: Metadata = {
+  title: "Subventions",
+};
 
 export default async function SubventionsPage({
   params,

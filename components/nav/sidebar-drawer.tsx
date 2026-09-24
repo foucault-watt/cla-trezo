@@ -33,7 +33,10 @@ export function SidebarDrawer({
   return (
     <div className="drawer lg:drawer-open flex-1">
       {edgeGlow && (
-        <div className="admin-edge-glow pointer-events-none fixed inset-0 z-50" aria-hidden="true" />
+        <div
+          className="admin-edge-glow pointer-events-none fixed inset-0 z-50"
+          aria-hidden="true"
+        />
       )}
       <input id="app-nav-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-1 flex-col bg-base-200">
@@ -45,19 +48,37 @@ export function SidebarDrawer({
           >
             <Menu size={18} />
           </label>
-          <Image src="/logo.png" alt="" width={24} height={24} className="rounded-sm" />
+          <Image
+            src="/logo.png"
+            alt=""
+            width={24}
+            height={24}
+            className="rounded-sm"
+          />
           <span className="flex-1 font-semibold">{rootLabel}</span>
           <ThemeToggle />
         </div>
         <main className="flex-1 p-6">{children}</main>
       </div>
       <div className="drawer-side z-40">
-        <label htmlFor="app-nav-drawer" aria-label="Fermer le menu" className="drawer-overlay" />
+        <label
+          htmlFor="app-nav-drawer"
+          aria-label="Fermer le menu"
+          className="drawer-overlay"
+        />
         <aside className="flex h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
           <div className="mb-4 flex items-center justify-between px-2">
             <div className="flex min-w-0 items-center gap-2">
-              <Image src="/logo.png" alt="" width={28} height={28} className="shrink-0 rounded-sm" />
-              <p className="truncate text-sm font-semibold text-base-content/70">{rootLabel}</p>
+              <Image
+                src="/logo.png"
+                alt=""
+                width={28}
+                height={28}
+                className="shrink-0 rounded-sm"
+              />
+              <p className="truncate text-sm font-semibold text-base-content/70">
+                {rootLabel}
+              </p>
             </div>
             <div className="hidden lg:block">
               <ThemeToggle />
@@ -69,8 +90,10 @@ export function SidebarDrawer({
             ))}
           </ul>
           {secondaryNavItems && secondaryNavItems.length > 0 && (
-            <ul className="menu w-full gap-1 border-t border-base-200 pt-2">
-              {secondaryLabel && <li className="menu-title">{secondaryLabel}</li>}
+            <ul className="menu w-full gap-1 border-t border-base-200 pt-2 opacity-20 transition-opacity duration-200 hover:opacity-100 focus-within:opacity-100 has-[.menu-active]:opacity-100">
+              {secondaryLabel && (
+                <li className="menu-title">{secondaryLabel}</li>
+              )}
               {secondaryNavItems.map((item) => (
                 <NavLink key={item.href} {...item} />
               ))}

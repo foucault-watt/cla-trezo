@@ -131,6 +131,7 @@ export type ExpenseReportDetailForAdmin = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  rejectionReason: string | null;
   beneficiaryUserId: string | null;
   beneficiaryFirstname: string | null;
   beneficiaryLastname: string | null;

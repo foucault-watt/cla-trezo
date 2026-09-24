@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { HandCoins, LogIn, Receipt, Sparkles, TrendingUp, Wallet } from "lucide-react";
+import {
+  HandCoins,
+  LogIn,
+  Receipt,
+  Sparkles,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import { DemoLoginButton } from "@/components/demo/demo-login-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { formatCents } from "@/lib/money";
 import { SITE_URL } from "@/lib/site";
 
 // Seule page du site destinée au référencement : le reste (derrière SSO)
@@ -20,7 +28,7 @@ const features = [
   {
     icon: Wallet,
     title: "Solde en temps réel",
-    desc: "Suivez le solde de votre club sans devoir harceler le trésorier de CLA",
+    desc: "Consultez le solde de votre club à tout moment, sans attendre de réponse du trésorier de CLA",
   },
   {
     icon: HandCoins,
@@ -65,11 +73,15 @@ export default function Home() {
               Trézo - Centrale Lille Associations
             </h1>
             <p className="mx-auto max-w-md text-base text-base-content/70 lg:mx-0">
-              L&apos;application de CLA pour les Clubs, Commissions et Associations
-              loi 1901 : soldes, subventions et notes de frais au même endroit.
+              L&apos;application de CLA pour les Clubs, Commissions et
+              Associations loi 1901 : soldes, subventions et notes de frais au
+              même endroit.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:items-stretch lg:justify-start">
-              <Link href="/login" className="btn btn-primary w-full max-w-xs h-10">
+              <Link
+                href="/login"
+                className="btn btn-primary w-full max-w-xs h-10"
+              >
                 <LogIn size={18} />
                 Se connecter
               </Link>
@@ -87,16 +99,20 @@ export default function Home() {
               </span>
               <TrendingUp className="text-success" size={16} />
             </div>
-            <p className="text-3xl font-semibold">1 248,50 €</p>
+            <p className="text-3xl font-semibold">{formatCents(124_850)}</p>
             <div className="divider my-4" />
             <ul className="space-y-2 text-sm">
               <li className="flex items-center justify-between text-base-content/70">
                 <span>Recette de la soirée dansante</span>
-                <span className="font-medium text-base-content">+350 €</span>
+                <span className="font-medium text-base-content">
+                  +{formatCents(35_000)}
+                </span>
               </li>
               <li className="flex items-center justify-between text-base-content/70">
                 <span>Achats de boissons</span>
-                <span className="font-medium text-warning">- 42 €</span>
+                <span className="font-medium text-warning">
+                  -{formatCents(4_200)}
+                </span>
               </li>
             </ul>
           </div>
@@ -119,7 +135,10 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-base-300 px-4 py-6 text-center text-xs text-base-content/50">
-        <Link href="/mentions-legales" className="hover:text-base-content hover:underline">
+        <Link
+          href="/mentions-legales"
+          className="hover:text-base-content hover:underline"
+        >
           Mentions légales
         </Link>
         <span className="mx-2">·</span>

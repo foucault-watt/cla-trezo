@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft, RotateCcw, TriangleAlert } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Connexion",
+};
 
 export default async function LoginPage({
   searchParams,
@@ -12,14 +19,30 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-base-200">
+    <div className="flex flex-1 items-center justify-center bg-base-200 px-4">
       <div className="card w-full max-w-sm border border-base-300 bg-base-100 shadow-md">
         <div className="card-body">
-          <h1 className="card-title">Connexion</h1>
-          <p className="alert alert-error text-sm">{error}</p>
+          <h1 className="card-title">Connexion impossible</h1>
+          <div
+            role="alert"
+            className="alert alert-error alert-soft items-start text-sm"
+          >
+            <TriangleAlert size={18} className="mt-0.5 shrink-0" />
+            <span>
+              La connexion avec votre compte CLA n&apos;a pas abouti. Réessayez
+              dans un instant ; si le problème persiste, contactez l&apos;équipe
+              CLA.
+            </span>
+          </div>
+          <p className="text-xs text-base-content/50">Détail : {error}</p>
           <a href="/api/auth/login" className="btn btn-primary mt-2">
+            <RotateCcw size={16} />
             Réessayer avec CLA
           </a>
+          <Link href="/" className="btn btn-ghost btn-sm">
+            <ArrowLeft size={16} />
+            Retour à l&apos;accueil
+          </Link>
         </div>
       </div>
     </div>

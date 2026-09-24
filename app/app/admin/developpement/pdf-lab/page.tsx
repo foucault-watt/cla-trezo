@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { PdfLabTabs } from "./_components/pdf-lab-tabs";
 import { fixture as subsidyConventionFixture } from "@/pdf-lab/templates/convention/fixture";
 import { fixture as financementFixture } from "@/pdf-lab/templates/financement/fixture";
 import { fixture as expenseReportFixture } from "@/pdf-lab/templates/ndf-fn-sb/fixture";
 import { fixture as expenseBalanceFixture } from "@/pdf-lab/templates/ndf-solde/fixture";
+
+export const metadata: Metadata = {
+  title: "Atelier PDF",
+};
 
 export default function PdfLabPage() {
   return (

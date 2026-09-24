@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { listAssociations } from "@/lib/admin/associations";
 import { StatsBar } from "./_components/stats-bar";
 import { AssociationsList } from "./_components/associations-list";
+
+export const metadata: Metadata = {
+  title: "Associations",
+};
 
 export default async function AssociationsPage() {
   const associations = await listAssociations();

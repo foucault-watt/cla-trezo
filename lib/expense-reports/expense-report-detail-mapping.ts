@@ -45,6 +45,7 @@ export type ExpenseReportDetail = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  rejectionReason: string | null;
   beneficiaryUserId: string | null;
   beneficiaryFirstname: string | null;
   beneficiaryLastname: string | null;
@@ -82,6 +83,7 @@ export type ExpenseReportRow = {
   description: string | null;
   status: ExpenseReportStatus;
   createdAt: Date;
+  rejectionReason?: string | null;
   beneficiaryUserId?: string | null;
   beneficiaryFirstname?: string | null;
   beneficiaryLastname?: string | null;
@@ -111,6 +113,7 @@ export function mapExpenseReportToDetail(
     description: report.description,
     status: report.status,
     createdAt: report.createdAt,
+    rejectionReason: report.rejectionReason ?? null,
     beneficiaryUserId: report.beneficiaryUserId ?? null,
     beneficiaryFirstname: report.beneficiaryFirstname ?? null,
     beneficiaryLastname: report.beneficiaryLastname ?? null,

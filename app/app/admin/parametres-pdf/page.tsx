@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { ConventionSettingsForm } from "./_components/convention-settings-form";
 import { getConventionPdfSettings } from "@/lib/admin/convention-pdf-settings";
+
+export const metadata: Metadata = {
+  title: "Paramètres PDF",
+};
 
 export default async function AdminPdfSettingsPage() {
   const settings = await getConventionPdfSettings();

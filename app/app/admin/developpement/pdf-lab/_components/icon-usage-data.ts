@@ -216,7 +216,7 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/[assoSlug]/layout.tsx",
     context:
-      "icône construite ici et passée en prop à DemoLoginButton ; le texte du bouton n'est pas visible dans ce fichier",
+      "« Essayer la démo », réservé aux Admins ; icône construite ici et passée en prop à DemoLoginButton",
   },
 
   // components/demo/demo-mode-banner.tsx
@@ -237,7 +237,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "Sparkles",
-    visibleText: "Démo",
+    visibleText: "Essayer la démo",
     ariaLabel: null,
     file: "app/page.tsx",
     context:
@@ -387,8 +387,8 @@ export const iconUsages: IconUsage[] = [
     context: "aria-hidden, à côté de la date de publication d'une campagne",
   },
   {
-    icon: "TriangleAlert",
-    visibleText: "Subventions anciennes",
+    icon: "Clock3",
+    visibleText: "Subventions de plus d'un an",
     ariaLabel: null,
     file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
     context: "aria-hidden, en-tête de section",
@@ -1302,7 +1302,7 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/notes-de-frais/[reportId]/remboursements/page.tsx
   {
     icon: "ArrowRight",
-    visibleText: "Vérifier la deuxième étape",
+    visibleText: "Étape suivante : Bénéficiaire",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/remboursements/page.tsx",
     context:
@@ -1378,6 +1378,8 @@ export const iconUsages: IconUsage[] = [
     icon: "X",
     visibleText: null,
     ariaLabel: "Fermer",
+    context:
+      "dans l'alerte en haut d'une Note Soumise (layout du wizard Admin)",
     file: "components/ui/toast.tsx",
     context: "bouton icône seul de fermeture manuelle d'un toast",
   },
@@ -1616,6 +1618,98 @@ export const iconUsages: IconUsage[] = [
       "icône d'en-tête selon le Type de l'Asso, cohérent avec asso-type-picker.tsx",
   },
 
+  // components/ui/empty-state.tsx (icône passée en prop)
+  {
+    icon: "Receipt",
+    visibleText: "Aucune Note de frais pour l'instant",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/page.tsx",
+    context: "état vide de la liste, avec le bouton Nouvelle Note de frais",
+  },
+  {
+    icon: "Receipt",
+    visibleText: "Aucune Note de frais soumise",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/page.tsx",
+    context: "état vide de la liste Admin",
+  },
+  {
+    icon: "HandCoins",
+    visibleText: "Aucune campagne de subvention",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/page.tsx",
+    context: "état vide de la liste des campagnes",
+  },
+  {
+    icon: "Building2",
+    visibleText: "Vous n'êtes membre d'aucune Asso pour le moment",
+    ariaLabel: null,
+    file: "app/app/page.tsx",
+    context: "état vide de « Mes Assos », avec le bouton Déconnexion",
+  },
+
+  // app/login/page.tsx
+  {
+    icon: "TriangleAlert",
+    visibleText: "La connexion avec votre compte CLA n'a pas abouti…",
+    ariaLabel: null,
+    file: "app/login/page.tsx",
+    context: "alerte d'échec du SSO CLA",
+  },
+  {
+    icon: "RotateCcw",
+    visibleText: "Réessayer avec CLA",
+    ariaLabel: null,
+    file: "app/login/page.tsx",
+  },
+  {
+    icon: "ArrowLeft",
+    visibleText: "Retour à l'accueil",
+    ariaLabel: null,
+    file: "app/login/page.tsx",
+  },
+
+  // components/ui/route-error.tsx
+  {
+    icon: "TriangleAlert",
+    visibleText: "Une erreur est survenue",
+    ariaLabel: null,
+    file: "components/ui/route-error.tsx",
+    context: "pastille au-dessus du titre des pages d'erreur (error.tsx)",
+  },
+  {
+    icon: "RotateCcw",
+    visibleText: "Réessayer",
+    ariaLabel: null,
+    file: "components/ui/route-error.tsx",
+    context: "relance le rendu de la page en erreur",
+  },
+  {
+    icon: "ArrowLeft",
+    visibleText: "Retour à l'accueil / Retour au Dashboard",
+    ariaLabel: null,
+    file: "components/ui/route-error.tsx",
+    context: "libellé selon la section (racine, admin, Asso)",
+  },
+
+  // app/app/[assoSlug]/notes-de-frais/[reportId]/layout.tsx
+  {
+    icon: "Ban",
+    visibleText: "Cette Note de frais a été rejetée par l'Admin CLA.",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/layout.tsx",
+    context: "alerte d'une Note Rejetée, avec le motif du rejet",
+  },
+
+  // app/app/admin/notes-de-frais/[reportId]/layout.tsx
+  {
+    icon: "Ban",
+    visibleText: "Note de frais rejetée.",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/[reportId]/layout.tsx",
+    context: "alerte d'une Note Rejetée, avec le motif du rejet",
+  },
+
   // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx
   {
     icon: "FileText",
@@ -1628,8 +1722,8 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx
   {
-    icon: "TriangleAlert",
-    visibleText: "Subventions anciennes",
+    icon: "Clock3",
+    visibleText: "Subventions de plus d'un an",
     ariaLabel: null,
     file: "app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx",
     context:

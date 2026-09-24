@@ -1,14 +1,23 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Building2, Code2, Cookie, Server, ShieldCheck } from "lucide-react";
 import { BackLink } from "@/components/nav/back-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
+export const metadata: Metadata = {
+  title: "Mentions légales",
+};
+
 const sections = [
   { id: "editeur", title: "Éditeur", icon: Building2 },
   { id: "developpement", title: "Développement", icon: Code2 },
   { id: "hebergement", title: "Hébergement", icon: Server },
-  { id: "donnees-personnelles", title: "Données personnelles", icon: ShieldCheck },
+  {
+    id: "donnees-personnelles",
+    title: "Données personnelles",
+    icon: ShieldCheck,
+  },
   { id: "cookies", title: "Cookies", icon: Cookie },
 ];
 
@@ -161,10 +170,10 @@ export default function MentionsLegalesPage() {
                 de ses Assos.
               </p>
               <p className="mt-2">
-                Les données sont accessibles uniquement aux personnes
-                autorisées au sein de CLA ainsi qu&apos;aux prestataires
-                techniques lorsque cela est nécessaire au fonctionnement ou à
-                la maintenance de l&apos;application.
+                Les données sont accessibles uniquement aux personnes autorisées
+                au sein de CLA ainsi qu&apos;aux prestataires techniques lorsque
+                cela est nécessaire au fonctionnement ou à la maintenance de
+                l&apos;application.
               </p>
               <p className="mt-2">
                 Les données sont conservées pendant la durée nécessaire à la
@@ -175,16 +184,16 @@ export default function MentionsLegalesPage() {
               </p>
               <p className="mt-2">
                 Les coordonnées bancaires saisies dans l&apos;application sont
-                destinées uniquement à permettre le remboursement. Les IBAN
-                sont supprimés de l&apos;application après la génération du
-                document final de note de frais.
+                destinées uniquement à permettre le remboursement. Les IBAN sont
+                supprimés de l&apos;application après la génération du document
+                final de note de frais.
               </p>
               <p className="mt-2">
                 Conformément à la réglementation applicable en matière de
-                protection des données personnelles, les utilisateurs
-                disposent notamment de droits d&apos;accès, de rectification,
-                d&apos;effacement, de limitation et, lorsque les conditions
-                sont réunies, d&apos;opposition concernant leurs données.
+                protection des données personnelles, les utilisateurs disposent
+                notamment de droits d&apos;accès, de rectification,
+                d&apos;effacement, de limitation et, lorsque les conditions sont
+                réunies, d&apos;opposition concernant leurs données.
               </p>
               <p className="mt-2">
                 Ces droits peuvent être exercés en contactant :{" "}
@@ -197,8 +206,7 @@ export default function MentionsLegalesPage() {
                 .
               </p>
               <p className="mt-2">
-                Les utilisateurs peuvent également adresser une réclamation à
-                la{" "}
+                Les utilisateurs peuvent également adresser une réclamation à la{" "}
                 <strong className="font-medium text-base-content">
                   Commission nationale de l&apos;informatique et des libertés
                   (CNIL)
@@ -215,8 +223,8 @@ export default function MentionsLegalesPage() {
               <p className="mt-3">
                 L&apos;application utilise uniquement des cookies et traceurs
                 strictement nécessaires à son fonctionnement et à
-                l&apos;authentification des utilisateurs, notamment un cookie
-                de session.
+                l&apos;authentification des utilisateurs, notamment un cookie de
+                session.
               </p>
               <p className="mt-2">
                 Aucun cookie publicitaire ou dispositif de suivi à des fins

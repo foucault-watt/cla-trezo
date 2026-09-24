@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { ClaAuthError, syncUserFromCla, validateClaTicket } from "@/lib/auth/cla";
+import {
+  ClaAuthError,
+  syncUserFromCla,
+  validateClaTicket,
+} from "@/lib/auth/cla";
 
 export async function GET(request: NextRequest) {
   const ticket = request.nextUrl.searchParams.get("ticket");
   if (!ticket) {
-    return NextResponse.json(
-      { error: "Ticket CLA manquant." },
-      { status: 400 },
+    return NextResponse.redirect(
+      new URL(
+        `/login?error=${encodeURIComponent("Ticket CLA manquant.")}`,
+        request.url,
+      ),
     );
   }
 

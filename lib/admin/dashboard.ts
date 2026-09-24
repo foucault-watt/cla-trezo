@@ -32,6 +32,12 @@ export function daysSince(date: Date, now: Date): number {
   return Math.floor((now.getTime() - date.getTime()) / DAY_MS);
 }
 
+export function waitingLabel(days: number): string {
+  if (days <= 0) return "aujourd'hui";
+  if (days === 1) return "hier";
+  return `il y a ${days} j`;
+}
+
 /**
  * Répartit des lignes datées entre la période courante et la précédente
  * d'une RollingWindow. Les lignes plus anciennes que `previousStart` sont
@@ -116,6 +122,7 @@ export type ActivityEvent = {
   label: string;
   amountCents?: number;
   date: Date;
+  href: string;
 };
 
 export function buildActivityFeed(
@@ -153,6 +160,7 @@ function reportActivity(
     label: options.label,
     amountCents: report.lines.reduce((sum, line) => sum + line.amountCents, 0),
     date: options.date ?? report.createdAt,
+    href: `/app/admin/notes-de-frais/${report.id}`,
   };
 }
 
@@ -170,7 +178,7 @@ export type DashboardData = {
   subventionsAccordeesCents365jPrecedents: number;
   montantRembourseCents365j: number;
   montantRembourseCents365jPrecedents: number;
-  notesTraiteesCeMois: number;
+  notesValideesCeMois: number;
   queue: QueueItem[];
   campaignInfo: CampaignInfo | null;
   recentActivity: ActivityEvent[];
@@ -179,9 +187,6 @@ export type DashboardData = {
 /**
  * Vue d'ensemble Admin du dashboard : file d'attente, activité récente,
  * chiffres clés sur une fenêtre glissante de 365 jours (cf. rollingWindow).
- * "Notes de frais traitées ce mois-ci" compte les Prises en charge du mois
- * (`takenAt`), pas les Validations : la Validation (statut FINALIZED) n'est
- * pas encore implémentée dans l'app, seul "Prendre en charge" existe.
  */
 export async function getDashboardData(
   now: Date = new Date(),
@@ -193,7 +198,7 @@ export async function getDashboardData(
     assosActives,
     subventionRows,
     movementRows,
-    notesTraiteesCeMois,
+    notesValideesCeMois,
     queueReports,
     campaigns,
     finalizedReports,
@@ -218,7 +223,10 @@ export async function getDashboardData(
       select: { amountCents: true, createdAt: true },
     }),
     prisma.expenseReport.count({
-      where: { takenAt: { gte: monthStart }, ...EXCLUDE_DEMO_ASSO_RELATION },
+      where: {
+        finalizedAt: { gte: monthStart },
+        ...EXCLUDE_DEMO_ASSO_RELATION,
+      },
     }),
     prisma.expenseReport.findMany({
       where: {
@@ -277,6 +285,7 @@ export async function getDashboardData(
         createdAt: true,
         reason: true,
         amountCents: true,
+        campaignId: true,
         asso: { select: { name: true } },
       },
     }),
@@ -289,7 +298,7 @@ export async function getDashboardData(
         createdAt: true,
         movementType: true,
         amountCents: true,
-        asso: { select: { name: true } },
+        asso: { select: { name: true, slug: true } },
       },
     }),
   ]);
@@ -332,6 +341,7 @@ export async function getDashboardData(
         label: `Subvention accordée — ${subvention.reason}`,
         amountCents: subvention.amountCents,
         date: subvention.createdAt,
+        href: `/app/admin/subventions/${subvention.campaignId}`,
       })),
       ...manualMovements.map((movement): ActivityEvent => ({
         id: `movement-${movement.id}`,
@@ -343,6 +353,7 @@ export async function getDashboardData(
             : "Sortie manuelle sur le solde",
         amountCents: movement.amountCents,
         date: movement.createdAt,
+        href: `/app/admin/associations/${movement.asso.slug}`,
       })),
     ],
     6,
@@ -354,7 +365,7 @@ export async function getDashboardData(
     subventionsAccordeesCents365jPrecedents: subventionsSum.previous,
     montantRembourseCents365j: movementsSum.current,
     montantRembourseCents365jPrecedents: movementsSum.previous,
-    notesTraiteesCeMois,
+    notesValideesCeMois,
     queue,
     campaignInfo,
     recentActivity,

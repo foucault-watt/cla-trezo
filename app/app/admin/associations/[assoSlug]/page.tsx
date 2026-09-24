@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/nav/back-link";
 import { Stat, StatsBar } from "@/components/ui/stats";
@@ -9,6 +10,16 @@ import {
 import { getAssociationDetail } from "@/lib/admin/associations";
 import { AssoDetailTabs } from "./_components/asso-detail-tabs";
 import { AssoTypePicker } from "./_components/asso-type-picker";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ assoSlug: string }>;
+}): Promise<Metadata> {
+  const { assoSlug } = await params;
+  const asso = await getAssociationDetail(assoSlug);
+  return { title: asso?.name ?? "Association introuvable" };
+}
 
 export default async function AdminAssociationDetailPage({
   params,

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { RecentActivityAccordion } from "@/components/dashboard/recent-activity-accordion";
 import { SoldeHistoryAccordion } from "@/components/dashboard/solde-history-accordion";
 import { SoldeNotInitializedAlert } from "@/components/solde/solde-not-initialized-alert";
 import { Stat, StatsBar } from "@/components/ui/stats";
 import { getDashboardOverview } from "@/lib/dashboard/dashboard-overview";
 import { formatCents } from "@/lib/money";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function DashboardPage({
   params,

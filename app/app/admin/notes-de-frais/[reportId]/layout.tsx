@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { Ban } from "lucide-react";
 import { BackLink } from "@/components/nav/back-link";
 import {
   expenseReportStatusBadgeClass,
@@ -13,6 +15,17 @@ import { GeneralInformationModal } from "@/components/expense-reports/general-in
 import { AdminExpenseReportStepper } from "./_components/expense-report-stepper";
 import { DeleteExpenseReportAsAdminButton } from "./_components/delete-expense-report-as-admin-button";
 import { PdfDownloadButton } from "./_components/pdf-download-button";
+import { TakeOverButton } from "./_components/take-over-button";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ reportId: string }>;
+}): Promise<Metadata> {
+  const { reportId } = await params;
+  const report = await getExpenseReportDetailForAdmin(reportId);
+  return { title: `${report.title} (${report.assoName})` };
+}
 
 export default async function AdminExpenseReportWizardLayout({
   children,
@@ -34,9 +47,7 @@ export default async function AdminExpenseReportWizardLayout({
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{report.title}</h1>
-          <p className="mt-1 text-sm text-base-content/70">
-            {report.assoName}
-          </p>
+          <p className="mt-1 text-sm text-base-content/70">{report.assoName}</p>
           {report.description && (
             <p className="mt-1 text-sm text-base-content/70">
               {report.description}
@@ -64,8 +75,30 @@ export default async function AdminExpenseReportWizardLayout({
         </div>
       </div>
       {!editable && report.status === "SUBMITTED" && (
-        <div role="status" className="alert alert-info alert-soft mt-5">
-          Prenez cette Note de frais en charge pour pouvoir la modifier.
+        <div
+          role="status"
+          className="alert alert-info alert-soft mt-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <span>
+            Prenez cette Note de frais en charge pour pouvoir la modifier.
+          </span>
+          <TakeOverButton reportId={reportId} />
+        </div>
+      )}
+      {report.status === "REJECTED" && (
+        <div
+          role="status"
+          className="alert alert-error alert-soft mt-5 items-start"
+        >
+          <Ban size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium">Note de frais rejetée.</p>
+            <p className="mt-1 whitespace-pre-line text-sm">
+              {report.rejectionReason
+                ? `Motif : ${report.rejectionReason}`
+                : "Aucun motif enregistré (rejet antérieur à la saisie du motif)."}
+            </p>
+          </div>
         </div>
       )}
       {report.status === "FINALIZED" && report.pdfs.length > 0 && (
@@ -77,7 +110,10 @@ export default async function AdminExpenseReportWizardLayout({
                 <PdfDownloadButton
                   reportId={reportId}
                   pdfId={pdf.id}
-                  label={pdf.subventionReason ?? fundingSourceLabel[pdf.fundingSource]}
+                  label={
+                    pdf.subventionReason ??
+                    fundingSourceLabel[pdf.fundingSource]
+                  }
                 />
               </li>
             ))}

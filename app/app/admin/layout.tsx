@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Archive,
   Building2,
@@ -14,6 +15,13 @@ import { BackToAppLink } from "@/components/nav/back-to-app-link";
 import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { requireAdmin } from "@/lib/auth/guards";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Administration",
+    template: "%s · Admin · CLA Trézo",
+  },
+};
 
 const navItems = [
   {

@@ -23,7 +23,10 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "CLA - Trézo",
+  title: {
+    default: "CLA - Trézo",
+    template: "%s · CLA Trézo",
+  },
   description,
   keywords: [
     "Centrale Lille Associations",

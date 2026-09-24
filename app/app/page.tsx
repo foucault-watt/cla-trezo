@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ShieldUser } from "lucide-react";
+import { Building2, ShieldUser } from "lucide-react";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getSession } from "@/lib/session";
 import { listAssociations } from "@/lib/admin/associations";
 import { MemberAssoCard } from "./_components/member-asso-card";
 import { OtherAssoCard } from "./_components/other-asso-card";
 import type { MemberAssoCard as MemberAssoCardData } from "./_components/home-types";
+
+export const metadata: Metadata = {
+  title: "Mes Assos",
+};
 
 export default async function AppHomePage() {
   const session = await getSession();
@@ -20,10 +27,12 @@ export default async function AppHomePage() {
   const allAssos = await listAssociations();
   const overviewBySlug = new Map(allAssos.map((asso) => [asso.slug, asso]));
 
-  const memberCards: MemberAssoCardData[] = user.structures.map((structure) => ({
-    ...structure,
-    overview: overviewBySlug.get(structure.slug) ?? null,
-  }));
+  const memberCards: MemberAssoCardData[] = user.structures.map(
+    (structure) => ({
+      ...structure,
+      overview: overviewBySlug.get(structure.slug) ?? null,
+    }),
+  );
 
   const otherAssos = user.isAdmin
     ? allAssos.filter((asso) => !memberSlugs.has(asso.slug))
@@ -32,7 +41,13 @@ export default async function AppHomePage() {
   return (
     <div className="flex flex-1 flex-col bg-base-200">
       <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3">
-        <Image src="/logo.png" alt="" width={24} height={24} className="rounded-sm" />
+        <Image
+          src="/logo.png"
+          alt=""
+          width={24}
+          height={24}
+          className="rounded-sm"
+        />
         <span className="font-semibold">CLA Trézo</span>
       </div>
 
@@ -60,9 +75,12 @@ export default async function AppHomePage() {
               Mes Assos
             </h2>
             {memberCards.length === 0 ? (
-              <p className="text-base-content/70">
-                Vous n&apos;êtes membre d&apos;aucune Asso pour le moment.
-              </p>
+              <EmptyState
+                icon={<Building2 size={24} />}
+                title="Vous n'êtes membre d'aucune Asso pour le moment"
+                description="Vos Assos sont récupérées depuis vos rôles sur votre compte CLA. S'il en manque une, contactez l'équipe CLA."
+                action={<LogoutButton />}
+              />
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {memberCards.map((card) => (

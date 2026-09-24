@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CalendarClock, Clock } from "lucide-react";
-import type { DashboardData } from "@/lib/admin/dashboard";
+import { waitingLabel, type DashboardData } from "@/lib/admin/dashboard";
 import { formatCents } from "@/lib/money";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -31,13 +31,19 @@ export function QueueList({ data }: { data: DashboardData }) {
           >
             <Clock size={16} className="shrink-0 text-base-content/50" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium">{item.assoName}</div>
-              <div className="truncate text-xs text-base-content/60">{item.title}</div>
+              <div className="truncate text-sm font-medium">
+                {item.assoName}
+              </div>
+              <div className="truncate text-xs text-base-content/60">
+                {item.title}
+              </div>
             </div>
             <div className="shrink-0 text-right text-sm text-base-content/70">
               {formatCents(item.amountCents)}
             </div>
-            <span className="badge badge-ghost shrink-0">il y a {item.daysWaiting} j</span>
+            <span className="badge badge-ghost shrink-0">
+              {waitingLabel(item.daysWaiting)}
+            </span>
           </Link>
         ))}
       </div>
@@ -47,7 +53,10 @@ export function QueueList({ data }: { data: DashboardData }) {
           {data.campaignInfo.kind === "pending" ? (
             <span>
               Campagne en attente de publication —{" "}
-              <span className="font-medium text-base-content">{data.campaignInfo.name}</span>,{" "}
+              <span className="font-medium text-base-content">
+                {data.campaignInfo.name}
+              </span>
+              ,{" "}
               {data.campaignInfo.publicationDate
                 ? `se publiera le ${dateFormatter.format(data.campaignInfo.publicationDate)}`
                 : "date non définie"}
@@ -55,8 +64,10 @@ export function QueueList({ data }: { data: DashboardData }) {
           ) : (
             <span>
               Dernière campagne publiée —{" "}
-              <span className="font-medium text-base-content">{data.campaignInfo.name}</span>, le{" "}
-              {dateFormatter.format(data.campaignInfo.publicationDate)}
+              <span className="font-medium text-base-content">
+                {data.campaignInfo.name}
+              </span>
+              , le {dateFormatter.format(data.campaignInfo.publicationDate)}
             </span>
           )}
         </div>

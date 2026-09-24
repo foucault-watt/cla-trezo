@@ -70,13 +70,24 @@ export function parseTakeOverExpenseReportForm(formData: FormData) {
   });
 }
 
+export const REJECTION_REASON_MAX_LENGTH = 1000;
+
 export const rejectExpenseReportFormSchema = z.object({
   id: z.string().uuid(),
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Indiquez le motif du rejet.")
+    .max(
+      REJECTION_REASON_MAX_LENGTH,
+      `Le motif ne doit pas dépasser ${REJECTION_REASON_MAX_LENGTH} caractères.`,
+    ),
 });
 
 export function parseRejectExpenseReportForm(formData: FormData) {
   return rejectExpenseReportFormSchema.safeParse({
     id: formData.get("id"),
+    reason: formData.get("reason") ?? "",
   });
 }
 
