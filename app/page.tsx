@@ -35,6 +35,10 @@ const features = [
 ];
 
 export default function Home() {
+  const gitSha = process.env.GIT_SHA;
+  const buildDate = process.env.BUILD_DATE;
+  const buildLabel = gitSha && gitSha !== "unknown" ? gitSha.slice(0, 7) : null;
+
   return (
     <div className="relative flex flex-1 flex-col">
       <header className="flex items-center justify-between px-4 py-4 sm:px-8">
@@ -117,6 +121,17 @@ export default function Home() {
         </Link>
         <span className="mx-2">·</span>
         Créé par Foucault Wattinne · © 2026
+        {buildLabel && (
+          <>
+            <span className="mx-2">·</span>
+            <span
+              className="opacity-40"
+              title={buildDate ? `Déployé le ${buildDate}` : undefined}
+            >
+              build {buildLabel}
+            </span>
+          </>
+        )}
       </footer>
     </div>
   );

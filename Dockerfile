@@ -16,6 +16,14 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Infos de build affichées discrètement sur la landing page (footer, à côté
+# des mentions légales). La page d'accueil est statique : ces valeurs sont
+# figées dans le HTML pré-rendu pendant `npm run build` ci-dessous, donc
+# elles doivent être en place avant cette commande.
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+ENV GIT_SHA=$GIT_SHA
+ENV BUILD_DATE=$BUILD_DATE
 # next build charge lib/session.ts pour analyser /api/auth/cla/callback, qui
 # lève une erreur si SESSION_SECRET est absent/trop court. Valeur factice
 # utilisée uniquement pendant le build : elle ne part pas dans l'image finale
