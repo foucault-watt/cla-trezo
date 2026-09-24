@@ -19,7 +19,11 @@ import { listVisibleSubventionsForAdmin } from "@/lib/subventions/visible-subven
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import { getClubSoldeForAdmin } from "@/lib/solde/actions";
 import type { SoldeView } from "@/lib/solde/solde";
-import type { AssoType, ExpenseReportStatus } from "@/app/generated/prisma/enums";
+import type {
+  AssoType,
+  ExpenseReportStatus,
+  FundingSourceType,
+} from "@/app/generated/prisma/enums";
 export type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 
 export type ExpenseReportOverviewForAdmin = {
@@ -69,6 +73,54 @@ export async function listExpenseReportsForAdmin(): Promise<
     totalAmountCents: report.lines.reduce(
       (sum, line) => sum + line.amountCents,
       0,
+    ),
+  }));
+}
+
+export type ExpenseReportOverviewForAsso = {
+  id: string;
+  title: string;
+  status: ExpenseReportStatus;
+  createdAt: Date;
+  beneficiaryFirstname: string | null;
+  beneficiaryLastname: string | null;
+  totalAmountCents: number;
+  /** Sources de financement distinctes utilisées par les Lignes de cette Note. */
+  fundingSources: FundingSourceType[];
+};
+
+/**
+ * Notes de frais d'une seule Structure, tous statuts confondus (y compris
+ * Brouillon), pour l'onglet "Notes de frais" en lecture seule de la page
+ * Admin détail d'Asso (cf. #associations-lab) — contrairement à
+ * listExpenseReportsForAdmin qui liste toutes les Structures mais exclut les
+ * Brouillons, cette vue par Asso n'a pas besoin de ce filtre : elle sert à
+ * avoir une vue d'ensemble de la Structure, pas une file de traitement.
+ */
+export async function listExpenseReportsForAsso(
+  assoId: string,
+): Promise<ExpenseReportOverviewForAsso[]> {
+  await requireAdmin();
+
+  const reports = await prisma.expenseReport.findMany({
+    where: { assoId },
+    orderBy: { createdAt: "desc" },
+    include: { lines: { select: { amountCents: true, fundingSource: true } } },
+  });
+
+  return reports.map((report) => ({
+    id: report.id,
+    title: report.title,
+    status: report.status,
+    createdAt: report.createdAt,
+    beneficiaryFirstname: report.beneficiaryFirstname,
+    beneficiaryLastname: report.beneficiaryLastname,
+    totalAmountCents: report.lines.reduce(
+      (sum, line) => sum + line.amountCents,
+      0,
+    ),
+    fundingSources: Array.from(
+      new Set(report.lines.map((line) => line.fundingSource)),
     ),
   }));
 }

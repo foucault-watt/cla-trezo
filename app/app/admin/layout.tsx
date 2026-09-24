@@ -7,6 +7,7 @@ import {
   HandCoins,
   LayoutDashboard,
   Receipt,
+  Users,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { BackToAppLink } from "@/components/nav/back-to-app-link";
@@ -57,6 +58,11 @@ const devNavItems = [
     href: "/app/admin/developpement/dashboard-lab",
     label: "Atelier Dashboard",
     icon: <Gauge size={18} />,
+  },
+  {
+    href: "/app/admin/developpement/associations-lab",
+    label: "Atelier Associations",
+    icon: <Users size={18} />,
   },
 ];
 

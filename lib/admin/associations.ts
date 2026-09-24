@@ -1,7 +1,19 @@
 import type { AssoStatus, AssoType } from "@/app/generated/prisma/enums";
 import { EXCLUDE_DEMO_ASSO } from "@/lib/auth/demo-config";
+import {
+  listExpenseReportsForAsso,
+  type ExpenseReportOverviewForAsso,
+} from "@/lib/admin/expense-reports";
+import {
+  listActiveAssoMembersWithLogin,
+  type AssoMemberWithLogin,
+} from "@/lib/asso/members";
 import { prisma } from "@/lib/prisma";
 import { computeSolde, type SoldeView } from "@/lib/solde/solde";
+import {
+  listVisibleSubventionsForAdmin,
+  type VisibleSubvention,
+} from "@/lib/subventions/visible-subventions";
 
 export type AssoOverview = {
   id: string;
@@ -107,4 +119,32 @@ export async function getAssociationOverview(
   });
 
   return asso ? toOverview(asso) : null;
+}
+
+export type AssoDetail = AssoOverview & {
+  members: AssoMemberWithLogin[];
+  subventions: VisibleSubvention[];
+  notesDeFrais: ExpenseReportOverviewForAsso[];
+};
+
+/**
+ * Vue complète d'une Structure pour la page Admin détail d'Asso (onglets
+ * Aperçu/Solde/Subventions/Notes de frais/Documents) — étend AssoOverview
+ * (déjà utilisée pour la liste) avec les données propres à chaque onglet.
+ * Séparée de getAssociationOverview pour ne pas alourdir listAssociations,
+ * qui n'a besoin que du résumé.
+ */
+export async function getAssociationDetail(
+  slug: string,
+): Promise<AssoDetail | null> {
+  const overview = await getAssociationOverview(slug);
+  if (!overview) return null;
+
+  const [members, subventions, notesDeFrais] = await Promise.all([
+    listActiveAssoMembersWithLogin(overview.id),
+    listVisibleSubventionsForAdmin(overview.id),
+    listExpenseReportsForAsso(overview.id),
+  ]);
+
+  return { ...overview, members, subventions, notesDeFrais };
 }

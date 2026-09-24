@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
-import { SoldeCard } from "@/components/solde/solde-card";
 import {
   assoStatusBadgeClass,
   assoStatusLabel,
   assoTypeLabel,
 } from "@/lib/admin/asso-labels";
-import { getAssociationOverview } from "@/lib/admin/associations";
-import { ManualMovementForm } from "./_components/manual-movement-form";
+import { getAssociationDetail } from "@/lib/admin/associations";
+import { AssoDetailTabs } from "./_components/asso-detail-tabs";
 import { AssoTypePicker } from "./_components/asso-type-picker";
 
 export default async function AdminAssociationDetailPage({
@@ -15,7 +14,7 @@ export default async function AdminAssociationDetailPage({
   params: Promise<{ assoSlug: string }>;
 }) {
   const { assoSlug } = await params;
-  const asso = await getAssociationOverview(assoSlug);
+  const asso = await getAssociationDetail(assoSlug);
   if (!asso) {
     notFound();
   }
@@ -66,14 +65,7 @@ export default async function AdminAssociationDetailPage({
             </div>
           </div>
 
-          {asso.type === "CLUB" &&
-            (asso.solde.status === "not_initialized" ||
-              asso.solde.status === "ready") && (
-              <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-                <SoldeCard solde={asso.solde} />
-                <ManualMovementForm assoId={asso.id} assoSlug={asso.slug} />
-              </div>
-            )}
+          <AssoDetailTabs asso={asso} />
 
           <div className="collapse-arrow collapse mt-8 border border-base-300 bg-base-100">
             <input type="checkbox" />
