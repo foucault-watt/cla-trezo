@@ -1378,8 +1378,6 @@ export const iconUsages: IconUsage[] = [
     icon: "X",
     visibleText: null,
     ariaLabel: "Fermer",
-    context:
-      "dans l'alerte en haut d'une Note Soumise (layout du wizard Admin)",
     file: "components/ui/toast.tsx",
     context: "bouton icône seul de fermeture manuelle d'un toast",
   },
@@ -1390,6 +1388,8 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Prendre en charge",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/_components/take-over-button.tsx",
+    context:
+      "dans l'alerte en haut d'une Note Soumise (layout du wizard Admin)",
   },
 
   // app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx
