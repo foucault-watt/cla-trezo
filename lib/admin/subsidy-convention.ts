@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatCents } from "@/lib/money";
+import { formatCentsForPdf } from "@/lib/money";
 import type {
   ConventionRepresentative,
   SubsidyConventionPdfData,
@@ -156,9 +156,9 @@ export async function getConventionPreparation(
       expenses: campaign.subventions.map((line) => ({
         grantedOn: publicationDate ? formatConventionDate(publicationDate) : "",
         description: line.reason,
-        amount: formatCents(line.amountCents),
+        amount: formatCentsForPdf(line.amountCents),
       })),
-      totalAmount: formatCents(totalAmountCents),
+      totalAmount: formatCentsForPdf(totalAmountCents),
       firstPartySignature: {
         associationName: settings.claAssociationName,
         signatoryName: settings.claSignatoryName,

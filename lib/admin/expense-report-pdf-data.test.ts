@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCents } from "@/lib/money";
+import { formatCentsForPdf } from "@/lib/money";
 import { buildSoldePdfData, buildSubventionPdfData } from "./expense-report-pdf-data";
 
 const context = {
@@ -26,10 +26,10 @@ describe("buildSubventionPdfData", () => {
     });
 
     expect(data.grantedExpenses).toEqual([
-      { date: "10/01/2026", description: "Achat de matériel", amount: formatCents(50000) },
-      { date: "10/01/2026", description: "Événement de rentrée", amount: formatCents(20000) },
+      { date: "10/01/2026", description: "Achat de matériel", amount: formatCentsForPdf(50000) },
+      { date: "10/01/2026", description: "Événement de rentrée", amount: formatCentsForPdf(20000) },
     ]);
-    expect(data.grantedTotal).toBe(formatCents(70000));
+    expect(data.grantedTotal).toBe(formatCentsForPdf(70000));
     expect(data.fundingName).toBe("Budget prévisionnel 2025-2026");
     expect(data.grantName).toBe("Achat de matériel");
   });
@@ -58,14 +58,14 @@ describe("buildSubventionPdfData", () => {
     });
 
     expect(data.reimbursedExpenses).toEqual([
-      { date: "01/02/2026", description: "Casque VR", amount: formatCents(20000) },
+      { date: "01/02/2026", description: "Casque VR", amount: formatCentsForPdf(20000) },
     ]);
-    expect(data.remainingTotal).toBe(formatCents(80000));
+    expect(data.remainingTotal).toBe(formatCentsForPdf(80000));
     expect(data.expensesToReimburse).toEqual([
-      { date: "01/03/2026", description: "Carte électronique", amount: formatCents(15000) },
+      { date: "01/03/2026", description: "Carte électronique", amount: formatCentsForPdf(15000) },
     ]);
-    expect(data.reimbursementTotal).toBe(formatCents(15000));
-    expect(data.grantBalance).toBe(formatCents(65000));
+    expect(data.reimbursementTotal).toBe(formatCentsForPdf(15000));
+    expect(data.grantBalance).toBe(formatCentsForPdf(65000));
   });
 
   it("utilise la date de la Note en l'absence de date de dépense", () => {
@@ -82,7 +82,7 @@ describe("buildSubventionPdfData", () => {
     });
 
     expect(data.expensesToReimburse).toEqual([
-      { date: "15/03/2026", description: "Pièce sans date", amount: formatCents(3000) },
+      { date: "15/03/2026", description: "Pièce sans date", amount: formatCentsForPdf(3000) },
     ]);
   });
 
@@ -152,10 +152,10 @@ describe("buildSoldePdfData", () => {
     });
 
     expect(data.expenses).toEqual([
-      { date: "02/03/2026", description: "Taxi gare", amount: formatCents(1500) },
-      { date: "03/03/2026", description: "Repas équipe", amount: formatCents(2500) },
+      { date: "02/03/2026", description: "Taxi gare", amount: formatCentsForPdf(1500) },
+      { date: "03/03/2026", description: "Repas équipe", amount: formatCentsForPdf(2500) },
     ]);
-    expect(data.total).toBe(formatCents(4000));
+    expect(data.total).toBe(formatCentsForPdf(4000));
     expect(data.authorName).toBe("Camille Martin");
     expect(data.recipientName).toBe("Camille Martin");
     expect(data.treasurerName).toBe("Baptiste Frenay");

@@ -128,7 +128,7 @@ describe("getConventionPreparation", () => {
         amount: expect.stringContaining("660,00"),
       },
     ]);
-    expect(preparation?.data.totalAmount).toContain("1 310,00");
+    expect(preparation?.data.totalAmount).toContain("1 310,00");
     expect(preparation?.data.secondParty.address).toBe(
       preparation?.data.firstParty.address,
     );

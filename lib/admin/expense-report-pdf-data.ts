@@ -1,4 +1,4 @@
-import { formatCents } from "@/lib/money";
+import { formatCentsForPdf } from "@/lib/money";
 import type { ExpenseReportPdfData, ExpenseRow } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import { formatConventionDate } from "./subsidy-convention";
@@ -33,7 +33,7 @@ function toRow(expense: PdfExpenseInput, fallbackDate: Date): ExpenseRow {
   return {
     date: formatConventionDate(expense.date ?? fallbackDate),
     description: expense.description,
-    amount: formatCents(expense.amountCents),
+    amount: formatCentsForPdf(expense.amountCents),
   };
 }
 
@@ -83,7 +83,7 @@ export function buildSubventionPdfData({
     grantedExpenses: campaignSubventions.map((subvention) => ({
       date: formatConventionDate(campaignGrantedOn),
       description: subvention.reason,
-      amount: formatCents(subvention.amountCents),
+      amount: formatCentsForPdf(subvention.amountCents),
     })),
     reimbursedExpenses: reimbursedHistory.map((expense) =>
       toRow(expense, context.reportDate),
@@ -91,10 +91,10 @@ export function buildSubventionPdfData({
     expensesToReimburse: linesToReimburse.map((expense) =>
       toRow(expense, context.reportDate),
     ),
-    grantedTotal: formatCents(grantedTotalCents),
-    remainingTotal: formatCents(remainingBeforeCents),
-    reimbursementTotal: formatCents(reimbursementTotalCents),
-    grantBalance: formatCents(remainingAfterCents),
+    grantedTotal: formatCentsForPdf(grantedTotalCents),
+    remainingTotal: formatCentsForPdf(remainingBeforeCents),
+    reimbursementTotal: formatCentsForPdf(reimbursementTotalCents),
+    grantBalance: formatCentsForPdf(remainingAfterCents),
     paymentMethod: "transfer",
     iban: context.iban ?? undefined,
     recipientName: context.beneficiaryName,
@@ -120,7 +120,7 @@ export function buildSoldePdfData({
     authorName: context.beneficiaryName,
     associationName: context.associationName,
     expenses: lines.map((expense) => toRow(expense, context.reportDate)),
-    total: formatCents(sumCents(lines)),
+    total: formatCentsForPdf(sumCents(lines)),
     paymentMethod: "transfer",
     iban: context.iban ?? undefined,
     recipientName: context.beneficiaryName,
