@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatCents } from "@/lib/money";
 import { SoldeCard } from "@/components/solde/solde-card";
+import { Stat, StatsBar } from "@/components/ui/stats";
 import type { AssoDetail } from "@/lib/admin/associations";
 import { ManualMovementForm } from "./manual-movement-form";
 import { MembersList } from "./members-list";
@@ -110,32 +111,32 @@ function ApercuTab({
 
   return (
     <div className="space-y-4">
-      <div className="stats border border-base-300 bg-base-100 shadow-sm">
-        <div className="stat">
-          <div className="stat-title">
-            {isClub ? "Solde actuel" : "Subventions"}
-          </div>
-          {isClub ? (
-            asso.solde.status === "not_initialized" ? (
-              <div className="stat-desc text-warning">
-                Pas encore initialisé
-              </div>
-            ) : asso.solde.status === "ready" ? (
-              <div className="stat-value text-2xl">
-                {formatCents(asso.solde.balanceCents)}
-              </div>
-            ) : null
-          ) : asso.subventions.length === 0 ? (
-            <div className="stat-desc text-warning">
-              Aucune pour l&apos;instant
-            </div>
+      <StatsBar>
+        {isClub ? (
+          asso.solde.status === "not_initialized" ? (
+            <Stat
+              title="Solde actuel"
+              desc="Pas encore initialisé"
+              descClassName="text-warning"
+            />
+          ) : asso.solde.status === "ready" ? (
+            <Stat
+              title="Solde actuel"
+              value={formatCents(asso.solde.balanceCents)}
+            />
           ) : (
-            <div className="stat-value text-2xl">
-              {formatCents(subventionsTotalCents)}
-            </div>
-          )}
-        </div>
-      </div>
+            <Stat title="Solde actuel" />
+          )
+        ) : asso.subventions.length === 0 ? (
+          <Stat
+            title="Subventions"
+            desc="Aucune pour l'instant"
+            descClassName="text-warning"
+          />
+        ) : (
+          <Stat title="Subventions" value={formatCents(subventionsTotalCents)} />
+        )}
+      </StatsBar>
 
       <div>
         <h3 className="mb-2 text-sm font-medium text-base-content/70">

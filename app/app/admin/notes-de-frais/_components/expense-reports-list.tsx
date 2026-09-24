@@ -11,6 +11,7 @@ import {
   type YearGroup,
 } from "@/lib/year-grouping";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import { AdminExpenseReportRow } from "./expense-report-row";
 
 // Une Note n'atteint la liste Admin qu'une fois soumise (cf.
@@ -41,7 +42,7 @@ function YearSection({ group }: { group: YearGroup<ExpenseReportOverviewForAdmin
       <div className="flex items-center gap-3 border-b border-base-300 bg-base-200/50 px-4 py-2">
         <span className="text-base font-semibold">{group.year}</span>
         <span className="text-sm text-base-content/60">
-          {group.items.length} note(s)
+          {pluralize(group.items.length, "note")}
         </span>
         <span className="ml-auto text-sm text-base-content/70">
           {formatCents(group.totalCents)}

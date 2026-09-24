@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BackLink } from "@/components/nav/back-link";
 import {
   expenseReportStatusBadgeClass,
   expenseReportStatusLabel,
@@ -21,12 +21,10 @@ export default async function ExpenseReportWizardLayout({
 
   return (
     <div>
-      <Link
+      <BackLink
         href={`/app/${assoSlug}/notes-de-frais`}
-        className="link link-hover text-sm text-base-content/70"
-      >
-        ← Toutes les Notes de frais
-      </Link>
+        label="Toutes les Notes de frais"
+      />
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{report.title}</h1>

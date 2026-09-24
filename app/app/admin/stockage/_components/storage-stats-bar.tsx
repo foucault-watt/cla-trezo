@@ -1,4 +1,5 @@
 import type { AssoStorageOverview } from "@/lib/admin/storage";
+import { Stat, StatsBar } from "@/components/ui/stats";
 
 export function StorageStatsBar({
   associations,
@@ -23,23 +24,11 @@ export function StorageStatsBar({
       : "—";
 
   return (
-    <div className="stats stats-vertical mb-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-      <div className="stat">
-        <div className="stat-title">Justificatifs</div>
-        <div className="stat-value text-2xl">{totalSupportingDocuments}</div>
-      </div>
-      <div className="stat">
-        <div className="stat-title">PDF générés</div>
-        <div className="stat-value text-2xl">{totalPdfs}</div>
-      </div>
-      <div className="stat">
-        <div className="stat-title">Structures avec des fichiers</div>
-        <div className="stat-value text-2xl">{structuresAvecFichiers}</div>
-      </div>
-      <div className="stat">
-        <div className="stat-title">Période couverte</div>
-        <div className="stat-value text-2xl">{periode}</div>
-      </div>
-    </div>
+    <StatsBar className="mb-6">
+      <Stat title="Justificatifs" value={totalSupportingDocuments} />
+      <Stat title="PDF générés" value={totalPdfs} />
+      <Stat title="Structures avec des fichiers" value={structuresAvecFichiers} />
+      <Stat title="Période couverte" value={periode} />
+    </StatsBar>
   );
 }

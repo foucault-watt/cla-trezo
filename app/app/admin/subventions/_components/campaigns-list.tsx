@@ -7,6 +7,7 @@ import { subventionTypeLabel } from "@/lib/subventions/labels";
 import { campaignStatusLabel, type CampaignStatus } from "@/lib/subventions/status";
 import { groupByYear, splitRecentAndHistorique, type YearGroup } from "@/lib/year-grouping";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import { CampaignRow } from "./campaign-row";
 
 const STATUS_ORDER: CampaignStatus[] = ["PROGRAMMEE", "PUBLIEE"];
@@ -25,7 +26,7 @@ function YearSection({ group }: { group: YearGroup<SubventionCampaignOverview> }
       <div className="flex items-center gap-3 border-b border-base-300 bg-base-200/50 px-4 py-2">
         <span className="text-base font-semibold">{group.year}</span>
         <span className="text-sm text-base-content/60">
-          {group.items.length} campagne(s)
+          {pluralize(group.items.length, "campagne")}
         </span>
         <span className="ml-auto text-sm text-base-content/70">
           {formatCents(group.totalCents)}

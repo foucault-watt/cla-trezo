@@ -372,7 +372,7 @@ export const iconUsages: IconUsage[] = [
   {
     icon: "TriangleAlert",
     visibleText:
-      "dépense(s) comportent une alerte. Cela ne bloque pas la soumission.",
+      "dépenses comportent une alerte. Cela ne bloque pas la soumission.",
     ariaLabel: null,
     file: "components/expense-reports/reimbursements-table.tsx",
     context: "bandeau de synthèse en pied de tableau",
@@ -470,7 +470,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "TriangleAlert",
-    visibleText: "alerte(s) non bloquante(s)",
+    visibleText: "alertes non bloquantes",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
     context: "modale de confirmation de soumission",
@@ -513,14 +513,14 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "CheckCircle2",
-    visibleText: "dépense(s) renseignée(s)",
+    visibleText: "dépenses renseignées",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
     context: "liste de complétude",
   },
   {
     icon: "CheckCircle2",
-    visibleText: "justificatif(s) ajouté(s)",
+    visibleText: "justificatifs ajoutés",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
     context: "liste de complétude",
@@ -1211,9 +1211,12 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "ArrowLeft",
-    visibleText: "Retour à l'accueil",
+    visibleText:
+      "Toutes les Notes de frais / Toutes les campagnes / Toutes les Associations / {nom de la campagne} / Accueil",
     ariaLabel: null,
-    file: "app/mentions-legales/page.tsx",
+    file: "components/nav/back-link.tsx",
+    context:
+      "BackLink, lien retour au-dessus du titre des pages de détail (Notes de frais Asso et Admin, campagne, octroi, Asso Admin, mentions légales)",
   },
   {
     icon: "Plus",
@@ -1274,7 +1277,7 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
   {
     icon: "Save",
-    visibleText: "Valider la note de frais",
+    visibleText: "Valider la Note de frais",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
     context: "ouvre la modale de confirmation",
@@ -1309,7 +1312,7 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/notes-de-frais/[reportId]/beneficiaire/page.tsx
   {
     icon: "CheckCircle2",
-    visibleText: "Valider la note de frais",
+    visibleText: "Valider la Note de frais",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/beneficiaire/page.tsx",
     context: "déclenche l'aperçu de validation (/valider)",
@@ -1390,7 +1393,7 @@ export const iconUsages: IconUsage[] = [
   // app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx
   {
     icon: "Ban",
-    visibleText: "Rejeter la note de frais",
+    visibleText: "Rejeter la Note de frais",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/_components/reject-button.tsx",
   },
@@ -1583,29 +1586,6 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/subventions/[campaignId]/page.tsx",
     context:
       "bouton par Asso, liste des conventions à préparer (la ligne a déjà FileDown en icône décorative)",
-  },
-
-  // app/app/[assoSlug]/page.tsx
-  {
-    icon: "Wallet",
-    visibleText: "Solde actuel",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/page.tsx",
-    context: "figure de la tuile stat Solde actuel (Club uniquement)",
-  },
-  {
-    icon: "Receipt",
-    visibleText: "Notes de frais en attente",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/page.tsx",
-    context: "figure de la tuile stat Notes de frais",
-  },
-  {
-    icon: "HandCoins",
-    visibleText: "Subventions restantes",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/page.tsx",
-    context: "figure de la tuile stat Subventions",
   },
 
   // components/asso/member-login-badge.tsx

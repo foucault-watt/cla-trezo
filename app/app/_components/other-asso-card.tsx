@@ -9,6 +9,7 @@ import {
   assoTypeLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
+import { pluralize } from "@/lib/plural";
 import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 
 export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
@@ -40,8 +41,12 @@ export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
           <AssoSoldeBadge solde={asso.solde} size="sm" />
         </p>
         <p className="text-xs text-base-content/60">
-          {asso.subventionsPubliees} subvention(s) publiée(s) ·{" "}
-          {asso.notesDeFraisEnAttente} note(s) en attente
+          {pluralize(
+            asso.subventionsPubliees,
+            "subvention publiée",
+            "subventions publiées",
+          )}{" "}
+          · {pluralize(asso.notesDeFraisEnAttente, "note")} en attente
         </p>
       </div>
     </Link>

@@ -34,6 +34,7 @@ import {
 import type { TypeDepenseOption } from "@/lib/expense-reports/expense-reports";
 import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import type { SoldeView } from "@/lib/solde/solde";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 
@@ -708,8 +709,12 @@ export function ReimbursementsTable({
         <div role="status" className="alert alert-warning alert-soft">
           <TriangleAlert size={18} />
           <span>
-            {warningCount} dépense(s) comportent une alerte. Cela ne bloque pas
-            la soumission.
+            {pluralize(
+              warningCount,
+              "dépense comporte",
+              "dépenses comportent",
+            )}{" "}
+            une alerte. Cela ne bloque pas la soumission.
           </span>
         </div>
       )}

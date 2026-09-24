@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { BackLink } from "@/components/nav/back-link";
 import { FileDown, FileText } from "lucide-react";
 import {
   getSubventionCampaign,
@@ -58,14 +59,9 @@ export default async function AdminSubventionCampaignDetailPage({
 
   return (
     <div>
-      <Link
-        href="/app/admin/subventions"
-        className="link link-hover text-sm text-base-content/70"
-      >
-        ← Toutes les campagnes
-      </Link>
+      <BackLink href="/app/admin/subventions" label="Toutes les campagnes" />
 
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
             {subventionTypeLabel[campaign.type]} {campaign.name}

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/nav/back-link";
+import { Stat, StatsBar } from "@/components/ui/stats";
 import {
   assoStatusBadgeClass,
   assoStatusLabel,
@@ -21,7 +23,9 @@ export default async function AdminAssociationDetailPage({
 
   return (
     <div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <BackLink href="/app/admin/associations" label="Toutes les Associations" />
+
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{asso.name}</h1>
           <p className="mt-1 text-sm text-base-content/70">
@@ -50,20 +54,13 @@ export default async function AdminAssociationDetailPage({
         </div>
       ) : (
         <>
-          <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-            <div className="stat">
-              <div className="stat-title">Subventions publiées</div>
-              <div className="stat-value text-2xl">
-                {asso.subventionsPubliees}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="stat-title">Notes de frais en attente</div>
-              <div className="stat-value text-2xl">
-                {asso.notesDeFraisEnAttente}
-              </div>
-            </div>
-          </div>
+          <StatsBar className="mt-6">
+            <Stat title="Subventions publiées" value={asso.subventionsPubliees} />
+            <Stat
+              title="Notes de frais en attente"
+              value={asso.notesDeFraisEnAttente}
+            />
+          </StatsBar>
 
           <AssoDetailTabs asso={asso} />
 

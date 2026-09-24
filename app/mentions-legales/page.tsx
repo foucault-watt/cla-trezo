@@ -1,13 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Building2,
-  Code2,
-  Cookie,
-  Server,
-  ShieldCheck,
-} from "lucide-react";
+import { Building2, Code2, Cookie, Server, ShieldCheck } from "lucide-react";
+import { BackLink } from "@/components/nav/back-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const sections = [
@@ -37,7 +31,10 @@ export default function MentionsLegalesPage() {
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-8 sm:py-10">
         <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-10">
-          <h1 className="text-2xl font-semibold sm:text-3xl">Mentions légales</h1>
+          <BackLink href="/" label="Accueil" />
+          <h1 className="mt-3 text-2xl font-semibold sm:text-3xl">
+            Mentions légales
+          </h1>
           <p className="mt-2 text-sm text-base-content/60">
             Dernière mise à jour : 19 août 2026
           </p>
@@ -231,13 +228,6 @@ export default function MentionsLegalesPage() {
                 préalable du consentement de l&apos;utilisateur.
               </p>
             </section>
-          </div>
-
-          <div className="mt-4">
-            <Link href="/" className="btn btn-primary btn-sm">
-              <ArrowLeft size={16} />
-              Retour à l&apos;accueil
-            </Link>
           </div>
         </div>
       </main>

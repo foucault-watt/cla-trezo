@@ -33,7 +33,7 @@ export function RejectButton({ reportId }: { reportId: string }) {
         onClick={() => modalRef.current?.open()}
       >
         <Ban size={18} />
-        Rejeter la note de frais
+        Rejeter la Note de frais
       </button>
       <Modal ref={modalRef} title="Rejeter cette Note de frais ?">
         <p className="text-sm text-base-content/80">

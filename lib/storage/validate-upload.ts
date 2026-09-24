@@ -3,6 +3,7 @@ import {
   MAX_FILE_SIZE_BYTES,
   type AllowedMimeType,
 } from "./constants";
+import { pluralize } from "@/lib/plural";
 
 export type ValidationResult = { ok: true } | { ok: false; error: string };
 
@@ -34,7 +35,7 @@ export function validateFileCount({
   if (existingCount + incomingCount > maxCount) {
     return {
       ok: false,
-      error: `Maximum ${maxCount} fichier(s) par Note de frais.`,
+      error: `Maximum ${pluralize(maxCount, "fichier")} par Note de frais.`,
     };
   }
   return { ok: true };

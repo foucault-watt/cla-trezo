@@ -8,11 +8,8 @@ export default function PdfLabPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-medium text-base-content/60">
-          Développement
-        </p>
-        <h1 className="text-3xl font-bold">Atelier PDF</h1>
-        <p className="mt-2 max-w-3xl text-base-content/70">
+        <h1 className="text-2xl font-semibold">Atelier PDF</h1>
+        <p className="mt-1 max-w-3xl text-sm text-base-content/70">
           Modifiez les données de démonstration des notes de frais ou des
           conventions de subvention, ajoutez les lignes nécessaires et
           téléchargez le rendu React PDF. Les informations saisies ici ne sont

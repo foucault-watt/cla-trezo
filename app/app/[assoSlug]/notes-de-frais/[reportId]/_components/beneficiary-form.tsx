@@ -26,6 +26,7 @@ import {
   type UpdateExpenseReportBeneficiaryState,
 } from "@/lib/expense-reports/expense-report-actions";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import { DeleteExpenseReportButton } from "./delete-expense-report-button";
 
 const initialSaveState: UpdateExpenseReportBeneficiaryState = { ok: false };
@@ -186,7 +187,11 @@ function SubmitCurrentBeneficiaryForm({
             <TriangleAlert size={18} className="shrink-0" />
             <div>
               <p className="font-medium">
-                {warnings.length} alerte(s) non bloquante(s)
+                {pluralize(
+                  warnings.length,
+                  "alerte non bloquante",
+                  "alertes non bloquantes",
+                )}
               </p>
               <ul className="mt-1 list-disc ps-4 text-sm">
                 {warnings.map((warning) => (
@@ -672,7 +677,8 @@ export function BeneficiaryForm({
                 : "Bénéficiaire à compléter"}
             </h3>
             <p className="mt-1 text-sm text-base-content/60 break-words">
-              {reimbursementsCount} dépense(s), {documentsCount} justificatif(s)
+              {pluralize(reimbursementsCount, "dépense")},{" "}
+              {pluralize(documentsCount, "justificatif")}
               {beneficiaryName ? ` pour ${beneficiaryName}` : ""}.
             </p>
           </div>
@@ -683,11 +689,15 @@ export function BeneficiaryForm({
         <ul className="mt-4 space-y-2 text-sm">
           <li className="flex items-center gap-2">
             <CheckCircle2 size={15} className="shrink-0 text-success" />
-            {reimbursementsCount} dépense(s) renseignée(s)
+            {pluralize(
+              reimbursementsCount,
+              "dépense renseignée",
+              "dépenses renseignées",
+            )}
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2 size={15} className="shrink-0 text-success" />
-            {documentsCount} justificatif(s) ajouté(s)
+            {pluralize(documentsCount, "justificatif ajouté", "justificatifs ajoutés")}
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2

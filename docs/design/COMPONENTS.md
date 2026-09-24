@@ -259,6 +259,27 @@ content: list view OR grid view, switched via ?view=list|grid
 This shape is meant to be reused for the other admin sections (notes de
 frais, subventions, rapports) rather than reinvented per page.
 
+## Page header
+
+One header style for every page inside the app (admin, member, dev labs):
+
+- `h1` is `text-2xl font-semibold`, description underneath is
+  `mt-1 text-sm text-base-content/70`. No bigger/bolder `text-3xl font-bold`
+  variant, and no small sur-titre ("Administration", "Développement") above
+  the title — the section breadcrumb already says where you are.
+- Detail pages get a `BackLink` (`components/nav/back-link.tsx`) above the
+  title, pointing at the parent list ("Toutes les Notes de frais", "Toutes
+  les Associations"…), then the header at `mt-3`. Never a bare "← " text
+  arrow, never a `btn`.
+
+## Stats bar
+
+Every row of key figures goes through `StatsBar` + `Stat`
+(`components/ui/stats.tsx`): daisyUI `stats` on a surface, `stat-value
+text-2xl`, optional `stat-desc`. No `stat-figure` icons, and no hand-rolled
+grid of mini-cards — a page's key figures should look the same whether it's
+a dashboard or a list page.
+
 ## Home page (`/app`) — enriched cards, admin section as a collapsible grid
 
 Iterated directly in the app across three live variants switched via

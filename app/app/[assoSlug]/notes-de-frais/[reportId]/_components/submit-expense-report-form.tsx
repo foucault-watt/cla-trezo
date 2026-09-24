@@ -13,6 +13,7 @@ import {
   type SubmitExpenseReportState,
 } from "@/lib/expense-reports/expense-report-actions";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 
 const initialState: SubmitExpenseReportState = { ok: false };
 
@@ -78,7 +79,11 @@ export function SubmitExpenseReportForm({
             <TriangleAlert size={18} className="shrink-0" />
             <div>
               <p className="font-medium">
-                {warnings.length} alerte(s) non bloquante(s)
+                {pluralize(
+                  warnings.length,
+                  "alerte non bloquante",
+                  "alertes non bloquantes",
+                )}
               </p>
               <ul className="mt-1 list-disc pl-4 text-sm">
                 {warnings.map((warning) => (

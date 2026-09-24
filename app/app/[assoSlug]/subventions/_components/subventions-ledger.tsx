@@ -1,5 +1,6 @@
 import { History, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import {
@@ -10,10 +11,6 @@ import {
 
 type AgeBand = SubventionAgeBand;
 type Campaign = SubventionCampaignGroup;
-
-function pluralizeCampaign(count: number) {
-  return `${count} campagne${count > 1 ? "s" : ""}`;
-}
 
 function progressValue(campaign: Campaign) {
   if (campaign.totalAmountCents <= 0) return 0;
@@ -354,7 +351,7 @@ function OldCampaignsSection({ campaigns }: { campaigns: Campaign[] }) {
           />
           Subventions anciennes
           <span className="font-normal text-base-content/60">
-            ({pluralizeCampaign(campaigns.length)})
+            ({pluralize(campaigns.length, "campagne")})
           </span>
         </div>
         <div className="collapse-content">
@@ -377,7 +374,7 @@ function HistorySection({ campaigns }: { campaigns: Campaign[] }) {
           <History aria-hidden="true" size={17} />
           Historique
           <span className="font-normal text-base-content/60">
-            ({pluralizeCampaign(campaigns.length)})
+            ({pluralize(campaigns.length, "campagne")})
           </span>
         </div>
         <div className="collapse-content">
