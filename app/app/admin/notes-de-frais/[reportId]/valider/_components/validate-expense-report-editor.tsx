@@ -181,7 +181,7 @@ export function ValidateExpenseReportEditor({
           onClick={() => confirmModalRef.current?.open()}
         >
           <Save size={18} />
-          Valider la note de frais
+          Valider la Note de frais
         </button>
       </div>
 

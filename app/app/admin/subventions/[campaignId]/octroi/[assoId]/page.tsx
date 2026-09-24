@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/nav/back-link";
 import {
   grantDocumentKindLabels,
   requireGrantDocumentPreparation,
@@ -32,19 +33,14 @@ export default async function GrantDocumentPreparationPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link
+        <BackLink
           href={`/app/admin/subventions/${campaignId}`}
-          className="link link-hover text-sm text-base-content/70"
-        >
-          ← Retour à la campagne
-        </Link>
-        <p className="mt-4 text-sm font-medium text-base-content/60">
-          {preparation.campaignName}
-        </p>
-        <h1 className="text-3xl font-bold">
+          label={preparation.campaignName}
+        />
+        <h1 className="mt-3 text-2xl font-semibold">
           {kindLabel} — {preparation.assoName}
         </h1>
-        <p className="mt-2 max-w-3xl text-base-content/70">
+        <p className="mt-1 max-w-3xl text-sm text-base-content/70">
           Vérifiez les données récupérées automatiquement, complétez les
           informations manquantes, puis générez le document. Il sera stocké et
           téléchargeable par la Structure.

@@ -1,5 +1,6 @@
 import type { AssoOverview } from "@/lib/admin/associations";
 import { formatCents } from "@/lib/money";
+import { Stat, StatsBar as StatsBarSurface } from "@/components/ui/stats";
 
 export function StatsBar({ associations }: { associations: AssoOverview[] }) {
   const totalSoldeCents = associations.reduce(
@@ -16,29 +17,17 @@ export function StatsBar({ associations }: { associations: AssoOverview[] }) {
   );
 
   return (
-    <div className="stats stats-vertical mb-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-      <div className="stat">
-        <div className="stat-title">Solde total des Clubs</div>
-        <div className="stat-value text-2xl">
-          {formatCents(totalSoldeCents)}
-        </div>
-      </div>
+    <StatsBarSurface className="mb-6">
+      <Stat title="Solde total des Clubs" value={formatCents(totalSoldeCents)} />
       {typesNonDefinis > 0 && (
-        <div className="stat">
-          <div className="stat-title">Types à définir</div>
-          <div className="stat-value text-2xl text-error">
-            {typesNonDefinis}
-          </div>
-        </div>
+        <Stat
+          title="Types à définir"
+          value={typesNonDefinis}
+          valueClassName="text-error"
+        />
       )}
-      <div className="stat">
-        <div className="stat-title">Clubs non initialisés</div>
-        <div className="stat-value text-2xl">{clubsNonInitialises}</div>
-      </div>
-      <div className="stat">
-        <div className="stat-title">Notes de frais en attente</div>
-        <div className="stat-value text-2xl">{notesDeFraisEnAttente}</div>
-      </div>
-    </div>
+      <Stat title="Clubs non initialisés" value={clubsNonInitialises} />
+      <Stat title="Notes de frais en attente" value={notesDeFraisEnAttente} />
+    </StatsBarSurface>
   );
 }

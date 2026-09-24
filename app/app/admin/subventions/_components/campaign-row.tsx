@@ -8,6 +8,7 @@ import {
 } from "@/lib/subventions/status";
 import { formatShortDate } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 
 /**
  * Ligne dense pour la liste Admin des Campagnes de subvention — même forme
@@ -47,7 +48,7 @@ export function CampaignRow({
           </span>
         </div>
         <div className="flex items-center justify-between pl-[1.125rem] text-xs text-base-content/60">
-          <span>{campaign.subventionsCount} subv.</span>
+          <span>{pluralize(campaign.subventionsCount, "subvention")}</span>
           <span className="font-medium text-base-content/70">
             {formatCents(campaign.totalAmountCents)}
           </span>
@@ -69,7 +70,7 @@ export function CampaignRow({
           {formatShortDate(campaign.date)}
         </div>
         <div className="hidden w-28 shrink-0 whitespace-nowrap text-right text-sm text-base-content/70 sm:block">
-          {campaign.subventionsCount} subv.
+          {pluralize(campaign.subventionsCount, "subvention")}
         </div>
         <div className="w-28 shrink-0 text-right text-sm text-base-content/70">
           {formatCents(campaign.totalAmountCents)}

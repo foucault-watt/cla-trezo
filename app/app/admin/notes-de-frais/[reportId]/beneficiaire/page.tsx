@@ -55,7 +55,7 @@ export default async function AdminBeneficiaryPage({
             className="btn btn-primary"
           >
             <CheckCircle2 size={18} />
-            Valider la note de frais
+            Valider la Note de frais
           </Link>
         </div>
       )}

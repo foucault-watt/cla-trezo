@@ -11,6 +11,7 @@ import {
   assoStatusLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
+import { pluralize } from "@/lib/plural";
 import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 import { AssoTypeAlert } from "./asso-type-alert";
 
@@ -51,8 +52,12 @@ export function AssociationRow({
         )}
         <div className="flex items-center justify-between pl-[1.125rem] text-xs text-base-content/60">
           <span>
-            {asso.subventionsPubliees} subv. · {asso.notesDeFraisEnAttente}{" "}
-            note(s) de frais
+            {pluralize(
+              asso.subventionsPubliees,
+              "subvention publiée",
+              "subventions publiées",
+            )}{" "}
+            · {pluralize(asso.notesDeFraisEnAttente, "note")} en attente
           </span>
           <span className="font-medium text-base-content/70">
             <AssoSoldeBadge solde={asso.solde} size="sm" />
@@ -72,11 +77,19 @@ export function AssociationRow({
           <span className="truncate font-medium">{asso.name}</span>
           <AssoTypeAlert type={asso.type} />
         </div>
-        <div className="hidden w-28 shrink-0 text-right text-sm text-base-content/70 lg:block">
-          {asso.subventionsPubliees} subv.
+        {/* Libellés complets plutôt qu'abrégés (« subv. ») : la liste n'a pas
+            d'en-têtes de colonnes, le texte doit se suffire. La colonne
+            Subventions, plus large, n'apparaît qu'à partir de `xl` pour
+            laisser la place au nom sous la sidebar. */}
+        <div className="hidden w-44 shrink-0 whitespace-nowrap text-right text-sm text-base-content/70 xl:block">
+          {pluralize(
+            asso.subventionsPubliees,
+            "subvention publiée",
+            "subventions publiées",
+          )}
         </div>
         <div className="hidden w-36 shrink-0 whitespace-nowrap text-right text-sm text-base-content/70 sm:block">
-          {asso.notesDeFraisEnAttente} note(s) de frais
+          {pluralize(asso.notesDeFraisEnAttente, "note")} en attente
         </div>
         <div className="w-28 shrink-0 text-right">
           <AssoSoldeBadge solde={asso.solde} />

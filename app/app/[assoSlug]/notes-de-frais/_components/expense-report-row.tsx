@@ -8,6 +8,7 @@ import {
 } from "@/lib/expense-reports/labels";
 import { formatShortDate } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 
 /**
  * Ligne dense partagée par toutes les variantes d'affichage de la liste des
@@ -59,7 +60,7 @@ export function ExpenseReportRow({
           </div>
         )}
         <div className="flex items-center justify-between pl-[1.125rem] text-xs text-base-content/60">
-          <span>{report.linesCount} dépense(s)</span>
+          <span>{pluralize(report.linesCount, "dépense")}</span>
           <span className="font-medium text-base-content/70">
             {formatCents(report.totalAmountCents)}
           </span>
@@ -92,7 +93,7 @@ export function ExpenseReportRow({
           ) ?? "—"}
         </div>
         <div className="hidden w-28 shrink-0 whitespace-nowrap text-right text-sm text-base-content/70 sm:block">
-          {report.linesCount} dépense(s)
+          {pluralize(report.linesCount, "dépense")}
         </div>
         <div className="w-28 shrink-0 text-right text-sm text-base-content/70">
           {formatCents(report.totalAmountCents)}

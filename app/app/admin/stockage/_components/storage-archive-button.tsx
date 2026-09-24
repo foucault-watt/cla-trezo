@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Download, TriangleAlert, X } from "lucide-react";
 import type { ArchiveCheckResult } from "@/lib/admin/storage";
 import { Modal, type ModalHandle } from "@/components/ui/modal";
+import { agree, pluralize } from "@/lib/plural";
 
 type CheckState =
   | { status: "loading" }
@@ -77,15 +78,30 @@ export function StorageArchiveButton({
             <div role="alert" className="alert alert-warning text-sm">
               <TriangleAlert size={18} className="shrink-0" />
               <span>
-                {check.missingCount} fichier(s) sur {check.totalCount} sont
-                introuvables sur le serveur et seront absents de
-                l&apos;archive. Les {check.availableCount} autres seront
-                téléchargés normalement.
+                {pluralize(check.missingCount, "fichier")} sur{" "}
+                {check.totalCount}{" "}
+                {agree(
+                  check.missingCount,
+                  "est introuvable sur le serveur et sera absent",
+                  "sont introuvables sur le serveur et seront absents",
+                )}{" "}
+                de l&apos;archive.
+                {check.availableCount > 0 &&
+                  ` ${agree(
+                    check.availableCount,
+                    "L'autre sera téléchargé",
+                    `Les ${check.availableCount} autres seront téléchargés`,
+                  )} normalement.`}
               </span>
             </div>
           ) : (
             <p className="text-sm text-base-content/80">
-              {check.totalCount} fichier(s) prêt(s) à être téléchargés.
+              {pluralize(
+                check.totalCount,
+                "fichier prêt à être téléchargé",
+                "fichiers prêts à être téléchargés",
+              )}
+              .
             </p>
           ))}
 

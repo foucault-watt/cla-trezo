@@ -4,11 +4,8 @@ export default function AssociationsLabPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-medium text-base-content/60">
-          Développement
-        </p>
-        <h1 className="text-3xl font-bold">Atelier Associations</h1>
-        <p className="mt-2 max-w-3xl text-base-content/70">
+        <h1 className="text-2xl font-semibold">Atelier Associations</h1>
+        <p className="mt-1 max-w-3xl text-sm text-base-content/70">
           Trois pistes pour la page admin détail d&apos;association
           (/admin/associations/[assoSlug]), avec des données 100% statiques —
           rien n&apos;est lu ni écrit en base ici. Basculez entre Club et
