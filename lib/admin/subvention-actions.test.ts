@@ -70,6 +70,10 @@ beforeEach(() => {
   revalidatePathMock.mockReset();
   requireAdminMock.mockResolvedValue(admin);
   campaignFindUniqueMock.mockResolvedValue({ id: valid.campaignId });
+  subventionCreateMock.mockImplementation(async ({ data }) => ({
+    id: "sub-1",
+    ...data,
+  }));
 });
 
 describe("addSubventionAction", () => {
@@ -99,7 +103,7 @@ describe("addSubventionAction", () => {
     expect(subventionCreateMock).not.toHaveBeenCalled();
   });
 
-  it("crée la Subvention avec le montant converti en centimes et revalide les pages", async () => {
+  it("crée la Subvention avec le montant converti en centimes et renvoie la ligne créée", async () => {
     const result = await addSubventionAction({ ok: false }, formData(valid));
 
     expect(subventionCreateMock).toHaveBeenCalledWith({
@@ -111,22 +115,38 @@ describe("addSubventionAction", () => {
         commentary: valid.commentary,
       },
     });
-    expect(revalidatePathMock).toHaveBeenCalledWith(
+    expect(result).toEqual({
+      ok: true,
+      subvention: {
+        id: "sub-1",
+        assoId: valid.assoId,
+        reason: valid.reason,
+        amountCents: 35050,
+        commentary: valid.commentary,
+      },
+    });
+  });
+
+  it("revalide la liste des Campagnes mais pas la page de détail, mise à jour côté client", async () => {
+    await addSubventionAction({ ok: false }, formData(valid));
+
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
+    expect(revalidatePathMock).not.toHaveBeenCalledWith(
       `/app/admin/subventions/${valid.campaignId}`,
     );
-    expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
-    expect(result).toEqual({ ok: true });
   });
 
   it("permet plusieurs Subventions pour la même Structure dans la même Campagne", async () => {
-    subventionCreateMock.mockResolvedValueOnce({ id: "sub-1" });
-    subventionCreateMock.mockResolvedValueOnce({ id: "sub-2" });
+    subventionCreateMock
+      .mockImplementationOnce(async ({ data }) => ({ id: "sub-1", ...data }))
+      .mockImplementationOnce(async ({ data }) => ({ id: "sub-2", ...data }));
 
-    await addSubventionAction({ ok: false }, formData(valid));
-    const result = await addSubventionAction({ ok: false }, formData(valid));
+    const first = await addSubventionAction({ ok: false }, formData(valid));
+    const second = await addSubventionAction({ ok: false }, formData(valid));
 
     expect(subventionCreateMock).toHaveBeenCalledTimes(2);
-    expect(result).toEqual({ ok: true });
+    expect(first.subvention?.id).toBe("sub-1");
+    expect(second.subvention?.id).toBe("sub-2");
   });
 });
 
