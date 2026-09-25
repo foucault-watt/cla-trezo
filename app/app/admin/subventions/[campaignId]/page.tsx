@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { BackLink } from "@/components/nav/back-link";
-import { FileDown, FileText } from "lucide-react";
+import { listGrantDocumentStatuses } from "@/lib/admin/grant-documents";
 import {
   getSubventionCampaign,
   listAssosForSelect,
@@ -11,10 +10,9 @@ import {
   campaignStatusLabel,
   campaignStatusBadgeClass,
 } from "@/lib/subventions/status";
-import { formatCents } from "@/lib/money";
 import { EditCampaignForm } from "./_components/edit-campaign-form";
 import { DeleteCampaignButton } from "./_components/delete-campaign-button";
-import { SubventionsTable } from "./_components/subventions-table";
+import { SubventionsPanel } from "./_components/subventions-panel";
 
 export default async function AdminSubventionCampaignDetailPage({
   params,
@@ -22,40 +20,14 @@ export default async function AdminSubventionCampaignDetailPage({
   params: Promise<{ campaignId: string }>;
 }) {
   const { campaignId } = await params;
-  const [campaign, assos] = await Promise.all([
+  const [campaign, assos, grantDocumentStatuses] = await Promise.all([
     getSubventionCampaign(campaignId),
     listAssosForSelect(),
+    listGrantDocumentStatuses(campaignId),
   ]);
   if (!campaign) {
     notFound();
   }
-
-  const conventionGroups = Array.from(
-    campaign.subventions
-      .reduce(
-        (groups, subvention) => {
-          const current = groups.get(subvention.assoId);
-          groups.set(subvention.assoId, {
-            assoId: subvention.assoId,
-            assoName: subvention.assoName,
-            linesCount: (current?.linesCount ?? 0) + 1,
-            totalAmountCents:
-              (current?.totalAmountCents ?? 0) + subvention.amountCents,
-          });
-          return groups;
-        },
-        new Map<
-          string,
-          {
-            assoId: string;
-            assoName: string;
-            linesCount: number;
-            totalAmountCents: number;
-          }
-        >(),
-      )
-      .values(),
-  );
 
   return (
     <div>
@@ -86,73 +58,12 @@ export default async function AdminSubventionCampaignDetailPage({
         </div>
       </div>
 
-      <div className="stats stats-vertical mt-6 w-full border border-base-300 bg-base-100 shadow-md sm:stats-horizontal">
-        <div className="stat">
-          <div className="stat-title">Subventions</div>
-          <div className="stat-value text-2xl">{campaign.subventionsCount}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Montant total</div>
-          <div className="stat-value text-2xl">
-            {formatCents(campaign.totalAmountCents)}
-          </div>
-        </div>
-      </div>
-
-      <section className="mt-6 rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
-        <div className="mb-4">
-          <h3 className="font-semibold">Subventions</h3>
-          <p className="text-xs text-base-content/60">
-            Ajoutez et corrigez les subventions directement dans le tableau.
-          </p>
-        </div>
-        <SubventionsTable
-          campaignId={campaign.id}
-          subventions={campaign.subventions}
-          assos={assos}
-        />
-      </section>
-
-      <div className="ml-7 h-5 border-l-2 border-dashed border-base-300" />
-
-      <section className="rounded-box border border-base-300 bg-base-100 p-5 shadow-md sm:p-6">
-        <div className="mb-4">
-          <h3 className="font-semibold">Conventions de subvention</h3>
-          <p className="text-xs text-base-content/60">
-            Une convention regroupe toutes les lignes accordées à une même
-            association dans cette campagne.
-          </p>
-        </div>
-
-        {conventionGroups.length === 0 ? (
-          <p className="text-sm text-base-content/70">
-            Ajoutez une ligne de subvention pour préparer une convention.
-          </p>
-        ) : (
-          <ul className="list rounded-box border border-base-300">
-            {conventionGroups.map((group) => (
-              <li className="list-row items-center" key={group.assoId}>
-                <FileDown size={20} className="text-base-content/60" />
-                <div>
-                  <p className="font-medium">{group.assoName}</p>
-                  <p className="text-xs text-base-content/60">
-                    {group.linesCount} ligne
-                    {group.linesCount > 1 ? "s" : ""} ·{" "}
-                    {formatCents(group.totalAmountCents)}
-                  </p>
-                </div>
-                <Link
-                  href={`/app/admin/subventions/${campaign.id}/octroi/${group.assoId}`}
-                  className="btn btn-sm"
-                >
-                  <FileText size={16} />
-                  Préparer le PDF
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <SubventionsPanel
+        campaignId={campaign.id}
+        initialSubventions={campaign.subventions}
+        assos={assos}
+        grantDocumentStatuses={grantDocumentStatuses}
+      />
 
       <div className="mt-8">
         <DeleteCampaignButton

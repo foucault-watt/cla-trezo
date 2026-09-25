@@ -682,14 +682,29 @@ export const iconUsages: IconUsage[] = [
       "carte d'une Asso accessible en vue Admin sans rôle, cohérent avec member-asso-card.tsx",
   },
 
-  // app/app/admin/subventions/[campaignId]/page.tsx
+  // app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx
   {
     icon: "FileDown",
     visibleText: null,
     ariaLabel: null,
-    file: "app/app/admin/subventions/[campaignId]/page.tsx",
+    file: "app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx",
     context:
-      "à côté du nom d'une association, liste des conventions à préparer",
+      "à côté du nom d'une Structure, section Documents d'octroi de la campagne",
+  },
+  {
+    icon: "Download",
+    visibleText: "Télécharger",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx",
+    context: "télécharge le Document d'octroi déjà généré d'une Structure",
+  },
+  {
+    icon: "FileText",
+    visibleText: "Préparer le document / Régénérer",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx",
+    context:
+      "ouvre la page de préparation du Document d'octroi, libellé selon qu'il a déjà été généré",
   },
 
   // app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/convention-preparation-form.tsx
@@ -1553,16 +1568,6 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
     context: "modale de succès après validation",
-  },
-
-  // app/app/admin/subventions/[campaignId]/page.tsx (suite)
-  {
-    icon: "FileText",
-    visibleText: "Préparer le PDF",
-    ariaLabel: null,
-    file: "app/app/admin/subventions/[campaignId]/page.tsx",
-    context:
-      "bouton par Asso, liste des conventions à préparer (la ligne a déjà FileDown en icône décorative)",
   },
 
   // components/asso/member-login-badge.tsx

@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { SubventionRow } from "./subvention-row";
 import { NewSubventionRow } from "./new-subvention-row";
+import type { AddSubventionState } from "@/lib/admin/subvention-actions";
 
 export function SubventionsTable({
   campaignId,
   subventions,
   assos,
+  onAdded,
 }: {
   campaignId: string;
   subventions: {
@@ -19,6 +21,7 @@ export function SubventionsTable({
     commentary: string | null;
   }[];
   assos: { id: string; name: string }[];
+  onAdded: (subvention: NonNullable<AddSubventionState["subvention"]>) => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -69,7 +72,10 @@ export function SubventionsTable({
             <NewSubventionRow
               campaignId={campaignId}
               assos={assos}
-              onSaved={() => setIsAdding(false)}
+              onSaved={(subvention) => {
+                onAdded(subvention);
+                setIsAdding(false);
+              }}
               onCancel={() => setIsAdding(false)}
             />
           )}
