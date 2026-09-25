@@ -72,7 +72,6 @@ export async function getDevSessionUser(): Promise<SessionUser> {
     where: { username },
     include: {
       memberships: {
-        where: { isActive: true },
         select: { assoId: true, role: true },
       },
     },

@@ -6,7 +6,7 @@ import {
   type ExpenseReportOverviewForAsso,
 } from "@/lib/admin/expense-reports";
 import {
-  listActiveAssoMembersWithLogin,
+  listAssoMembersWithLogin,
   type AssoMemberWithLogin,
 } from "@/lib/asso/members";
 import { prisma } from "@/lib/prisma";
@@ -139,7 +139,7 @@ export const getAssociationDetail = cache(async function (
   if (!overview) return null;
 
   const [members, subventions, notesDeFrais] = await Promise.all([
-    listActiveAssoMembersWithLogin(overview.id),
+    listAssoMembersWithLogin(overview.id),
     listVisibleSubventionsForAdmin(overview.id),
     listExpenseReportsForAsso(overview.id),
   ]);

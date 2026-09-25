@@ -229,10 +229,10 @@ describe("updateExpenseReportBeneficiary", () => {
 
     expect(mocks.membershipFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { assoId: "asso-2", userId: "user-1", isActive: true },
+        where: { assoId: "asso-2", userId: "user-1" },
       }),
     );
-    expect(result).toEqual({ ok: false, error: "Membre introuvable ou inactif." });
+    expect(result).toEqual({ ok: false, error: "Membre introuvable dans la Structure." });
   });
 });
 

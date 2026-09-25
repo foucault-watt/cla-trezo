@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { listActiveAssoMembers } from "@/lib/asso/members";
+import { listAssoMembers } from "@/lib/asso/members";
 import {
   getExpenseReportDetailForAdmin,
   isExpenseReportEditableByAdmin,
@@ -29,7 +29,7 @@ export default async function AdminBeneficiaryPage({
       {editable ? (
         <AdminBeneficiaryForm
           reportId={reportId}
-          members={await listActiveAssoMembers(report.assoId)}
+          members={await listAssoMembers(report.assoId)}
           beneficiary={{
             userId: report.beneficiaryUserId,
             firstname: report.beneficiaryFirstname ?? "",

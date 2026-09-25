@@ -116,17 +116,19 @@ model Asso {
 }
 
 model RefAssoUser {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  assoId    String    @map("asso_id") @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  assoId    String   @map("asso_id") @db.Uuid
   role      String
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at")
-  endedAt   DateTime? @map("ended_at")
+  // Début du poste actuel : remis à zéro quand le SSO CLA change le poste.
+  createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   asso Asso @relation(fields: [assoId], references: [id], onDelete: Cascade)
 
+  // Le SSO CLA fait foi : un rôle par couple User × Structure, sans historique
+  // (cf. lib/auth/cla-sync-plan.ts).
+  @@unique([userId, assoId])
   @@map("ref_asso_user")
 }
 
@@ -415,11 +417,9 @@ model FinancialMovement {
 //   user_id uuid [not null]
 //   asso_id uuid [not null]
 //   role varchar [not null]
-//   is_active boolean [not null, default: true]
 //   created_at timestamp [not null, default: `now()`]
-//   ended_at timestamp
-//   // pas de contrainte unique (user_id, asso_id) : historique multi-lignes possible
-//   // (changement de rôle, ancienne appartenance)
+//   indexes { (user_id, asso_id) [unique] }
+//   // le SSO CLA fait foi : un rôle par couple, sans historique (cf. ADR-0008)
 // }
 
 // Table user_log {

@@ -18,6 +18,9 @@ Structure interne à CLA disposant de son propre compte bancaire ou fonctionneme
 Structure juridiquement indépendante de CLA, avec son propre compte bancaire. Fonctionne comme une Commission dans l'application : pas de solde interne, suivi uniquement par subventions.
 _Avoid_: association (seule, sans qualificatif — pour éviter la confusion avec le sens générique du mot)
 
+**Membre**:
+Personne qui occupe un poste (Président, Trésorier…) dans une Structure. Le SSO CLA fait foi : les rôles sont alignés sur lui à chaque connexion, sans historique — un poste qu'il ne renvoie plus disparaît, un poste changé remplace l'ancien. Une personne a au plus un rôle par Structure (plusieurs postes sont fusionnés, ex. "Président, Trésorier").
+
 **Solde**:
 Argent d'un Club géré par CLA, suivi dans l'application. Alimenté par des entrées manuelles et diminué par des sorties manuelles ou des Notes de frais financées dessus. Concerne uniquement les Clubs.
 _Avoid_: budget, trésorerie (trop génériques, mélangent Solde et Subvention)
@@ -45,7 +48,7 @@ _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de subvention)
 Demande portée par une Structure et dédiée à un bénéficiaire unique. Elle regroupe un ou plusieurs Remboursements et leurs Justificatifs.
 
 **Bénéficiaire**:
-Personne unique à laquelle tous les Remboursements d'une Note de frais sont destinés. Il peut s'agir d'un membre actif de la Structure ou d'une personne personnalisée.
+Personne unique à laquelle tous les Remboursements d'une Note de frais sont destinés. Il peut s'agir d'un Membre de la Structure ou d'une personne personnalisée.
 
 **Remboursement**:
 Unité d'une Note de frais correspondant à une dépense datée, un montant et une source de financement unique — soit le Solde, soit une Subvention. Un remboursement partagé entre plusieurs sources devient plusieurs Remboursements.

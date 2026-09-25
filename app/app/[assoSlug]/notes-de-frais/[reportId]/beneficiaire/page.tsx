@@ -1,5 +1,5 @@
 import { requireStructureAccess } from "@/lib/auth/guards";
-import { listActiveAssoMembers } from "@/lib/asso/members";
+import { listAssoMembers } from "@/lib/asso/members";
 import {
   expenseReportStepHref,
   guardExpenseReportWizardStep,
@@ -16,7 +16,7 @@ export default async function BeneficiaryPage({
   const context = await loadExpenseReportWizard(assoSlug, reportId);
   guardExpenseReportWizardStep(context, "beneficiaire", assoSlug, reportId);
   const [members, { user }] = await Promise.all([
-    listActiveAssoMembers(context.assoId),
+    listAssoMembers(context.assoId),
     requireStructureAccess(assoSlug),
   ]);
   const { report } = context;

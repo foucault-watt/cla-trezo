@@ -8,16 +8,16 @@ export type AssoMember = {
 };
 
 /**
- * Membres actuellement actifs d'une Structure (cf. ref_asso_user), utilisés
+ * Membres d'une Structure (cf. ref_asso_user, aligné sur le SSO CLA), utilisés
  * pour regrouper visuellement les Lignes de note de frais par bénéficiaire
  * (le rattachement Rôle↔Personne existe déjà en base, pas de nouvelle
  * relation nécessaire).
  */
-export async function listActiveAssoMembers(
+export async function listAssoMembers(
   assoId: string,
 ): Promise<AssoMember[]> {
   const memberships = await prisma.refAssoUser.findMany({
-    where: { assoId, isActive: true },
+    where: { assoId },
     include: { user: { select: { id: true, firstname: true, lastname: true } } },
     orderBy: [
       { user: { lastname: "asc" } },
@@ -42,19 +42,19 @@ export type AssoMemberWithLogin = AssoMember & {
 };
 
 /**
- * Variante de listActiveAssoMembers avec la fraîcheur de connexion, pour la
+ * Variante de listAssoMembers avec la fraîcheur de connexion, pour la
  * page Admin détail d'Asso (onglet Aperçu) : savoir qui contacter, et
  * signaler quand le rôle affiché n'a peut-être pas été rafraîchi depuis
  * longtemps (cf. lib/asso/member-login.ts). Non fusionnée dans
- * listActiveAssoMembers pour ne pas alourdir ses autres appelants (groupage
+ * listAssoMembers pour ne pas alourdir ses autres appelants (groupage
  * des Lignes de note de frais par bénéficiaire), qui n'ont pas besoin de
  * l'agrégat UserLog.
  */
-export async function listActiveAssoMembersWithLogin(
+export async function listAssoMembersWithLogin(
   assoId: string,
 ): Promise<AssoMemberWithLogin[]> {
   const memberships = await prisma.refAssoUser.findMany({
-    where: { assoId, isActive: true },
+    where: { assoId },
     include: {
       user: {
         select: {

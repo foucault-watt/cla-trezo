@@ -237,7 +237,6 @@ export async function getGrantDocumentPreparation(
         name: true,
         type: true,
         memberships: {
-          where: { isActive: true },
           select: {
             role: true,
             user: { select: { firstname: true, lastname: true } },

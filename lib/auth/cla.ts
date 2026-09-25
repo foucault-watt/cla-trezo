@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import type { SessionStructure, SessionUser } from "@/lib/session";
-import type { AssoModel } from "@/app/generated/prisma/models/Asso";
+import { planClaSync, type ClaSyncPlan } from "@/lib/auth/cla-sync-plan";
 
 export class ClaAuthError extends Error {}
 
@@ -63,13 +63,41 @@ export async function validateClaTicket(
   return parsed.data.payload;
 }
 
+/** Un updateMany par libellé de poste plutôt qu'un update par ligne. */
+function groupIdsByRole(
+  updates: ClaSyncPlan["rolesToUpdate"],
+): Map<string, string[]> {
+  const idsByRole = new Map<string, string[]>();
+  for (const { id, role } of updates) {
+    idsByRole.set(role, [...(idsByRole.get(role) ?? []), id]);
+  }
+  return idsByRole;
+}
+
+function requireAssoId(assoIdBySlug: Map<string, string>, slug: string): string {
+  const assoId = assoIdBySlug.get(slug);
+  if (!assoId) {
+    throw new Error(`Structure introuvable après synchro CLA : ${slug}`);
+  }
+  return assoId;
+}
+
+const syncAssoSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  status: true,
+  isDemo: true,
+} as const;
+
 /**
- * Crée ou met à jour l'utilisateur et synchronise ses rôles de Structure
- * avec ceux renvoyés par CLA. Une Structure inconnue en base est créée à la
- * volée (Type et Status par défaut, à corriger ensuite par un Admin). Un
- * rôle qui n'est plus renvoyé (départ, changement) n'est pas supprimé : la
- * ligne ref_asso_user est conservée pour l'historique, avec isActive à
- * false.
+ * Crée ou met à jour l'utilisateur et aligne ses rôles de Structure sur ceux
+ * renvoyés par CLA, qui fait foi : un rôle qui n'est plus renvoyé est
+ * supprimé, un poste changé met à jour la ligne existante, sans historique.
+ * Une Structure inconnue en base est créée à la volée en ACTIVE (Type absent,
+ * à classifier par un Admin). Les règles vivent dans planClaSync
+ * (lib/auth/cla-sync-plan.ts) ; ici on lit l'existant et on applique le plan
+ * en écritures groupées.
  */
 export async function syncUserFromCla(
   payload: ClaAuthPayload,
@@ -93,58 +121,86 @@ export async function syncUserFromCla(
       },
     });
 
-    const currentRoles: { role: string; asso: AssoModel }[] = [];
-    for (const entry of payload.associationRoles) {
-      const asso = await tx.asso.upsert({
-        where: { slug: entry.associationSlug },
-        update: { name: entry.associationName },
-        create: {
-          slug: entry.associationSlug,
-          name: entry.associationName,
-          // type volontairement absent : CLA SSO ne dit pas si c'est un
-          // Club, une Commission ou une Association loi 1901, un Admin doit
-          // le classifier (cf. lib/admin/asso-type.ts).
-          status: "ACTIVE",
-          createdAt: new Date(),
-        },
-      });
-      currentRoles.push({ role: entry.role, asso });
-    }
-
-    await tx.refAssoUser.updateMany({
-      where: {
-        userId: user.id,
-        isActive: true,
-        assoId: { notIn: currentRoles.map(({ asso }) => asso.id) },
-      },
-      data: { isActive: false, endedAt: new Date() },
+    const ssoSlugs = [
+      ...new Set(payload.associationRoles.map((entry) => entry.associationSlug)),
+    ];
+    const ssoAssos = await tx.asso.findMany({
+      where: { slug: { in: ssoSlugs } },
+      select: syncAssoSelect,
+    });
+    const memberships = await tx.refAssoUser.findMany({
+      where: { userId: user.id },
+      select: { id: true, role: true, asso: { select: syncAssoSelect } },
     });
 
-    for (const { role, asso } of currentRoles) {
-      const active = await tx.refAssoUser.findFirst({
-        where: { userId: user.id, assoId: asso.id, isActive: true },
-      });
+    const existingAssos = new Map(ssoAssos.map((asso) => [asso.slug, asso]));
+    for (const { asso } of memberships) existingAssos.set(asso.slug, asso);
 
-      if (!active) {
-        await tx.refAssoUser.create({
-          data: { userId: user.id, assoId: asso.id, role },
-        });
-      } else if (active.role !== role) {
-        await tx.refAssoUser.update({
-          where: { id: active.id },
-          data: { isActive: false, endedAt: new Date() },
-        });
-        await tx.refAssoUser.create({
-          data: { userId: user.id, assoId: asso.id, role },
-        });
-      }
+    const plan = planClaSync(
+      {
+        assos: [...existingAssos.values()],
+        roles: memberships.map((membership) => ({
+          id: membership.id,
+          username: user.username,
+          assoSlug: membership.asso.slug,
+          role: membership.role,
+        })),
+      },
+      { username: user.username, associationRoles: payload.associationRoles },
+      "user",
+    );
+
+    const now = new Date();
+    if (plan.assosToCreate.length > 0) {
+      await tx.asso.createMany({
+        // type volontairement absent : un Admin doit classifier la Structure
+        // (cf. lib/admin/asso-type.ts).
+        data: plan.assosToCreate.map((asso) => ({ ...asso, createdAt: now })),
+        skipDuplicates: true,
+      });
+    }
+    for (const { id, name } of plan.assosToRename) {
+      await tx.asso.update({ where: { id }, data: { name } });
     }
 
-    const structures: SessionStructure[] = currentRoles.map(
-      ({ role, asso }) => ({
-        assoId: asso.id,
-        slug: asso.slug,
-        name: asso.name,
+    const assoIdBySlug = new Map(
+      [...existingAssos.values()].map((asso) => [asso.slug, asso.id]),
+    );
+    if (plan.assosToCreate.length > 0) {
+      const created = await tx.asso.findMany({
+        where: { slug: { in: plan.assosToCreate.map((asso) => asso.slug) } },
+        select: { id: true, slug: true },
+      });
+      for (const asso of created) assoIdBySlug.set(asso.slug, asso.id);
+    }
+
+    if (plan.roleIdsToDelete.length > 0) {
+      await tx.refAssoUser.deleteMany({
+        where: { id: { in: plan.roleIdsToDelete } },
+      });
+    }
+    for (const [role, ids] of groupIdsByRole(plan.rolesToUpdate)) {
+      await tx.refAssoUser.updateMany({
+        where: { id: { in: ids } },
+        data: { role, createdAt: now },
+      });
+    }
+    if (plan.rolesToCreate.length > 0) {
+      await tx.refAssoUser.createMany({
+        data: plan.rolesToCreate.map(({ assoSlug, role }) => ({
+          userId: user.id,
+          assoId: requireAssoId(assoIdBySlug, assoSlug),
+          role,
+          createdAt: now,
+        })),
+      });
+    }
+
+    const structures: SessionStructure[] = plan.userRoles.map(
+      ({ assoSlug, assoName, role }) => ({
+        assoId: requireAssoId(assoIdBySlug, assoSlug),
+        slug: assoSlug,
+        name: assoName,
         role,
       }),
     );

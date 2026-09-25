@@ -338,7 +338,6 @@ export async function resolveExpenseReportBeneficiary({
       where: {
         assoId,
         userId: input.beneficiaryUserId as string,
-        isActive: true,
       },
       select: {
         userId: true,
@@ -346,7 +345,7 @@ export async function resolveExpenseReportBeneficiary({
       },
     });
     if (!membership) {
-      return { ok: false, error: "Membre introuvable ou inactif." };
+      return { ok: false, error: "Membre introuvable dans la Structure." };
     }
     userId = membership.userId;
     firstname = membership.user.firstname;

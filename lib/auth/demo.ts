@@ -53,10 +53,10 @@ export async function provisionDemoFixtures(): Promise<SessionUser> {
     upsertDemoUser(DEMO_ADMIN_USERNAME, "Admin", "CLA (démo)", true),
   ]);
 
-  const activeMembership = await prisma.refAssoUser.findFirst({
-    where: { userId: treasurer.id, assoId: asso.id, isActive: true },
+  const membership = await prisma.refAssoUser.findFirst({
+    where: { userId: treasurer.id, assoId: asso.id },
   });
-  if (!activeMembership) {
+  if (!membership) {
     await prisma.refAssoUser.create({
       data: { userId: treasurer.id, assoId: asso.id, role: "Trésorier·ère" },
     });
