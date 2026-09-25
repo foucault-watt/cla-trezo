@@ -48,7 +48,7 @@ function sumCents(expenses: { amountCents: number }[]): number {
  * Remboursements déjà Validés sur cette Subvention (story #5), et
  * `linesToReimburse` les Lignes de la Note en cours de validation qui la
  * financent. `grantBalance` (solde après cette Note, story #6) se déduit du
- * solde avant Note (`remainingTotal`) moins ce qui est remboursé maintenant.
+ * solde avant Note moins ce qui est remboursé maintenant.
  */
 export function buildSubventionPdfData({
   context,
@@ -79,21 +79,12 @@ export function buildSubventionPdfData({
     fundingName: campaignName,
     grantName: grantReason,
     associationName: context.associationName,
-    reimbursedAssociationName: context.associationName,
     grantedExpenses: campaignSubventions.map((subvention) => ({
       date: formatConventionDate(campaignGrantedOn),
       description: subvention.reason,
       amount: formatCentsForPdf(subvention.amountCents),
     })),
-    reimbursedExpenses: reimbursedHistory.map((expense) =>
-      toRow(expense, context.reportDate),
-    ),
-    expensesToReimburse: linesToReimburse.map((expense) =>
-      toRow(expense, context.reportDate),
-    ),
     grantedTotal: formatCentsForPdf(grantedTotalCents),
-    remainingTotal: formatCentsForPdf(remainingBeforeCents),
-    reimbursementTotal: formatCentsForPdf(reimbursementTotalCents),
     grantBalance: formatCentsForPdf(remainingAfterCents),
     paymentMethod: "transfer",
     iban: context.iban ?? undefined,

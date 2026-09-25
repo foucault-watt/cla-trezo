@@ -76,13 +76,6 @@ export function SubventionPdfFields({
               value={data.associationName}
               onChange={(value) => updateField("associationName", value)}
             />
-            <PdfTextField
-              label="Association déjà remboursée"
-              value={data.reimbursedAssociationName}
-              onChange={(value) =>
-                updateField("reimbursedAssociationName", value)
-              }
-            />
           </div>
         </div>
       </div>
@@ -93,18 +86,6 @@ export function SubventionPdfFields({
         rows={data.grantedExpenses}
         onChange={(rows) => updateField("grantedExpenses", rows)}
       />
-      <PdfExpenseRowsEditor
-        title="Frais déjà remboursés"
-        dateLabel="Payé le"
-        rows={data.reimbursedExpenses}
-        onChange={(rows) => updateField("reimbursedExpenses", rows)}
-      />
-      <PdfExpenseRowsEditor
-        title="Frais à rembourser"
-        dateLabel="Date facture"
-        rows={data.expensesToReimburse}
-        onChange={(rows) => updateField("expensesToReimburse", rows)}
-      />
 
       <div className="card card-border bg-base-100">
         <div className="card-body gap-4">
@@ -114,16 +95,6 @@ export function SubventionPdfFields({
               label="Total accordé"
               value={data.grantedTotal}
               onChange={(value) => updateField("grantedTotal", value)}
-            />
-            <PdfTextField
-              label="Total restant"
-              value={data.remainingTotal}
-              onChange={(value) => updateField("remainingTotal", value)}
-            />
-            <PdfTextField
-              label="Total à rembourser"
-              value={data.reimbursementTotal}
-              onChange={(value) => updateField("reimbursementTotal", value)}
             />
             <PdfTextField
               label="Solde de la subvention"

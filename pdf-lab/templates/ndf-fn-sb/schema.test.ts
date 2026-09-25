@@ -22,7 +22,7 @@ describe("expenseReportPdfDataSchema", () => {
     expect(() =>
       expenseReportPdfDataSchema.parse({
         ...fixture,
-        expensesToReimburse: [
+        grantedExpenses: [
           { date: "", description: "Taxi", amount: "12,00 €" },
         ],
       }),

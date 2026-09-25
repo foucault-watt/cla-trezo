@@ -57,33 +57,7 @@ describe("buildSubventionPdfData", () => {
       ],
     });
 
-    expect(data.reimbursedExpenses).toEqual([
-      { date: "01/02/2026", description: "Casque VR", amount: formatCentsForPdf(20000) },
-    ]);
-    expect(data.remainingTotal).toBe(formatCentsForPdf(80000));
-    expect(data.expensesToReimburse).toEqual([
-      { date: "01/03/2026", description: "Carte électronique", amount: formatCentsForPdf(15000) },
-    ]);
-    expect(data.reimbursementTotal).toBe(formatCentsForPdf(15000));
     expect(data.grantBalance).toBe(formatCentsForPdf(65000));
-  });
-
-  it("utilise la date de la Note en l'absence de date de dépense", () => {
-    const data = buildSubventionPdfData({
-      context,
-      campaignName: "Budget prévisionnel 2025-2026",
-      grantReason: "Achat de matériel",
-      campaignGrantedOn: new Date("2026-01-10T00:00:00+01:00"),
-      campaignSubventions: [{ reason: "Achat de matériel", amountCents: 10000 }],
-      reimbursedHistory: [],
-      linesToReimburse: [
-        { amountCents: 3000, date: null, description: "Pièce sans date" },
-      ],
-    });
-
-    expect(data.expensesToReimburse).toEqual([
-      { date: "15/03/2026", description: "Pièce sans date", amount: formatCentsForPdf(3000) },
-    ]);
   });
 
   it("reprend le bénéficiaire de la Note comme auteur, destinataire et virement", () => {
@@ -100,7 +74,6 @@ describe("buildSubventionPdfData", () => {
     expect(data.authorName).toBe("Camille Martin");
     expect(data.recipientName).toBe("Camille Martin");
     expect(data.associationName).toBe("Club Robotique");
-    expect(data.reimbursedAssociationName).toBe("Club Robotique");
     expect(data.treasurerName).toBe("Baptiste Frenay");
     expect(data.paymentMethod).toBe("transfer");
     expect(data.iban).toBe("FR7630006000011234567890189");

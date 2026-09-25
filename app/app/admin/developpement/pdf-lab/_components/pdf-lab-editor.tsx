@@ -8,7 +8,7 @@ import type {
 } from "@/pdf-lab/templates/ndf-fn-sb/types";
 
 type RowsField =
-  "grantedExpenses" | "reimbursedExpenses" | "expensesToReimburse";
+  "grantedExpenses";
 
 function TextField({
   label,
@@ -251,13 +251,6 @@ export function PdfLabEditor({
               value={data.associationName}
               onChange={(value) => updateField("associationName", value)}
             />
-            <TextField
-              label="Association déjà remboursée"
-              value={data.reimbursedAssociationName}
-              onChange={(value) =>
-                updateField("reimbursedAssociationName", value)
-              }
-            />
           </div>
         </div>
       </div>
@@ -268,18 +261,6 @@ export function PdfLabEditor({
         rows={data.grantedExpenses}
         onChange={(rows) => updateRows("grantedExpenses", rows)}
       />
-      <ExpenseRowsEditor
-        title="Frais déjà remboursés"
-        dateLabel="Payé le"
-        rows={data.reimbursedExpenses}
-        onChange={(rows) => updateRows("reimbursedExpenses", rows)}
-      />
-      <ExpenseRowsEditor
-        title="Frais à rembourser"
-        dateLabel="Date facture"
-        rows={data.expensesToReimburse}
-        onChange={(rows) => updateRows("expensesToReimburse", rows)}
-      />
 
       <div className="card card-border bg-base-100">
         <div className="card-body gap-4">
@@ -289,16 +270,6 @@ export function PdfLabEditor({
               label="Total accordé"
               value={data.grantedTotal}
               onChange={(value) => updateField("grantedTotal", value)}
-            />
-            <TextField
-              label="Total restant"
-              value={data.remainingTotal}
-              onChange={(value) => updateField("remainingTotal", value)}
-            />
-            <TextField
-              label="Total à rembourser"
-              value={data.reimbursementTotal}
-              onChange={(value) => updateField("reimbursementTotal", value)}
             />
             <TextField
               label="Solde de la subvention"

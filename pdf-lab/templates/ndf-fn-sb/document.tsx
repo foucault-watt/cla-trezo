@@ -274,30 +274,6 @@ export function ExpenseReportDocument({
           total={data.grantedTotal}
         />
 
-        <Text style={styles.sectionParagraph} minPresenceAhead={70}>
-          Veuillez trouver ci-joints la liste des frais déjà remboursés pour
-          l’association {data.reimbursedAssociationName} correspondant au
-          financement (à la subvention) {data.fundingName} ({data.grantName}).
-        </Text>
-        <ExpenseTable
-          dateLabel="PAYÉ LE"
-          rows={data.reimbursedExpenses}
-          totalLabel="TOTAL RESTANT"
-          total={data.remainingTotal}
-        />
-
-        <Text style={styles.sectionParagraph} minPresenceAhead={70}>
-          Veuillez trouver ci-joints la liste des frais à rembourser engagés
-          pour l’association {data.associationName}. Les justificatifs d’achat
-          se trouvent en annexe.
-        </Text>
-        <ExpenseTable
-          dateLabel="DATE FACTURE"
-          rows={data.expensesToReimburse}
-          totalLabel="TOTAL"
-          total={data.reimbursementTotal}
-        />
-
         <Text style={styles.sectionParagraph}>
           Le montant restant de la subvention suite à cette note de frais est de{" "}
           {data.grantBalance}.

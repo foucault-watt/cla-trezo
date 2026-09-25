@@ -250,11 +250,6 @@ export function ExpenseBalanceDocument({
         )}
 
         <Text style={styles.paragraph}>Bonjour,</Text>
-        <Text style={styles.paragraph}>
-          Veuillez trouver ci-joints la liste des frais à rembourser engagés
-          pour l’association {data.associationName}. Les justificatifs
-          d’achat se trouvent en annexe.
-        </Text>
         <ExpenseTable rows={data.expenses} total={data.total} />
 
         <Text style={styles.conditionsTitle} minPresenceAhead={90}>

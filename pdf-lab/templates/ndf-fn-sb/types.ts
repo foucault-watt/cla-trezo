@@ -10,13 +10,8 @@ export type ExpenseReportPdfData = {
   fundingName: string;
   grantName: string;
   associationName: string;
-  reimbursedAssociationName: string;
   grantedExpenses: ExpenseRow[];
-  reimbursedExpenses: ExpenseRow[];
-  expensesToReimburse: ExpenseRow[];
   grantedTotal: string;
-  remainingTotal: string;
-  reimbursementTotal: string;
   grantBalance: string;
   paymentMethod: "cash" | "cheque" | "transfer";
   chequeOrder?: string;
