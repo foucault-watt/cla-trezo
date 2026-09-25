@@ -3,6 +3,7 @@ import type {
   FundingSourceType,
 } from "@/app/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
+import { balanceCents, subventionUsedCents } from "@/lib/solde/solde";
 import { PENDING_EXPENSE_REPORT_STATUSES } from "./expense-report-lifecycle";
 
 export type LineWarningCode =
@@ -195,11 +196,7 @@ export async function loadFundingSourceWarningTotals({
       }),
     ]);
 
-    const confirmedBalanceCents = movements.reduce(
-      (sum, m) =>
-        sum + (m.movementType === "CREDIT" ? m.amountCents : -m.amountCents),
-      0,
-    );
+    const confirmedBalanceCents = balanceCents(movements);
     const pendingLinesCentsTotal = pendingLines.reduce(
       (sum, l) => sum + l.amountCents,
       0,
@@ -231,11 +228,7 @@ export async function loadFundingSourceWarningTotals({
 
   if (!subvention) return null;
 
-  const confirmedUsedCents = movements.reduce(
-    (sum, m) =>
-      sum + (m.movementType === "DEBIT" ? m.amountCents : -m.amountCents),
-    0,
-  );
+  const confirmedUsedCents = subventionUsedCents(movements);
   const pendingLinesCentsTotal = pendingLines.reduce(
     (sum, l) => sum + l.amountCents,
     0,

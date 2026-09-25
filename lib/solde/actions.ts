@@ -2,7 +2,7 @@
 
 import { requireAdmin, requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
-import { computeSolde, type SoldeView } from "./solde";
+import { computeSolde, soldeMovementSelect, type SoldeView } from "./solde";
 
 async function getSoldeForAsso(assoId: string): Promise<SoldeView> {
   const asso = await prisma.asso.findUniqueOrThrow({
@@ -12,15 +12,7 @@ async function getSoldeForAsso(assoId: string): Promise<SoldeView> {
 
   const movements = await prisma.financialMovement.findMany({
     where: { assoId, accountType: "CLUB_BALANCE" },
-    select: {
-      id: true,
-      movementType: true,
-      amountCents: true,
-      origin: true,
-      category: true,
-      description: true,
-      createdAt: true,
-    },
+    select: soldeMovementSelect,
   });
 
   return computeSolde(asso.type, movements);

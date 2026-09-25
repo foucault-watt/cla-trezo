@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { computeSolde, type SoldeMovement } from "./solde";
+import {
+  assoHasSolde,
+  balanceCents,
+  computeSolde,
+  subventionUsedCents,
+  subventionUsedCentsById,
+  type SoldeMovement,
+} from "./solde";
 
 function movement(overrides: Partial<SoldeMovement>): SoldeMovement {
   return {
@@ -94,5 +101,61 @@ describe("computeSolde", () => {
     if (result.status === "ready") {
       expect(result.movements.map((m) => m.id)).toEqual(["new", "mid", "old"]);
     }
+  });
+});
+
+describe("assoHasSolde", () => {
+  it("réserve le Solde aux Clubs", () => {
+    expect(assoHasSolde("CLUB")).toBe(true);
+    expect(assoHasSolde("COMMISSION")).toBe(false);
+    expect(assoHasSolde("ASSOCIATION_1901")).toBe(false);
+    expect(assoHasSolde(null)).toBe(false);
+  });
+});
+
+describe("balanceCents", () => {
+  it("ajoute les Entrées et retranche les Sorties", () => {
+    expect(
+      balanceCents([
+        { movementType: "CREDIT", amountCents: 5000 },
+        { movementType: "DEBIT", amountCents: 1200 },
+        { movementType: "DEBIT", amountCents: 300 },
+      ]),
+    ).toBe(3500);
+  });
+
+  it("peut devenir négatif (Warning, jamais blocage)", () => {
+    expect(balanceCents([{ movementType: "DEBIT", amountCents: 700 }])).toBe(-700);
+  });
+});
+
+describe("subventionUsedCents", () => {
+  it("compte les Remboursements (DEBIT) et déduit les corrections (CREDIT)", () => {
+    expect(
+      subventionUsedCents([
+        { movementType: "DEBIT", amountCents: 4000 },
+        { movementType: "DEBIT", amountCents: 1000 },
+        { movementType: "CREDIT", amountCents: 500 },
+      ]),
+    ).toBe(4500);
+  });
+
+  it("vaut 0 sans mouvement", () => {
+    expect(subventionUsedCents([])).toBe(0);
+  });
+});
+
+describe("subventionUsedCentsById", () => {
+  it("regroupe le montant utilisé par Subvention, en ignorant les mouvements sans Subvention", () => {
+    const used = subventionUsedCentsById([
+      { subventionId: "sub-1", movementType: "DEBIT", amountCents: 3000 },
+      { subventionId: "sub-2", movementType: "DEBIT", amountCents: 800 },
+      { subventionId: "sub-1", movementType: "CREDIT", amountCents: 1000 },
+      { subventionId: null, movementType: "DEBIT", amountCents: 9999 },
+    ]);
+
+    expect(used.get("sub-1")).toBe(2000);
+    expect(used.get("sub-2")).toBe(800);
+    expect(used.size).toBe(2);
   });
 });

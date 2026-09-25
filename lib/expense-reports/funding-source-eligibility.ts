@@ -1,4 +1,5 @@
 import type { AssoType, FundingSourceType } from "@/app/generated/prisma/enums";
+import { assoHasSolde } from "@/lib/solde/solde";
 
 export type FundingSourceEligibilityInput =
   | { fundingSource: Extract<FundingSourceType, "CLUB_BALANCE">; assoType: AssoType | null }
@@ -23,7 +24,7 @@ export function checkFundingSourceEligibility(
   input: FundingSourceEligibilityInput,
 ): FundingSourceEligibilityResult {
   if (input.fundingSource === "CLUB_BALANCE") {
-    if (input.assoType !== "CLUB") {
+    if (!assoHasSolde(input.assoType)) {
       return { ok: false, error: "Seuls les Clubs peuvent utiliser le Solde." };
     }
     return { ok: true };

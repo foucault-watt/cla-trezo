@@ -10,7 +10,11 @@ import {
   type AssoMemberWithLogin,
 } from "@/lib/asso/members";
 import { prisma } from "@/lib/prisma";
-import { computeSolde, type SoldeView } from "@/lib/solde/solde";
+import {
+  computeSolde,
+  soldeMovementSelect,
+  type SoldeView,
+} from "@/lib/solde/solde";
 import {
   listVisibleSubventionsForAdmin,
   type VisibleSubvention,
@@ -38,15 +42,7 @@ function overviewInclude(now: Date) {
   return {
     financialMovements: {
       where: { accountType: "CLUB_BALANCE" as const },
-      select: {
-        id: true,
-        movementType: true,
-        amountCents: true,
-        origin: true,
-        category: true,
-        description: true,
-        createdAt: true,
-      },
+      select: soldeMovementSelect,
     },
     _count: {
       select: {

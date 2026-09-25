@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
+import { assoHasSolde } from "@/lib/solde/solde";
 import { parseManualMovementForm, toAmountCents } from "./movement-input";
 
 export type AddManualMovementState = { ok: boolean; error?: string };
@@ -30,7 +31,7 @@ export async function addManualMovementAction(
     where: { id: parsed.data.assoId },
     select: { type: true },
   });
-  if (!asso || asso.type !== "CLUB") {
+  if (!asso || !assoHasSolde(asso.type)) {
     return { ok: false, error: "Seuls les Clubs ont un Solde." };
   }
 

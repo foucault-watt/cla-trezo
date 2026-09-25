@@ -5,6 +5,7 @@ import {
   isSubventionStale,
 } from "@/lib/expense-reports/line-warnings";
 import { prisma } from "@/lib/prisma";
+import { subventionUsedCentsById } from "@/lib/solde/solde";
 
 export type VisibleSubvention = {
   id: string;
@@ -73,18 +74,7 @@ async function listVisibleSubventionsForAsso(
     select: { subventionId: true, movementType: true, amountCents: true },
   });
 
-  const usedCentsBySubventionId = new Map<string, number>();
-  for (const movement of movements) {
-    if (!movement.subventionId) continue;
-    const current = usedCentsBySubventionId.get(movement.subventionId) ?? 0;
-    usedCentsBySubventionId.set(
-      movement.subventionId,
-      current +
-        (movement.movementType === "DEBIT"
-          ? movement.amountCents
-          : -movement.amountCents),
-    );
-  }
+  const usedCentsBySubventionId = subventionUsedCentsById(movements);
 
   return subventions.map((s) => {
     const usedAmountCents = usedCentsBySubventionId.get(s.id) ?? 0;
