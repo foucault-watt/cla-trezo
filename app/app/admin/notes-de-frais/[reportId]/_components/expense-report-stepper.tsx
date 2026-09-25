@@ -8,6 +8,12 @@ import {
   type ExpenseReportStep,
 } from "@/lib/expense-reports/expense-report-steps";
 
+// Côté Admin, pas d'« envoi » : l'étape Bénéficiaire mène à la validation.
+const stepLabels: Record<ExpenseReportStep, string> = {
+  ...EXPENSE_REPORT_STEP_LABELS,
+  beneficiaire: "Bénéficiaire",
+};
+
 const stepDescriptions: Record<ExpenseReportStep, string> = {
   remboursements: "Dépenses puis justificatifs",
   beneficiaire: "Destinataire",
@@ -65,7 +71,7 @@ export function AdminExpenseReportStepper({
                       current ? "text-primary" : ""
                     }`}
                   >
-                    {EXPENSE_REPORT_STEP_LABELS[step]}
+                    {stepLabels[step]}
                   </span>
                   <span className="hidden text-xs text-base-content/60 sm:block">
                     {stepDescriptions[step]}

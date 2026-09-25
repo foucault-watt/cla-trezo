@@ -105,7 +105,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "ExternalLink",
-    visibleText: "Template d'attestation sur l'honneur à dupliquer",
+    visibleText: "Modèle d'attestation sur l'honneur à dupliquer",
     ariaLabel: null,
     file: "components/expense-reports/supporting-documents-panel.tsx",
     context:
@@ -191,14 +191,14 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "ArrowLeftRight",
-    visibleText: "Changer d'association",
+    visibleText: "Changer d'Asso",
     ariaLabel: null,
     file: "app/app/[assoSlug]/layout.tsx",
     context: "pied de nav membre, ouvre le sélecteur d'association",
   },
   {
     icon: "ShieldUser",
-    visibleText: "Vue admin",
+    visibleText: "Administration",
     ariaLabel: null,
     file: "app/app/[assoSlug]/layout.tsx",
   },
@@ -1266,14 +1266,14 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx
   {
-    icon: "Save",
+    icon: "CheckCircle2",
     visibleText: "Valider la Note de frais",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",
     context: "ouvre la modale de confirmation",
   },
   {
-    icon: "Save",
+    icon: "CheckCircle2",
     visibleText: "Confirmer",
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/valider/_components/validate-expense-report-editor.tsx",

@@ -24,7 +24,7 @@ export default async function NotesDeFraisPage({
       <div className="mb-4">
         <h1 className="text-2xl font-semibold">Notes de frais</h1>
         <p className="mt-1 text-sm text-base-content/70">
-          Demandes de remboursement de l&apos;association.
+          Demandes de remboursement de l&apos;Asso.
         </p>
       </div>
 
@@ -36,7 +36,7 @@ export default async function NotesDeFraisPage({
         <EmptyState
           icon={<Receipt size={24} />}
           title="Aucune Note de frais pour l'instant"
-          description="Créez une Note de frais pour vous faire rembourser une dépense engagée pour l'association."
+          description="Créez une Note de frais pour vous faire rembourser une dépense engagée pour l'Asso."
           action={<NewExpenseReportModalButton assoSlug={assoSlug} />}
         />
       ) : (

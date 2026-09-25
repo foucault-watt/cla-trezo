@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Download, FileDown, FileText } from "lucide-react";
 import type { GrantDocumentStatus } from "@/lib/admin/grant-documents";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 import { Stat, StatsBar } from "@/components/ui/stats";
 import { SubventionsTable } from "./subventions-table";
 import type { AddSubventionState } from "@/lib/admin/subvention-actions";
@@ -100,15 +101,15 @@ export function SubventionsPanel({
         <div className="mb-4">
           <h3 className="font-semibold">Documents d’octroi</h3>
           <p className="text-xs text-base-content/60">
-            Un document par Structure regroupe toutes ses lignes dans cette
-            campagne : Convention de subvention pour une Association loi 1901,
+            Un document par Structure regroupe toutes ses Subventions dans
+            cette campagne : Convention de subvention pour une Association loi 1901,
             Ordre de financement pour un Club ou une Commission.
           </p>
         </div>
 
         {conventionGroups.length === 0 ? (
           <p className="text-sm text-base-content/70">
-            Ajoutez une ligne de subvention pour préparer un document d’octroi.
+            Ajoutez une Subvention pour préparer un document d’octroi.
           </p>
         ) : (
           <ul className="list rounded-box border border-base-300">
@@ -124,8 +125,7 @@ export function SubventionsPanel({
                       {status?.kind && (
                         <>{grantDocumentKindLabel[status.kind]} · </>
                       )}
-                      {group.linesCount} ligne
-                      {group.linesCount > 1 ? "s" : ""} ·{" "}
+                      {pluralize(group.linesCount, "subvention")} ·{" "}
                       {formatCents(group.totalAmountCents)}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">

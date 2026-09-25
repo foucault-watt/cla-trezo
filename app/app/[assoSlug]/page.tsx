@@ -25,8 +25,8 @@ export default async function DashboardPage({
       <h1 className="text-2xl font-semibold">Dashboard</h1>
       <p className="mt-1 text-sm text-base-content/70">
         {isClub
-          ? "Solde de l'association."
-          : "Suivi des Notes de frais et Subventions de l'association."}
+          ? "Solde et mouvements du Club."
+          : "Suivi des Notes de frais et Subventions de l'Asso."}
       </p>
 
       <StatsBar className="mt-4">

@@ -406,7 +406,7 @@ export function SupportingDocumentsPanel({
                 className="link link-hover link-primary inline-flex items-center gap-1 self-start text-sm font-medium"
               >
                 <ExternalLink size={15} />
-                Template d&apos;attestation sur l&apos;honneur à dupliquer
+                Modèle d&apos;attestation sur l&apos;honneur à dupliquer
               </a>
             )}
 

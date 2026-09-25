@@ -9,8 +9,8 @@ export function SoldeNotInitializedAlert({
       className={`alert alert-info alert-soft${className ? ` ${className}` : ""}`}
     >
       <span>
-        Le solde de ce Club n&apos;a pas encore été initialisé par un
-        administrateur.
+        Le Solde de ce Club n&apos;a pas encore été initialisé par l&apos;Admin
+        CLA.
       </span>
     </div>
   );

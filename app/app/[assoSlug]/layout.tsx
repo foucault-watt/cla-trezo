@@ -72,7 +72,7 @@ export default async function MemberLayout({
           className="btn btn-ghost btn-sm w-full justify-start gap-2"
         >
           <ArrowLeftRight size={18} />
-          Changer d&apos;association
+          Changer d&apos;Asso
         </Link>
       )}
       {!user.isDemo && user.isAdmin && (
@@ -81,7 +81,7 @@ export default async function MemberLayout({
           className="btn btn-ghost btn-sm w-full justify-start gap-2"
         >
           <ShieldUser size={18} />
-          Vue admin
+          Administration
         </Link>
       )}
       {user.isDemo ? (

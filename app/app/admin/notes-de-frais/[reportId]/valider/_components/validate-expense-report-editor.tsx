@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Download, Save, X } from "lucide-react";
+import { CheckCircle2, Download, X } from "lucide-react";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import {
@@ -180,7 +180,7 @@ export function ValidateExpenseReportEditor({
           className="btn btn-primary"
           onClick={() => confirmModalRef.current?.open()}
         >
-          <Save size={18} />
+          <CheckCircle2 size={18} />
           Valider la Note de frais
         </button>
       </div>
@@ -215,7 +215,7 @@ export function ValidateExpenseReportEditor({
             {pending ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (
-              <Save size={18} />
+              <CheckCircle2 size={18} />
             )}
             {pending ? "Validation…" : "Confirmer"}
           </button>
