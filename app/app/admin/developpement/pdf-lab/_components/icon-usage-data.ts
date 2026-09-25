@@ -468,21 +468,6 @@ export const iconUsages: IconUsage[] = [
     context: "modale de confirmation, bouton final",
   },
 
-  // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx
-  {
-    icon: "Send",
-    visibleText: "Soumettre la Note de frais",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
-  },
-  {
-    icon: "TriangleAlert",
-    visibleText: "alertes non bloquantes",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
-    context: "modale de confirmation de soumission",
-  },
-
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx
   {
     icon: "ArrowLeft",
@@ -501,7 +486,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Soumettre la Note de frais",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
-    context: "cohérent avec submit-expense-report-form.tsx",
+    context: "ouvre la modale de confirmation de soumission",
   },
   {
     icon: "User",
@@ -1122,48 +1107,14 @@ export const iconUsages: IconUsage[] = [
     icon: "X",
     visibleText: "Annuler",
     ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
+    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
   },
   {
     icon: "Send",
     visibleText: "Soumettre la note",
     ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/submit-expense-report-form.tsx",
+    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
     context: "confirmation dans la modale, cohérent avec le bouton d'ouverture",
-  },
-  {
-    icon: "X",
-    visibleText: "Annuler",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
-  },
-  {
-    icon: "Send",
-    visibleText: "Soumettre la note",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
-    context:
-      "confirmation dans la modale, cohérent avec submit-expense-report-form.tsx",
-  },
-  {
-    icon: "Pencil",
-    visibleText: "Modifier",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/edit-expense-report-form.tsx",
-    context: 'bouton toggle, bascule vers X + "Annuler" en édition',
-  },
-  {
-    icon: "X",
-    visibleText: "Annuler",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/edit-expense-report-form.tsx",
-    context: 'bouton toggle, même bouton que Pencil + "Modifier" hors édition',
-  },
-  {
-    icon: "Save",
-    visibleText: "Enregistrer",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/edit-expense-report-form.tsx",
   },
   {
     icon: "Save",
