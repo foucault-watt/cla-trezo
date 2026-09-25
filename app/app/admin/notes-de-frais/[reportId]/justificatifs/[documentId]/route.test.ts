@@ -1,14 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { getSessionMock, documentFindUniqueMock, readStoredFileMock } = vi.hoisted(
-  () => ({
+// Accès, 410 et en-têtes : cf. lib/storage/stored-file-route.test.ts.
+const { getSessionMock, documentFindUniqueMock, readStoredFileMock } =
+  vi.hoisted(() => ({
     getSessionMock: vi.fn(),
     documentFindUniqueMock: vi.fn(),
     readStoredFileMock: vi.fn(),
-  }),
-);
+  }));
 
-vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
+vi.mock("@/lib/session", () => ({
+  getSession: getSessionMock,
+  getDemoSession: vi.fn(),
+}));
 vi.mock("@/lib/prisma", () => ({
   prisma: { supportingDocument: { findUnique: documentFindUniqueMock } },
 }));
@@ -21,37 +24,26 @@ const { GET } = await import("./route");
 const admin = { id: "admin-1", isAdmin: true, structures: [] };
 
 const document = {
-  filePath: "club-info/report-1/doc.jpg",
-  mimeType: "image/jpeg",
-  originalFilename: "facture.jpg",
+  filePath: "club-info/report-1/doc.pdf",
+  mimeType: "application/pdf",
+  originalFilename: "facture.pdf",
   expenseReportId: "report-1",
 };
 
-function call(params = { reportId: "report-1", documentId: "doc-1" }) {
-  return GET(new Request("http://localhost"), { params: Promise.resolve(params) });
+function call() {
+  return GET(new Request("http://localhost"), {
+    params: Promise.resolve({ reportId: "report-1", documentId: "doc-1" }),
+  });
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   getSessionMock.mockResolvedValue({ user: admin });
   documentFindUniqueMock.mockResolvedValue(document);
-  readStoredFileMock.mockResolvedValue(Buffer.from("jpeg"));
+  readStoredFileMock.mockResolvedValue(Buffer.from("%PDF-1.4"));
 });
 
 describe("GET justificatif (Admin)", () => {
-  it("renvoie 401 sans session", async () => {
-    getSessionMock.mockResolvedValue({});
-
-    expect((await call()).status).toBe(401);
-  });
-
-  it("renvoie 404 à un non-Admin", async () => {
-    getSessionMock.mockResolvedValue({ user: { ...admin, isAdmin: false } });
-
-    expect((await call()).status).toBe(404);
-    expect(documentFindUniqueMock).not.toHaveBeenCalled();
-  });
-
   it("renvoie 404 si le Justificatif n'est pas rattaché à la Note de l'URL", async () => {
     documentFindUniqueMock.mockResolvedValue({ ...document, expenseReportId: "report-2" });
 
@@ -59,13 +51,13 @@ describe("GET justificatif (Admin)", () => {
     expect(readStoredFileMock).not.toHaveBeenCalled();
   });
 
-  it("sert le fichier en inline avec son type MIME", async () => {
+  it("sert le fichier en inline avec son type MIME, quelle que soit la Structure", async () => {
     const response = await call();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("image/jpeg");
-    expect(response.headers.get("Content-Disposition")).toBe(
-      'inline; filename="facture.jpg"',
+    expect(response.headers.get("Content-Type")).toBe("application/pdf");
+    expect(response.headers.get("Content-Disposition")).toMatch(
+      /^inline; filename="facture\.pdf"/,
     );
   });
 });

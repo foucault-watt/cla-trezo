@@ -1,45 +1,14 @@
-import { resolveStructureAccess } from "@/lib/auth/access";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
-import { readStoredFile } from "@/lib/storage/file-storage";
+import { structureFileRoute } from "@/lib/storage/stored-file-route";
 
-async function lookupAssoBySlug(slug: string) {
-  return prisma.asso.findUnique({
-    where: { slug },
-    select: { id: true, name: true },
-  });
-}
-
-/**
- * Sert le contenu d'un Justificatif. Pas de `requireStructureAccess` ici :
- * ce garde-fou s'appuie sur `redirect`/`notFound` de `next/navigation`, pensés
- * pour le rendu de page — dans un Route Handler on renvoie directement des
- * codes HTTP explicites.
- */
-export async function GET(
-  _request: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ assoSlug: string; reportId: string; documentId: string }>;
-  },
-) {
-  const { assoSlug, reportId, documentId } = await params;
-
-  const session = await getSession();
-  const access = await resolveStructureAccess(
-    session.user,
-    assoSlug,
-    lookupAssoBySlug,
-  );
-  if (!access.ok) {
-    return new Response(null, {
-      status: access.reason === "unauthenticated" ? 401 : 404,
-    });
-  }
-
+/** Sert le contenu d'un Justificatif à sa Structure (accès, 410, en-têtes : cf. structureFileRoute). */
+export const GET = structureFileRoute<{
+  assoSlug: string;
+  reportId: string;
+  documentId: string;
+}>(async ({ params, structure }) => {
   const document = await prisma.supportingDocument.findUnique({
-    where: { id: documentId },
+    where: { id: params.documentId },
     select: {
       filePath: true,
       mimeType: true,
@@ -51,21 +20,16 @@ export async function GET(
 
   if (
     !document ||
-    document.expenseReportId !== reportId ||
-    document.expenseReport.assoId !== access.assoId
+    document.expenseReportId !== params.reportId ||
+    document.expenseReport.assoId !== structure.assoId
   ) {
-    return new Response(null, { status: 404 });
+    return null;
   }
 
-  const content = await readStoredFile(document.filePath);
-
-  return new Response(new Uint8Array(content), {
-    headers: {
-      "Content-Type": document.mimeType,
-      "Content-Disposition": `inline; filename="${encodeURIComponent(
-        document.originalFilename,
-      )}"`,
-      "Cache-Control": "private, max-age=0, no-cache",
-    },
-  });
-}
+  return {
+    filePath: document.filePath,
+    mimeType: document.mimeType,
+    filename: document.originalFilename,
+    disposition: "inline",
+  };
+});

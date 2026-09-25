@@ -1,46 +1,15 @@
-import { resolveStructureAccess } from "@/lib/auth/access";
 import { buildExpenseReportPdfFilename } from "@/lib/expense-reports/expense-report-pdf-filename";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
-import { readStoredFile } from "@/lib/storage/file-storage";
+import { structureFileRoute } from "@/lib/storage/stored-file-route";
 
-async function lookupAssoBySlug(slug: string) {
-  return prisma.asso.findUnique({
-    where: { slug },
-    select: { id: true, name: true },
-  });
-}
-
-/**
- * Sert le contenu d'un PDF final (issue #20) à la Structure bénéficiaire de
- * la Note de frais Validée — même garde-fou explicite (pas de
- * `requireStructureAccess`, pensé pour le rendu de page) que la route
- * équivalente pour un Justificatif (cf. justificatifs/[documentId]/route.ts).
- */
-export async function GET(
-  _request: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ assoSlug: string; reportId: string; pdfId: string }>;
-  },
-) {
-  const { assoSlug, reportId, pdfId } = await params;
-
-  const session = await getSession();
-  const access = await resolveStructureAccess(
-    session.user,
-    assoSlug,
-    lookupAssoBySlug,
-  );
-  if (!access.ok) {
-    return new Response(null, {
-      status: access.reason === "unauthenticated" ? 401 : 404,
-    });
-  }
-
+/** Sert un PDF final (issue #20) à la Structure de la Note de frais (cf. structureFileRoute). */
+export const GET = structureFileRoute<{
+  assoSlug: string;
+  reportId: string;
+  pdfId: string;
+}>(async ({ params, structure }) => {
   const pdf = await prisma.expenseReportPdf.findUnique({
-    where: { id: pdfId },
+    where: { id: params.pdfId },
     select: {
       filePath: true,
       expenseReportId: true,
@@ -58,19 +27,16 @@ export async function GET(
 
   if (
     !pdf ||
-    pdf.expenseReportId !== reportId ||
-    pdf.expenseReport.assoId !== access.assoId
+    pdf.expenseReportId !== params.reportId ||
+    pdf.expenseReport.assoId !== structure.assoId
   ) {
-    return new Response(null, { status: 404 });
+    return null;
   }
 
-  const content = await readStoredFile(pdf.filePath);
-
-  return new Response(new Uint8Array(content), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${buildExpenseReportPdfFilename(pdf)}"`,
-      "Cache-Control": "private, max-age=0, no-cache",
-    },
-  });
-}
+  return {
+    filePath: pdf.filePath,
+    mimeType: "application/pdf",
+    filename: buildExpenseReportPdfFilename(pdf),
+    disposition: "attachment",
+  };
+});

@@ -3,7 +3,7 @@ import {
   getAssoArchiveSource,
   type ArchiveCheckResult,
 } from "@/lib/admin/storage";
-import { getSession } from "@/lib/session";
+import { resolveAdminRouteAccess } from "@/lib/auth/route-access";
 import { storedFileExists } from "@/lib/storage/file-storage";
 
 /**
@@ -16,12 +16,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ assoSlug: string }> },
 ) {
-  const session = await getSession();
-  if (!session.user) {
-    return new Response(null, { status: 401 });
-  }
-  if (!session.user.isAdmin) {
-    return new Response(null, { status: 404 });
+  const access = await resolveAdminRouteAccess();
+  if (!access.ok) {
+    return access.response;
   }
 
   const { assoSlug } = await params;

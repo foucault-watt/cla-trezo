@@ -1,21 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const {
-  getSessionMock,
-  assoFindUniqueMock,
-  findGrantDocumentForAssoMock,
-  readStoredFileMock,
-} = vi.hoisted(() => ({
-  getSessionMock: vi.fn(),
-  assoFindUniqueMock: vi.fn(),
-  findGrantDocumentForAssoMock: vi.fn(),
-  readStoredFileMock: vi.fn(),
-}));
+// Accès, 410 et en-têtes : cf. lib/storage/stored-file-route.test.ts.
+const { getSessionMock, findGrantDocumentForAssoMock, readStoredFileMock } =
+  vi.hoisted(() => ({
+    getSessionMock: vi.fn(),
+    findGrantDocumentForAssoMock: vi.fn(),
+    readStoredFileMock: vi.fn(),
+  }));
 
-vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
-vi.mock("@/lib/prisma", () => ({
-  prisma: { asso: { findUnique: assoFindUniqueMock } },
+vi.mock("@/lib/session", () => ({
+  getSession: getSessionMock,
+  getDemoSession: vi.fn(),
 }));
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/lib/storage/file-storage", () => ({
   readStoredFile: readStoredFileMock,
 }));
@@ -27,17 +24,16 @@ const { GET } = await import("./route");
 
 const member = {
   id: "user-1",
-  username: "jdupont",
-  firstname: "Jean",
-  lastname: "Dupont",
   isAdmin: false,
   structures: [
     { assoId: "asso-1", slug: "club-info", name: "Club Info", role: "Trésorier" },
   ],
 };
 
-function call(params = { assoSlug: "club-info", documentId: "grant-1" }) {
-  return GET(new Request("http://localhost"), { params: Promise.resolve(params) });
+function call() {
+  return GET(new Request("http://localhost"), {
+    params: Promise.resolve({ assoSlug: "club-info", documentId: "grant-1" }),
+  });
 }
 
 beforeEach(() => {
@@ -51,19 +47,6 @@ beforeEach(() => {
 });
 
 describe("GET Document d'octroi (Structure)", () => {
-  it("renvoie 401 sans session", async () => {
-    getSessionMock.mockResolvedValue({});
-
-    expect((await call()).status).toBe(401);
-  });
-
-  it("renvoie 404 à un utilisateur qui n'est pas membre de la Structure", async () => {
-    const response = await call({ assoSlug: "bde", documentId: "grant-1" });
-
-    expect(response.status).toBe(404);
-    expect(findGrantDocumentForAssoMock).not.toHaveBeenCalled();
-  });
-
   it("cherche le Document scopé à la Structure de la session, pas à l'URL seule", async () => {
     findGrantDocumentForAssoMock.mockResolvedValue(null);
 
@@ -79,8 +62,8 @@ describe("GET Document d'octroi (Structure)", () => {
 
     expect(response.status).toBe(200);
     expect(readStoredFileMock).toHaveBeenCalledWith("club-info/octroi/grant-1.pdf");
-    expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="convention-club-info.pdf"',
+    expect(response.headers.get("Content-Disposition")).toMatch(
+      /^attachment; filename="convention-club-info\.pdf"/,
     );
   });
 });
