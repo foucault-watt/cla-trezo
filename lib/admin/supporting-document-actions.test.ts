@@ -193,7 +193,8 @@ describe("addSupportingDocumentsAsAdminAction", () => {
       ],
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/admin/notes-de-frais/report-1",
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -254,7 +255,8 @@ describe("removeSupportingDocumentAsAdminAction", () => {
       "club-info/report-1/mock-0.pdf",
     );
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/admin/notes-de-frais/report-1",
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });

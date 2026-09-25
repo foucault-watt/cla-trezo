@@ -300,7 +300,8 @@ describe("addSupportingDocumentsAction", () => {
       ],
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/club-info/notes-de-frais/report-1",
+      "/app/[assoSlug]/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -395,7 +396,8 @@ describe("removeSupportingDocumentAction", () => {
       "club-info/report-1/mock-0.pdf",
     );
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/club-info/notes-de-frais/report-1",
+      "/app/[assoSlug]/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });

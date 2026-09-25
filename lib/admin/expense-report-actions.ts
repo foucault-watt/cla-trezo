@@ -1,22 +1,26 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { z } from "zod";
 import { requireAdmin } from "@/lib/auth/guards";
 import {
-  assertExpenseReportMutable,
+  addExpenseReportLine,
+  deleteExpenseReportLine,
+  revalidateExpenseReportScreens,
+  updateExpenseReportBeneficiary,
+  updateExpenseReportInfo,
+  updateExpenseReportLine,
+} from "@/lib/expense-reports/expense-report-commands";
+import {
   assertExpenseReportTransition,
   ExpenseReportLifecycleError,
+  type ExpenseReportActor,
 } from "@/lib/expense-reports/expense-report-lifecycle";
 import {
-  loadFundingSourceEligibility,
   rawLineFormValues,
   type ExpenseReportLineDeleteState,
   type ExpenseReportLineFormState,
 } from "@/lib/expense-reports/expense-report-line-shared";
-import { resolveExpenseReportBeneficiary } from "@/lib/expense-reports/expense-report-actions";
-import { loadExpenseLineWarnings } from "@/lib/expense-reports/line-warnings";
-import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { deleteStoredFile } from "@/lib/storage/file-storage";
 import {
@@ -30,47 +34,34 @@ import {
   parseUpdateReimbursementAsAdminForm,
 } from "./expense-report-input";
 
+/*
+ * Server Actions de l'espace Admin. Les modifications de contenu sont des
+ * adapters vers expense-report-commands.ts, partagé avec la Structure — même
+ * chargement, même règle de verrouillage (l'Admin ne modifie qu'une Note
+ * Prise en charge, ADR-0001). Prise en charge, rejet et suppression n'existent
+ * que côté Admin et vivent ici.
+ */
+
+const ADMIN: ExpenseReportActor = { type: "ADMIN" };
+
+function invalid(parsed: { error: z.ZodError }) {
+  return {
+    ok: false as const,
+    error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+  };
+}
+
 export type UpdateExpenseReportAsAdminState = { ok: boolean; error?: string };
 
-/**
- * Équivalent Admin de updateExpenseReportAction
- * (lib/expense-reports/expense-report-actions.ts) : mêmes règles, sans
- * scoping par assoSlug (l'Admin n'est rattaché à aucune Structure).
- */
 export async function updateExpenseReportAsAdminAction(
   _prevState: UpdateExpenseReportAsAdminState,
   formData: FormData,
 ): Promise<UpdateExpenseReportAsAdminState> {
   const parsed = parseUpdateExpenseReportAsAdminForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   await requireAdmin();
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.id },
-    select: { id: true, status: true },
-  });
-  if (!report) return { ok: false, error: "Note de frais introuvable." };
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "ADMIN" },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
-
-  await prisma.expenseReport.update({
-    where: { id: report.id },
-    data: { title: parsed.data.title, description: parsed.data.description },
-  });
-  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
-  return { ok: true };
+  return updateExpenseReportInfo(ADMIN, parsed.data);
 }
 
 export type UpdateExpenseReportBeneficiaryAsAdminState = {
@@ -83,56 +74,10 @@ export async function updateExpenseReportBeneficiaryAsAdminAction(
   formData: FormData,
 ): Promise<UpdateExpenseReportBeneficiaryAsAdminState> {
   const parsed = parseUpdateExpenseReportBeneficiaryAsAdminForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   await requireAdmin();
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      assoId: true,
-      status: true,
-      beneficiaryUserId: true,
-      beneficiaryFirstname: true,
-      beneficiaryLastname: true,
-      beneficiaryIban: true,
-    },
-  });
-  if (!report) return { ok: false, error: "Note de frais introuvable." };
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "ADMIN" },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
-
-  const resolved = await resolveExpenseReportBeneficiary({
-    input: parsed.data,
-    assoId: report.assoId,
-    existing: report,
-  });
-  if (!resolved.ok) return resolved;
-  const { beneficiary } = resolved;
-
-  await prisma.expenseReport.update({
-    where: { id: report.id },
-    data: {
-      beneficiaryUserId: beneficiary.userId,
-      beneficiaryFirstname: beneficiary.firstname,
-      beneficiaryLastname: beneficiary.lastname,
-      beneficiaryIban: beneficiary.iban,
-    },
-  });
-  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
-  return { ok: true };
+  return updateExpenseReportBeneficiary(ADMIN, parsed.data);
 }
 
 /**
@@ -149,12 +94,7 @@ export async function takeOverExpenseReportAction(
   const admin = await requireAdmin();
 
   const parsed = parseTakeOverExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -167,7 +107,7 @@ export async function takeOverExpenseReportAction(
     assertExpenseReportTransition({
       from: report.status,
       to: "TAKEN_OVER",
-      actor: { type: "ADMIN" },
+      actor: ADMIN,
     });
   } catch (error) {
     if (!(error instanceof ExpenseReportLifecycleError)) throw error;
@@ -186,8 +126,7 @@ export async function takeOverExpenseReportAction(
     },
   });
 
-  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
-  revalidatePath("/app/admin/notes-de-frais");
+  revalidateExpenseReportScreens();
 
   return { ok: true };
 }
@@ -208,12 +147,7 @@ export async function rejectExpenseReportAction(
   await requireAdmin();
 
   const parsed = parseRejectExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -226,7 +160,7 @@ export async function rejectExpenseReportAction(
     assertExpenseReportTransition({
       from: report.status,
       to: "REJECTED",
-      actor: { type: "ADMIN" },
+      actor: ADMIN,
     });
   } catch (error) {
     if (!(error instanceof ExpenseReportLifecycleError)) throw error;
@@ -241,8 +175,7 @@ export async function rejectExpenseReportAction(
     data: { status: "REJECTED", rejectionReason: parsed.data.reason },
   });
 
-  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
-  revalidatePath("/app/admin/notes-de-frais");
+  revalidateExpenseReportScreens();
 
   return { ok: true };
 }
@@ -266,12 +199,7 @@ export async function deleteExpenseReportAsAdminAction(
   await requireAdmin();
 
   const parsed = parseDeleteExpenseReportAsAdminForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -313,7 +241,7 @@ export async function deleteExpenseReportAsAdminAction(
     ...report.pdfs.map((pdf) => deleteStoredFile(pdf.filePath)),
   ]);
 
-  revalidatePath("/app/admin/notes-de-frais");
+  revalidateExpenseReportScreens();
 
   const toastParams = new URLSearchParams({
     toast: "Note de frais supprimée.",
@@ -332,64 +260,11 @@ export async function addReimbursementAsAdminAction(
 ): Promise<ReimbursementAsAdminState> {
   const values = rawLineFormValues(formData);
   const parsed = parseAddReimbursementAsAdminForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-      values,
-    };
-  }
+  if (!parsed.success) return { ...invalid(parsed), values };
 
   await requireAdmin();
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.expenseReportId },
-    select: { id: true, assoId: true, status: true },
-  });
-  if (!report)
-    return { ok: false, error: "Note de frais introuvable.", values };
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "ADMIN" },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return {
-      ok: false,
-      error: "Cette Note de frais n'est plus modifiable.",
-      values,
-    };
-  }
-
-  const eligibility = await loadFundingSourceEligibility({
-    assoId: report.assoId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-  });
-  if (!eligibility.ok) return { ok: false, error: eligibility.error, values };
-
-  const amountCents = toAmountCents(parsed.data.amount);
-  const warnings = await loadExpenseLineWarnings({
-    assoId: report.assoId,
-    expenseReportId: report.id,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-    lineAmountCents: amountCents,
-  });
-  await prisma.expenseReportLine.create({
-    data: {
-      expenseReportId: report.id,
-      expenseDate: parsed.data.expenseDate,
-      amountCents,
-      expenseName: parsed.data.expenseName,
-      typeDepenseId: parsed.data.typeDepenseId,
-      customLabel: parsed.data.customLabel,
-      fundingSource: parsed.data.fundingSource,
-      subventionId: parsed.data.subventionId,
-    },
-  });
-  revalidatePath(`/app/admin/notes-de-frais/${report.id}`);
-  return { ok: true, warnings };
+  const result = await addExpenseReportLine(ADMIN, parsed.data);
+  return result.ok ? result : { ...result, values };
 }
 
 export async function updateReimbursementAsAdminAction(
@@ -398,115 +273,20 @@ export async function updateReimbursementAsAdminAction(
 ): Promise<ReimbursementAsAdminState> {
   const values = rawLineFormValues(formData);
   const parsed = parseUpdateReimbursementAsAdminForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-      values,
-    };
-  }
+  if (!parsed.success) return { ...invalid(parsed), values };
 
   await requireAdmin();
-  const line = await prisma.expenseReportLine.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      expenseReportId: true,
-      expenseReport: { select: { assoId: true, status: true } },
-    },
-  });
-  if (!line) return { ok: false, error: "Remboursement introuvable.", values };
-  const report = line.expenseReport;
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "ADMIN" },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return {
-      ok: false,
-      error: "Cette Note de frais n'est plus modifiable.",
-      values,
-    };
-  }
-
-  const eligibility = await loadFundingSourceEligibility({
-    assoId: report.assoId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-  });
-  if (!eligibility.ok) return { ok: false, error: eligibility.error, values };
-  const amountCents = toAmountCents(parsed.data.amount);
-  const warnings = await loadExpenseLineWarnings({
-    assoId: report.assoId,
-    expenseReportId: line.expenseReportId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-    lineAmountCents: amountCents,
-    excludeLineId: line.id,
-  });
-  await prisma.expenseReportLine.update({
-    where: { id: line.id },
-    data: {
-      expenseDate: parsed.data.expenseDate,
-      amountCents,
-      expenseName: parsed.data.expenseName,
-      typeDepenseId: parsed.data.typeDepenseId,
-      customLabel: parsed.data.customLabel,
-      fundingSource: parsed.data.fundingSource,
-      subventionId: parsed.data.subventionId,
-    },
-  });
-  revalidatePath(`/app/admin/notes-de-frais/${line.expenseReportId}`);
-  return { ok: true, warnings };
+  const result = await updateExpenseReportLine(ADMIN, parsed.data);
+  return result.ok ? result : { ...result, values };
 }
 
-export const deleteReimbursementAsAdminAction =
-  deleteExpenseReportLineAsAdminAction;
-
-/**
- * Seule opération de suppression de Ligne de l'application (le Structure ne
- * peut que modifier, jamais supprimer) : réservée à l'Admin sur une Note déjà
- * Prise en charge (#18). Sans risque pour FinancialMovement (relation
- * optionnelle 1:1, jamais créée avant la Validation, cf. ADR-0003) puisqu'une
- * Note Prise en charge n'est jamais encore Validée.
- */
-export async function deleteExpenseReportLineAsAdminAction(
+export async function deleteReimbursementAsAdminAction(
   _prevState: DeleteExpenseReportLineAsAdminState,
   formData: FormData,
 ): Promise<DeleteExpenseReportLineAsAdminState> {
   const parsed = parseDeleteExpenseReportLineAsAdminForm(formData);
-  if (!parsed.success) {
-    return { ok: false, error: "Saisie invalide." };
-  }
+  if (!parsed.success) return { ok: false, error: "Saisie invalide." };
 
   await requireAdmin();
-
-  const line = await prisma.expenseReportLine.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      expenseReportId: true,
-      expenseReport: { select: { status: true } },
-    },
-  });
-  if (!line) {
-    return { ok: false, error: "Remboursement introuvable." };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: line.expenseReport.status,
-      actor: { type: "ADMIN" },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
-
-  await prisma.expenseReportLine.delete({ where: { id: line.id } });
-
-  revalidatePath(`/app/admin/notes-de-frais/${line.expenseReportId}`);
-
-  return { ok: true };
+  return deleteExpenseReportLine(ADMIN, parsed.data);
 }

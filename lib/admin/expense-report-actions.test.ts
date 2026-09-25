@@ -86,7 +86,7 @@ const {
   takeOverExpenseReportAction,
   rejectExpenseReportAction,
   deleteExpenseReportAsAdminAction,
-  deleteExpenseReportLineAsAdminAction,
+  deleteReimbursementAsAdminAction,
   updateExpenseReportAsAdminAction,
   updateExpenseReportBeneficiaryAsAdminAction,
 } = await import("./expense-report-actions");
@@ -200,7 +200,8 @@ describe("takeOverExpenseReportAction", () => {
       },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/admin/notes-de-frais/${valid.id}`,
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -272,7 +273,8 @@ describe("rejectExpenseReportAction", () => {
       data: { status: "REJECTED", rejectionReason: "Justificatif illisible." },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/admin/notes-de-frais/${valid.id}`,
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -351,7 +353,7 @@ const validLine = {
   expenseReportId: "22222222-2222-2222-8222-222222222222",
 };
 
-describe("deleteExpenseReportLineAsAdminAction", () => {
+describe("deleteReimbursementAsAdminAction", () => {
   const valid = { id: "66666666-6666-6666-8666-666666666666" };
 
   const takenOverLine = {
@@ -361,7 +363,7 @@ describe("deleteExpenseReportLineAsAdminAction", () => {
   };
 
   it("refuse une saisie invalide sans appeler requireAdmin", async () => {
-    const result = await deleteExpenseReportLineAsAdminAction(
+    const result = await deleteReimbursementAsAdminAction(
       { ok: false },
       formData({ id: "pas-un-uuid" }),
     );
@@ -374,7 +376,7 @@ describe("deleteExpenseReportLineAsAdminAction", () => {
   it("refuse une Ligne introuvable", async () => {
     lineFindUniqueMock.mockResolvedValue(null);
 
-    const result = await deleteExpenseReportLineAsAdminAction(
+    const result = await deleteReimbursementAsAdminAction(
       { ok: false },
       formData(valid),
     );
@@ -389,7 +391,7 @@ describe("deleteExpenseReportLineAsAdminAction", () => {
       expenseReport: { status: "SUBMITTED" },
     });
 
-    const result = await deleteExpenseReportLineAsAdminAction(
+    const result = await deleteReimbursementAsAdminAction(
       { ok: false },
       formData(valid),
     );
@@ -404,14 +406,15 @@ describe("deleteExpenseReportLineAsAdminAction", () => {
   it("supprime la Ligne d'une Note Prise en charge et revalide la page Admin", async () => {
     lineFindUniqueMock.mockResolvedValue(takenOverLine);
 
-    const result = await deleteExpenseReportLineAsAdminAction(
+    const result = await deleteReimbursementAsAdminAction(
       { ok: false },
       formData(valid),
     );
 
     expect(lineDeleteMock).toHaveBeenCalledWith({ where: { id: valid.id } });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/admin/notes-de-frais/${validLine.expenseReportId}`,
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -470,7 +473,8 @@ describe("updateExpenseReportAsAdminAction", () => {
       data: { title: valid.title, description: null },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/admin/notes-de-frais/${valid.id}`,
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });
@@ -542,7 +546,8 @@ describe("updateExpenseReportBeneficiaryAsAdminAction", () => {
       },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/admin/notes-de-frais/${reportId}`,
+      "/app/admin/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true });
   });

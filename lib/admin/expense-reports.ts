@@ -3,10 +3,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { EXCLUDE_DEMO_ASSO_RELATION } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
-import {
-  assertExpenseReportMutable,
-  ExpenseReportLifecycleError,
-} from "@/lib/expense-reports/expense-report-lifecycle";
+import { isExpenseReportMutable } from "@/lib/expense-reports/expense-report-lifecycle";
 import { mapExpenseReportToDetail } from "@/lib/expense-reports/expense-report-detail-mapping";
 import type {
   ExpenseReportLineDetail,
@@ -158,13 +155,7 @@ export type ExpenseReportDetailForAdmin = {
 export function isExpenseReportEditableByAdmin(
   status: ExpenseReportStatus,
 ): boolean {
-  try {
-    assertExpenseReportMutable({ status, actor: { type: "ADMIN" } });
-    return true;
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return false;
-  }
+  return isExpenseReportMutable({ status, actor: { type: "ADMIN" } });
 }
 
 /**

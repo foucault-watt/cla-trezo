@@ -33,12 +33,11 @@ export function extractFiles(formData: FormData): File[] {
 export type AddSupportingDocumentsState = { ok: boolean; error?: string };
 
 /**
- * Cœur partagé de l'ajout de Justificatifs, appelé par l'action Structure
- * (supporting-document-actions.ts) comme par son équivalent Admin
- * (lib/admin/supporting-document-actions.ts, cf. #18) : auth, chargement et
- * vérification de la Note diffèrent par acteur, mais la règle d'exclusivité
+ * Cœur de l'ajout de Justificatifs, appelé par addExpenseReportDocuments
+ * (expense-report-commands.ts) pour la Structure comme pour l'Admin, une fois
+ * la Note chargée et vérifiée pour l'acteur. La règle d'exclusivité
  * (jamais Justificatif + Attestation sur la même Note, cf. issue #11 / T10),
- * les quotas et l'écriture des fichiers sont strictement identiques.
+ * les quotas et l'écriture des fichiers vivent ici.
  */
 export async function addSupportingDocumentsCore({
   report,
@@ -179,8 +178,8 @@ export async function addSupportingDocumentsCore({
 export type RemoveSupportingDocumentState = { ok: boolean; error?: string };
 
 /**
- * Supprime un Justificatif en base et son fichier sur disque — partagé par
- * l'action Structure et son équivalent Admin.
+ * Supprime un Justificatif en base et son fichier sur disque (cf.
+ * removeExpenseReportDocument, expense-report-commands.ts).
  */
 export async function removeSupportingDocumentCore(document: {
   id: string;

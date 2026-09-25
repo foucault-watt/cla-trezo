@@ -90,7 +90,6 @@ vi.mock("@/lib/storage/file-storage", () => ({
 const {
   createExpenseReportAction,
   updateExpenseReportAction,
-  submitExpenseReportAction,
   submitExpenseReportWithBeneficiaryAction,
   deleteExpenseReportAction,
   updateExpenseReportBeneficiaryAction,
@@ -179,7 +178,8 @@ describe("createExpenseReportAction", () => {
       },
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/club-info/notes-de-frais",
+      "/app/[assoSlug]/notes-de-frais",
+      "layout",
     );
     expect(result).toEqual({ ok: true, reportId: "report-1" });
   });
@@ -247,128 +247,12 @@ describe("updateExpenseReportAction", () => {
         data: { title: valid.title, description: null },
       });
       expect(revalidatePathMock).toHaveBeenCalledWith(
-        `/app/club-info/notes-de-frais/${valid.id}`,
-      );
+      "/app/[assoSlug]/notes-de-frais",
+      "layout",
+    );
       expect(result).toEqual({ ok: true });
     },
   );
-});
-
-describe("submitExpenseReportAction", () => {
-  const valid = {
-    id: "66666666-6666-6666-8666-666666666666",
-    assoSlug: "club-info",
-  };
-
-  it("refuse une Note introuvable ou d'une autre Structure", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-autre",
-      status: "DRAFT",
-    });
-
-    const result = await submitExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(result).toEqual({ ok: false, error: "Note de frais introuvable." });
-    expect(reportUpdateMock).not.toHaveBeenCalled();
-  });
-
-  it("refuse si la Note n'est pas en Brouillon", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-1",
-      status: "SUBMITTED",
-    });
-
-    const result = await submitExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(result).toEqual({
-      ok: false,
-      error: "Cette Note de frais n'est plus en Brouillon.",
-    });
-    expect(reportUpdateMock).not.toHaveBeenCalled();
-  });
-
-  it("refuse une Note sans Ligne", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-1",
-      status: "DRAFT",
-      beneficiaryFirstname: "Jean",
-      beneficiaryLastname: "Dupont",
-      beneficiaryIban: "FR7630006000011234567890189",
-    });
-    lineCountMock.mockResolvedValue(0);
-
-    const result = await submitExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(result).toEqual({
-      ok: false,
-      error: "Ajoutez au moins une Dépense datée avant de soumettre.",
-    });
-    expect(reportUpdateMock).not.toHaveBeenCalled();
-  });
-
-  it("refuse une Note sans Justificatif ni Attestation sur l'honneur", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-1",
-      status: "DRAFT",
-      beneficiaryFirstname: "Jean",
-      beneficiaryLastname: "Dupont",
-      beneficiaryIban: "FR7630006000011234567890189",
-    });
-    lineCountMock.mockResolvedValue(1);
-    documentCountMock.mockResolvedValue(0);
-
-    const result = await submitExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(result).toEqual({
-      ok: false,
-      error:
-        "Ajoutez au moins un Justificatif ou une Attestation sur l'honneur avant de soumettre.",
-    });
-    expect(reportUpdateMock).not.toHaveBeenCalled();
-  });
-
-  it("passe la Note de Brouillon à Soumise et revalide la page détail", async () => {
-    reportFindUniqueMock.mockResolvedValue({
-      id: valid.id,
-      assoId: "asso-1",
-      status: "DRAFT",
-      beneficiaryFirstname: "Jean",
-      beneficiaryLastname: "Dupont",
-      beneficiaryIban: "FR7630006000011234567890189",
-    });
-    lineCountMock.mockResolvedValue(1);
-    documentCountMock.mockResolvedValue(1);
-
-    const result = await submitExpenseReportAction(
-      { ok: false },
-      formData(valid),
-    );
-
-    expect(reportUpdateMock).toHaveBeenCalledWith({
-      where: { id: valid.id },
-      data: { status: "SUBMITTED", submittedAt: expect.any(Date) },
-    });
-    expect(revalidatePathMock).toHaveBeenCalledWith(
-      `/app/club-info/notes-de-frais/${valid.id}`,
-    );
-    expect(result).toEqual({ ok: true });
-  });
 });
 
 describe("updateExpenseReportBeneficiaryAction", () => {
@@ -576,7 +460,8 @@ describe("deleteExpenseReportAction", () => {
     expect(deleteStoredFileMock).toHaveBeenCalledWith("asso/report-1/a.pdf");
     expect(deleteStoredFileMock).toHaveBeenCalledWith("asso/report-1/b.pdf");
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/app/club-info/notes-de-frais",
+      "/app/[assoSlug]/notes-de-frais",
+      "layout",
     );
     expect(redirectMock).toHaveBeenCalledWith(
       "/app/club-info/notes-de-frais?toast=Note+de+frais+supprim%C3%A9e.&toastType=success",

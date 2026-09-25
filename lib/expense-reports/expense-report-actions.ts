@@ -1,44 +1,60 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireStructureMember } from "@/lib/auth/guards";
-import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { deleteStoredFile } from "@/lib/storage/file-storage";
 import {
-  EXPENSE_REPORT_STEPS,
-  expenseReportStepHref,
-} from "./expense-report-steps";
-import {
-  assertExpenseReportMutable,
   assertExpenseReportTransition,
   ExpenseReportLifecycleError,
+  type ExpenseReportActor,
 } from "./expense-report-lifecycle";
 import {
-  loadFundingSourceEligibility,
+  addExpenseReportLine,
+  beneficiaryData,
+  deleteExpenseReportLine,
+  resolveExpenseReportBeneficiary,
+  revalidateExpenseReportScreens,
+  updateExpenseReportBeneficiary,
+  updateExpenseReportInfo,
+  updateExpenseReportLine,
+} from "./expense-report-commands";
+import {
   rawLineFormValues,
   type ExpenseReportLineFormState,
 } from "./expense-report-line-shared";
-import { loadExpenseLineWarnings } from "./line-warnings";
 import {
   parseAddReimbursementForm,
   parseCreateExpenseReportForm,
   parseDeleteExpenseReportForm,
-  parseSubmitExpenseReportForm,
   parseUpdateExpenseReportForm,
   parseUpdateExpenseReportBeneficiaryForm,
   parseUpdateReimbursementForm,
 } from "./expense-report-input";
 export type { ExpenseReportLineFormValues } from "./expense-report-line-shared";
 
-function revalidateExpenseReportWizard(assoSlug: string, reportId: string) {
-  const basePath = `/app/${assoSlug}/notes-de-frais/${reportId}`;
-  revalidatePath(basePath);
-  for (const step of EXPENSE_REPORT_STEPS) {
-    revalidatePath(expenseReportStepHref(assoSlug, reportId, step));
-  }
+/*
+ * Server Actions de l'espace Structure. Les modifications de contenu
+ * (informations, bénéficiaire, Remboursements) sont des adapters vers
+ * expense-report-commands.ts, partagé avec l'Admin : parser le formulaire,
+ * résoudre l'acteur depuis la session (membre uniquement, cf.
+ * requireStructureMember), appeler la commande. Création, soumission et
+ * suppression d'un Brouillon n'existent que côté Structure et vivent ici.
+ */
+
+async function structureActor(
+  assoSlug: string,
+): Promise<Extract<ExpenseReportActor, { type: "STRUCTURE" }>> {
+  const { structure } = await requireStructureMember(assoSlug);
+  return { type: "STRUCTURE", assoId: structure.assoId };
+}
+
+function invalid(parsed: { error: z.ZodError }) {
+  return {
+    ok: false as const,
+    error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
+  };
 }
 
 export type CreateExpenseReportState = {
@@ -52,12 +68,7 @@ export async function createExpenseReportAction(
   formData: FormData,
 ): Promise<CreateExpenseReportState> {
   const parsed = parseCreateExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
   const { structure, user } = await requireStructureMember(
     parsed.data.assoSlug,
@@ -72,239 +83,27 @@ export async function createExpenseReportAction(
     },
   });
 
-  revalidatePath(`/app/${parsed.data.assoSlug}/notes-de-frais`);
+  revalidateExpenseReportScreens();
 
   return { ok: true, reportId: report.id };
 }
 
 export type UpdateExpenseReportState = { ok: boolean; error?: string };
 
-export type BeneficiaryFormValues = {
-  beneficiaryKind: "MEMBER" | "CUSTOM";
-  beneficiaryUserId: string | null;
-  beneficiaryFirstname: string;
-  beneficiaryLastname: string;
-  beneficiaryIban: string;
-};
-
-export type ExistingBeneficiary = {
-  beneficiaryUserId: string | null;
-  beneficiaryFirstname: string | null;
-  beneficiaryLastname: string | null;
-  beneficiaryIban: string | null;
-};
-
-export type ResolvedBeneficiary =
-  | {
-      ok: true;
-      beneficiary: {
-        userId: string | null;
-        firstname: string;
-        lastname: string;
-        iban: string;
-      };
-    }
-  | { ok: false; error: string };
-
-function normalizedIdentityPart(value: string | null) {
-  return value?.trim().toLocaleLowerCase("fr-FR") ?? "";
-}
-
-/**
- * Résout personne + IBAN comme un seul invariant. Un IBAN existant ne peut
- * être réutilisé que si l'identité n'a pas changé ; cela évite d'associer le
- * compte bancaire d'un ancien bénéficiaire au nom d'un nouveau.
- */
-export async function resolveExpenseReportBeneficiary({
-  input,
-  assoId,
-  existing,
-}: {
-  input: BeneficiaryFormValues;
-  assoId: string;
-  existing: ExistingBeneficiary;
-}): Promise<ResolvedBeneficiary> {
-  let userId: string | null = null;
-  let firstname = input.beneficiaryFirstname;
-  let lastname = input.beneficiaryLastname;
-  let sameIdentity = false;
-
-  if (input.beneficiaryKind === "MEMBER") {
-    const membership = await prisma.refAssoUser.findFirst({
-      where: {
-        assoId,
-        userId: input.beneficiaryUserId as string,
-        isActive: true,
-      },
-      select: {
-        userId: true,
-        user: { select: { firstname: true, lastname: true } },
-      },
-    });
-    if (!membership) {
-      return { ok: false, error: "Membre introuvable ou inactif." };
-    }
-    userId = membership.userId;
-    firstname = membership.user.firstname;
-    lastname = membership.user.lastname;
-    sameIdentity = existing.beneficiaryUserId === membership.userId;
-  } else {
-    sameIdentity =
-      existing.beneficiaryUserId === null &&
-      normalizedIdentityPart(existing.beneficiaryFirstname) ===
-        normalizedIdentityPart(firstname) &&
-      normalizedIdentityPart(existing.beneficiaryLastname) ===
-        normalizedIdentityPart(lastname);
-  }
-
-  const iban =
-    input.beneficiaryIban || (sameIdentity ? existing.beneficiaryIban : null);
-  if (!iban) {
-    return {
-      ok: false,
-      error: "Renseignez l'IBAN du nouveau bénéficiaire.",
-    };
-  }
-
-  return {
-    ok: true,
-    beneficiary: { userId, firstname, lastname, iban },
-  };
-}
-
 export async function updateExpenseReportAction(
   _prevState: UpdateExpenseReportState,
   formData: FormData,
 ): Promise<UpdateExpenseReportState> {
   const parsed = parseUpdateExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
-
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.id },
-    select: { id: true, assoId: true, status: true },
-  });
-  if (!report || report.assoId !== structure.assoId) {
-    return { ok: false, error: "Note de frais introuvable." };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
-
-  await prisma.expenseReport.update({
-    where: { id: report.id },
-    data: { title: parsed.data.title, description: parsed.data.description },
-  });
-
-  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
-
-  return { ok: true };
+  return updateExpenseReportInfo(
+    await structureActor(parsed.data.assoSlug),
+    parsed.data,
+  );
 }
 
 export type SubmitExpenseReportState = { ok: boolean; error?: string };
-
-export async function submitExpenseReportAction(
-  _prevState: SubmitExpenseReportState,
-  formData: FormData,
-): Promise<SubmitExpenseReportState> {
-  const parsed = parseSubmitExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
-
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
-
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      assoId: true,
-      status: true,
-      beneficiaryFirstname: true,
-      beneficiaryLastname: true,
-      beneficiaryIban: true,
-    },
-  });
-  if (!report || report.assoId !== structure.assoId) {
-    return { ok: false, error: "Note de frais introuvable." };
-  }
-
-  try {
-    assertExpenseReportTransition({
-      from: report.status,
-      to: "SUBMITTED",
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return {
-      ok: false,
-      error: "Cette Note de frais n'est plus en Brouillon.",
-    };
-  }
-
-  if (
-    !report.beneficiaryFirstname ||
-    !report.beneficiaryLastname ||
-    !report.beneficiaryIban
-  ) {
-    return {
-      ok: false,
-      error:
-        "Choisissez un bénéficiaire et renseignez son IBAN avant de soumettre.",
-    };
-  }
-
-  const [lineCount, allLineCount] = await Promise.all([
-    prisma.expenseReportLine.count({
-      where: { expenseReportId: report.id, expenseDate: { not: null } },
-    }),
-    prisma.expenseReportLine.count({
-      where: { expenseReportId: report.id },
-    }),
-  ]);
-  if (lineCount === 0 || lineCount !== allLineCount) {
-    return {
-      ok: false,
-      error: "Ajoutez au moins une Dépense datée avant de soumettre.",
-    };
-  }
-
-  const documentCount = await prisma.supportingDocument.count({
-    where: { expenseReportId: report.id },
-  });
-  if (documentCount === 0) {
-    return {
-      ok: false,
-      error:
-        "Ajoutez au moins un Justificatif ou une Attestation sur l'honneur avant de soumettre.",
-    };
-  }
-
-  await prisma.expenseReport.update({
-    where: { id: report.id },
-    data: { status: "SUBMITTED", submittedAt: new Date() },
-  });
-
-  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
-
-  return { ok: true };
-}
 
 /**
  * Soumet la Note avec le bénéficiaire actuellement affiché dans le formulaire.
@@ -317,14 +116,9 @@ export async function submitExpenseReportWithBeneficiaryAction(
   formData: FormData,
 ): Promise<SubmitExpenseReportState> {
   const parsed = parseUpdateExpenseReportBeneficiaryForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
+  const actor = await structureActor(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
     select: {
@@ -337,7 +131,7 @@ export async function submitExpenseReportWithBeneficiaryAction(
       beneficiaryIban: true,
     },
   });
-  if (!report || report.assoId !== structure.assoId) {
+  if (!report || report.assoId !== actor.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
 
@@ -345,7 +139,7 @@ export async function submitExpenseReportWithBeneficiaryAction(
     assertExpenseReportTransition({
       from: report.status,
       to: "SUBMITTED",
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
+      actor,
     });
   } catch (error) {
     if (!(error instanceof ExpenseReportLifecycleError)) throw error;
@@ -357,7 +151,7 @@ export async function submitExpenseReportWithBeneficiaryAction(
 
   const resolved = await resolveExpenseReportBeneficiary({
     input: parsed.data,
-    assoId: structure.assoId,
+    assoId: report.assoId,
     existing: report,
   });
   if (!resolved.ok) return resolved;
@@ -387,20 +181,16 @@ export async function submitExpenseReportWithBeneficiaryAction(
     };
   }
 
-  const { beneficiary } = resolved;
   await prisma.expenseReport.update({
     where: { id: report.id },
     data: {
-      beneficiaryUserId: beneficiary.userId,
-      beneficiaryFirstname: beneficiary.firstname,
-      beneficiaryLastname: beneficiary.lastname,
-      beneficiaryIban: beneficiary.iban,
+      ...beneficiaryData(resolved.beneficiary),
       status: "SUBMITTED",
       submittedAt: new Date(),
     },
   });
 
-  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
+  revalidateExpenseReportScreens();
   return { ok: true };
 }
 
@@ -408,7 +198,7 @@ export type DeleteExpenseReportState = { ok: boolean; error?: string };
 
 /**
  * Supprime une Note de frais et son contenu (Lignes, Justificatifs). Limité
- * au statut Brouillon — plus strict que assertExpenseReportMutable (qui
+ * au statut Brouillon — plus strict que la règle de modification (qui
  * autorise aussi Soumise) : une suppression est irréversible, contrairement
  * aux autres modifications de ce statut.
  */
@@ -417,14 +207,9 @@ export async function deleteExpenseReportAction(
   formData: FormData,
 ): Promise<DeleteExpenseReportState> {
   const parsed = parseDeleteExpenseReportForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
+  if (!parsed.success) return invalid(parsed);
 
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
+  const actor = await structureActor(parsed.data.assoSlug);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -435,7 +220,7 @@ export async function deleteExpenseReportAction(
       supportingDocuments: { select: { filePath: true } },
     },
   });
-  if (!report || report.assoId !== structure.assoId) {
+  if (!report || report.assoId !== actor.assoId) {
     return { ok: false, error: "Note de frais introuvable." };
   }
   if (report.status !== "DRAFT") {
@@ -456,14 +241,14 @@ export async function deleteExpenseReportAction(
   ]);
 
   // Best-effort, en parallèle : la DB fait foi, un fichier orphelin est
-  // toléré (pas de purge automatique en V1, cf. addSupportingDocumentsAction).
+  // toléré (pas de purge automatique en V1, cf. addSupportingDocumentsCore).
   await Promise.allSettled(
     report.supportingDocuments.map((document) =>
       deleteStoredFile(document.filePath),
     ),
   );
 
-  revalidatePath(`/app/${parsed.data.assoSlug}/notes-de-frais`);
+  revalidateExpenseReportScreens();
 
   // redirect() throws to let Next.js navigate directly from the action,
   // avoiding a client-side push racing the implicit refresh of the current
@@ -489,66 +274,13 @@ export async function addReimbursementAction(
 ): Promise<ReimbursementFormState> {
   const values = rawLineFormValues(formData);
   const parsed = parseAddReimbursementForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-      values,
-    };
-  }
+  if (!parsed.success) return { ...invalid(parsed), values };
 
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.expenseReportId },
-    select: { id: true, assoId: true, status: true },
-  });
-  if (!report || report.assoId !== structure.assoId) {
-    return { ok: false, error: "Note de frais introuvable.", values };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return {
-      ok: false,
-      error: "Cette Note de frais n'est plus modifiable.",
-      values,
-    };
-  }
-
-  const eligibility = await loadFundingSourceEligibility({
-    assoId: structure.assoId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-  });
-  if (!eligibility.ok) return { ok: false, error: eligibility.error, values };
-
-  const amountCents = toAmountCents(parsed.data.amount);
-  const warnings = await loadExpenseLineWarnings({
-    assoId: structure.assoId,
-    expenseReportId: report.id,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-    lineAmountCents: amountCents,
-  });
-
-  await prisma.expenseReportLine.create({
-    data: {
-      expenseReportId: report.id,
-      expenseDate: parsed.data.expenseDate,
-      amountCents,
-      expenseName: parsed.data.expenseName,
-      typeDepenseId: parsed.data.typeDepenseId,
-      customLabel: parsed.data.customLabel,
-      fundingSource: parsed.data.fundingSource,
-      subventionId: parsed.data.subventionId,
-    },
-  });
-  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
-  return { ok: true, warnings };
+  const result = await addExpenseReportLine(
+    await structureActor(parsed.data.assoSlug),
+    parsed.data,
+  );
+  return result.ok ? result : { ...result, values };
 }
 
 export async function updateReimbursementAction(
@@ -557,105 +289,36 @@ export async function updateReimbursementAction(
 ): Promise<ReimbursementFormState> {
   const values = rawLineFormValues(formData);
   const parsed = parseUpdateReimbursementForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-      values,
-    };
-  }
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
-  const line = await prisma.expenseReportLine.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      expenseReportId: true,
-      expenseReport: { select: { assoId: true, status: true } },
-    },
-  });
-  if (!line || line.expenseReport.assoId !== structure.assoId) {
-    return { ok: false, error: "Dépense introuvable.", values };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: line.expenseReport.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return {
-      ok: false,
-      error: "Cette Note de frais n'est plus modifiable.",
-      values,
-    };
-  }
-  const eligibility = await loadFundingSourceEligibility({
-    assoId: structure.assoId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-  });
-  if (!eligibility.ok) return { ok: false, error: eligibility.error, values };
+  if (!parsed.success) return { ...invalid(parsed), values };
 
-  const amountCents = toAmountCents(parsed.data.amount);
-  const warnings = await loadExpenseLineWarnings({
-    assoId: structure.assoId,
-    expenseReportId: line.expenseReportId,
-    fundingSource: parsed.data.fundingSource,
-    subventionId: parsed.data.subventionId,
-    lineAmountCents: amountCents,
-    excludeLineId: line.id,
-  });
-  await prisma.expenseReportLine.update({
-    where: { id: line.id },
-    data: {
-      expenseDate: parsed.data.expenseDate,
-      amountCents,
-      expenseName: parsed.data.expenseName,
-      typeDepenseId: parsed.data.typeDepenseId,
-      customLabel: parsed.data.customLabel,
-      fundingSource: parsed.data.fundingSource,
-      subventionId: parsed.data.subventionId,
-    },
-  });
-  revalidateExpenseReportWizard(parsed.data.assoSlug, line.expenseReportId);
-  return { ok: true, warnings };
+  const result = await updateExpenseReportLine(
+    await structureActor(parsed.data.assoSlug),
+    parsed.data,
+  );
+  return result.ok ? result : { ...result, values };
 }
 
 export type DeleteReimbursementState = { ok: boolean; error?: string };
+
+const deleteReimbursementFormSchema = z.object({
+  id: z.string().uuid(),
+  assoSlug: z.string().min(1),
+});
 
 export async function deleteReimbursementAction(
   _prevState: DeleteReimbursementState,
   formData: FormData,
 ): Promise<DeleteReimbursementState> {
-  const id = String(formData.get("id") ?? "");
-  const assoSlug = String(formData.get("assoSlug") ?? "");
-  if (!z.string().uuid().safeParse(id).success || !assoSlug) {
-    return { ok: false, error: "Saisie invalide." };
-  }
-  const { structure } = await requireStructureMember(assoSlug);
-  const line = await prisma.expenseReportLine.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      expenseReportId: true,
-      expenseReport: { select: { assoId: true, status: true } },
-    },
+  const parsed = deleteReimbursementFormSchema.safeParse({
+    id: formData.get("id"),
+    assoSlug: formData.get("assoSlug"),
   });
-  if (!line || line.expenseReport.assoId !== structure.assoId) {
-    return { ok: false, error: "Dépense introuvable." };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: line.expenseReport.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
-  await prisma.expenseReportLine.delete({ where: { id: line.id } });
-  revalidateExpenseReportWizard(assoSlug, line.expenseReportId);
-  return { ok: true };
+  if (!parsed.success) return { ok: false, error: "Saisie invalide." };
+
+  return deleteExpenseReportLine(
+    await structureActor(parsed.data.assoSlug),
+    parsed.data,
+  );
 }
 
 export type UpdateExpenseReportBeneficiaryState = {
@@ -668,55 +331,10 @@ export async function updateExpenseReportBeneficiaryAction(
   formData: FormData,
 ): Promise<UpdateExpenseReportBeneficiaryState> {
   const parsed = parseUpdateExpenseReportBeneficiaryForm(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
-    };
-  }
-  const { structure } = await requireStructureMember(parsed.data.assoSlug);
-  const report = await prisma.expenseReport.findUnique({
-    where: { id: parsed.data.id },
-    select: {
-      id: true,
-      assoId: true,
-      status: true,
-      beneficiaryUserId: true,
-      beneficiaryFirstname: true,
-      beneficiaryLastname: true,
-      beneficiaryIban: true,
-    },
-  });
-  if (!report || report.assoId !== structure.assoId) {
-    return { ok: false, error: "Note de frais introuvable." };
-  }
-  try {
-    assertExpenseReportMutable({
-      status: report.status,
-      actor: { type: "STRUCTURE", assoId: structure.assoId },
-    });
-  } catch (error) {
-    if (!(error instanceof ExpenseReportLifecycleError)) throw error;
-    return { ok: false, error: "Cette Note de frais n'est plus modifiable." };
-  }
+  if (!parsed.success) return invalid(parsed);
 
-  const resolved = await resolveExpenseReportBeneficiary({
-    input: parsed.data,
-    assoId: structure.assoId,
-    existing: report,
-  });
-  if (!resolved.ok) return resolved;
-  const { beneficiary } = resolved;
-
-  await prisma.expenseReport.update({
-    where: { id: report.id },
-    data: {
-      beneficiaryUserId: beneficiary.userId,
-      beneficiaryFirstname: beneficiary.firstname,
-      beneficiaryLastname: beneficiary.lastname,
-      beneficiaryIban: beneficiary.iban,
-    },
-  });
-  revalidateExpenseReportWizard(parsed.data.assoSlug, report.id);
-  return { ok: true };
+  return updateExpenseReportBeneficiary(
+    await structureActor(parsed.data.assoSlug),
+    parsed.data,
+  );
 }

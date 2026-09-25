@@ -5,10 +5,9 @@ import { checkFundingSourceEligibility } from "./funding-source-eligibility";
 /**
  * Charge les données Prisma nécessaires à la règle T11 (type de la Structure
  * ou Subvention candidate selon la source choisie) puis délègue la décision
- * à la fonction pure checkFundingSourceEligibility (cf. issue #29). Partagé
- * par les Server Actions Structure (expense-report-actions.ts) et Admin
- * (lib/admin/expense-report-actions.ts, cf. #18) — même règle stricte des
- * deux côtés, l'Admin n'a pas de passe-droit sur T11.
+ * à la fonction pure checkFundingSourceEligibility (cf. issue #29). Appelé par
+ * expense-report-commands.ts pour la Structure comme pour l'Admin — même règle
+ * stricte des deux côtés, l'Admin n'a pas de passe-droit sur T11.
  *
  * Vit hors d'un fichier "use server" : une fonction non-async exportée
  * (cf. rawLineFormValues ci-dessous) ferait échouer la contrainte Next.js
@@ -94,7 +93,7 @@ export type ExpenseReportLineFormState = {
   warnings?: string[];
 };
 
-/** Forme commune du retour d'une Server Action de suppression de Ligne (Admin uniquement, cf. #18). */
+/** Forme commune du retour d'une Server Action de suppression de Remboursement (Structure et Admin). */
 export type ExpenseReportLineDeleteState = {
   ok: boolean;
   error?: string;
