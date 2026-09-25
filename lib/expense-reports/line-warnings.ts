@@ -4,6 +4,7 @@ import type {
 } from "@/app/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { balanceCents, subventionUsedCents } from "@/lib/solde/solde";
+import { isSubventionStale } from "@/lib/subventions/subvention-age";
 import { PENDING_EXPENSE_REPORT_STATUSES } from "./expense-report-lifecycle";
 
 export type LineWarningCode =
@@ -16,45 +17,6 @@ export const LINE_WARNING_MESSAGES: Record<LineWarningCode, string> = {
   STALE_SUBVENTION:
     "La Subvention utilisée date de plus d'un an ; elle sera probablement refusée.",
 };
-
-function subtractYears(date: Date, years: number): Date {
-  const result = new Date(date);
-  result.setFullYear(result.getFullYear() - years);
-  return result;
-}
-
-/**
- * Une Subvention est "ancienne" (Warning T15) quand sa Campagne date de plus
- * d'un an. Utilisé aussi bien pour flaguer une Ligne existante que pour
- * afficher une Subvention en rouge dans le panneau de sélection.
- */
-export function isSubventionStale(campaignDate: Date, now: Date): boolean {
-  return campaignDate < subtractYears(now, 1);
-}
-
-/**
- * Coupure de la fenêtre de financement (cf. isSubventionWithinFundingWindow),
- * exposée pour filtrer côté requête (lib/subventions/visible-subventions.ts)
- * plutôt que de charger l'historique complet pour le re-filtrer en mémoire.
- */
-export function fundingWindowCutoff(now: Date): Date {
-  return subtractYears(now, 2);
-}
-
-/**
- * Fenêtre au-delà de laquelle une Subvention disparaît complètement du
- * panneau de sélection lors de l'ajout d'une Ligne (au-delà d'un an et
- * jusqu'à deux ans, elle reste sélectionnable mais flaguée via
- * isSubventionStale). Sert aussi de coupure "actuelle / historique" sur la
- * page de consultation dédiée des Subventions (T7) : l'historique au-delà de
- * cette fenêtre n'est chargé qu'à la demande, cf. listHistoricalSubventions.
- */
-export function isSubventionWithinFundingWindow(
-  campaignDate: Date,
-  now: Date,
-): boolean {
-  return campaignDate >= fundingWindowCutoff(now);
-}
 
 /**
  * Règle T13 : le Solde projeté devient négatif — confirmé, moins les autres
@@ -108,7 +70,7 @@ export type ComputeLineWarningsInput =
       confirmedUsedCents: number;
       pendingOtherLinesCents: number;
       lineAmountCents: number;
-      campaignDate: Date;
+      publicationDate: Date | null;
       now: Date;
     };
 
@@ -128,7 +90,7 @@ export function computeLineWarnings(input: ComputeLineWarningsInput): string[] {
   if (checkSubventionOverageWarning(input)) {
     warnings.push(LINE_WARNING_MESSAGES.SUBVENTION_OVERAGE);
   }
-  if (isSubventionStale(input.campaignDate, input.now)) {
+  if (isSubventionStale(input.publicationDate, input.now)) {
     warnings.push(LINE_WARNING_MESSAGES.STALE_SUBVENTION);
   }
   return warnings;
@@ -145,7 +107,7 @@ export type FundingSourceWarningTotals =
       subventionTotalCents: number;
       confirmedUsedCents: number;
       pendingLinesCentsTotal: number;
-      campaignDate: Date;
+      publicationDate: Date | null;
     };
 
 /**
@@ -210,7 +172,10 @@ export async function loadFundingSourceWarningTotals({
   const [subvention, movements, pendingLines] = await Promise.all([
     prisma.subvention.findUnique({
       where: { id: subventionId },
-      select: { amountCents: true, campaign: { select: { date: true } } },
+      select: {
+        amountCents: true,
+        campaign: { select: { publicationDate: true } },
+      },
     }),
     prisma.financialMovement.findMany({
       where: { subventionId, accountType: "SUBVENTION" },
@@ -239,7 +204,7 @@ export async function loadFundingSourceWarningTotals({
     subventionTotalCents: subvention.amountCents,
     confirmedUsedCents,
     pendingLinesCentsTotal,
-    campaignDate: subvention.campaign.date,
+    publicationDate: subvention.campaign.publicationDate,
   };
 }
 
@@ -270,7 +235,7 @@ function computeWarningsFromTotals(
     confirmedUsedCents: totals.confirmedUsedCents,
     pendingOtherLinesCents,
     lineAmountCents,
-    campaignDate: totals.campaignDate,
+    publicationDate: totals.publicationDate,
     now,
   });
 }

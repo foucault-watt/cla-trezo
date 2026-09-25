@@ -19,7 +19,6 @@ export function createSubventionAgeDemoData(): VisibleSubvention[] {
       remainingAmountCents: 53500,
       commentary: "Données ajoutées uniquement pour la démonstration.",
       publicationDate: daysAgo(500),
-      campaignDate: daysAgo(500),
       stale: true,
     },
     {
@@ -33,7 +32,6 @@ export function createSubventionAgeDemoData(): VisibleSubvention[] {
       remainingAmountCents: 21500,
       commentary: "Données ajoutées uniquement pour la démonstration.",
       publicationDate: daysAgo(900),
-      campaignDate: daysAgo(900),
       stale: true,
     },
   ];

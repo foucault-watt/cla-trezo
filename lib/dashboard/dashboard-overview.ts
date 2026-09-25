@@ -12,6 +12,7 @@ import { formatCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { getClubSolde } from "@/lib/solde/actions";
 import type { SoldeMovement, SoldeView } from "@/lib/solde/solde";
+import { getSubventionAgeBand } from "@/lib/subventions/subvention-age";
 import {
   listVisibleSubventions,
   type VisibleSubvention,
@@ -21,7 +22,8 @@ import {
  * L'application vit sur plusieurs années : sommer les Notes de frais ou les
  * Subventions depuis l'origine donnerait des montants qui grossissent sans
  * fin et perdent leur sens sur le Dashboard. Ces indicateurs sont donc
- * scopés aux 365 derniers jours ; seul le Solde reste une vraie somme
+ * scopés aux 365 derniers jours (les Subventions : publiées il y a un an ou
+ * moins, cf. lib/subventions/subvention-age.ts) ; seul le Solde reste une vraie somme
  * cumulée (cf. lib/solde/solde.ts), puisque c'est un solde bancaire réel,
  * pas un compteur d'activité.
  */
@@ -173,7 +175,7 @@ export async function getDashboardOverview(
   const reportsLast365Days = reportsWithinWindow(reports, cutoff);
 
   const subventionsLast365Days = visibleSubventions.filter(
-    (s) => s.campaignDate >= cutoff,
+    (s) => getSubventionAgeBand(s.publicationDate) === "recent",
   );
   const activeCampaignIds = new Set(
     subventionsLast365Days.map((s) => s.campaignId),

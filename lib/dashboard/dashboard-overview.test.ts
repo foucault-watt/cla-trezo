@@ -197,7 +197,6 @@ describe("getDashboardOverview", () => {
         remainingAmountCents: 800,
         commentary: null,
         publicationDate: recentDate,
-        campaignDate: recentDate,
         stale: false,
       },
       {
@@ -211,7 +210,6 @@ describe("getDashboardOverview", () => {
         remainingAmountCents: 1000,
         commentary: null,
         publicationDate: recentDate,
-        campaignDate: recentDate,
         stale: false,
       },
       {
@@ -225,7 +223,6 @@ describe("getDashboardOverview", () => {
         remainingAmountCents: 5000,
         commentary: null,
         publicationDate: oldDate,
-        campaignDate: oldDate,
         stale: true,
       },
     ]);
@@ -260,7 +257,6 @@ describe("getDashboardOverview", () => {
         remainingAmountCents: 1000,
         commentary: null,
         publicationDate: new Date("2025-07-01"),
-        campaignDate: new Date("2025-07-01"),
         stale: false,
       },
     ]);

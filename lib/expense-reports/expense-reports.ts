@@ -16,10 +16,8 @@ import {
   type ExpenseReportDetail,
   type ExpenseReportPdfDetail,
 } from "@/lib/expense-reports/expense-report-detail-mapping";
-import {
-  attachLineWarnings,
-  isSubventionWithinFundingWindow,
-} from "@/lib/expense-reports/line-warnings";
+import { attachLineWarnings } from "@/lib/expense-reports/line-warnings";
+import { isSubventionWithinFundingWindow } from "@/lib/subventions/subvention-age";
 export type {
   ExpenseReportLineDetail,
   SupportingDocumentDetail,
@@ -158,7 +156,7 @@ export const getExpenseReportDetail = cache(async function (
     // page /subventions dédiée (T7) affiche tout l'historique publié, sans
     // limite d'âge (cf. lib/subventions/visible-subventions.ts).
     visibleSubventions: visibleSubventions.filter((s) =>
-      isSubventionWithinFundingWindow(s.campaignDate, now),
+      isSubventionWithinFundingWindow(s.publicationDate, now),
     ),
     pdfs: report.pdfs.map((pdf) => ({
       id: pdf.id,

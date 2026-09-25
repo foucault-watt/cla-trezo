@@ -3,9 +3,9 @@ import { formatCents } from "@/lib/money";
 import { pluralize } from "@/lib/plural";
 import { subventionTypeLabel } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
+import type { SubventionAgeBand } from "@/lib/subventions/subvention-age";
 import {
   splitSubventionCampaignsByAge,
-  type SubventionAgeBand,
   type SubventionCampaignGroup,
 } from "@/lib/subventions/subvention-campaigns";
 

@@ -255,7 +255,6 @@ describe("getExpenseReportDetail", () => {
         remainingAmountCents: 1000,
         commentary: null,
         publicationDate: threeYearsAgo,
-        campaignDate: threeYearsAgo,
         stale: true,
       },
       {
@@ -268,7 +267,6 @@ describe("getExpenseReportDetail", () => {
         remainingAmountCents: 2000,
         commentary: null,
         publicationDate: sixMonthsAgo,
-        campaignDate: sixMonthsAgo,
         stale: false,
       },
     ]);

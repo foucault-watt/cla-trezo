@@ -30,6 +30,9 @@ _Avoid_: financement (terme utilisé dans les PDF générés — ndf-fn-sb, Ordr
 Enveloppe financière accordée à une Structure (Club, Commission ou Association) au sein d'une Campagne de subvention, toujours séparée du Solde — elle ne l'augmente jamais, même pour un Club. Portée par une raison et un montant unique (pas de ventilation interne).
 _Avoid_: budget, aide, financement (trop génériques)
 
+**Subvention ancienne**:
+Subvention dont la Campagne a été publiée il y a plus d'un an — l'âge se mesure toujours depuis la date de publication, jamais depuis la date de la Campagne. Reste utilisable pour un Remboursement (avec un Warning) jusqu'à deux ans après publication ; au-delà, elle ne peut plus être choisie et n'apparaît plus que dans l'historique.
+
 **Type de subvention**:
 Classification fixe d'une Campagne de subvention (et donc, par transitivité, de toutes ses Subventions) : `CA Budget`, `CA Event`, `CA Exceptionnel`. Enum fixe dans le code, non personnalisable. Porté par la Campagne, pas par la Subvention elle-même.
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de dépense)

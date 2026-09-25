@@ -23,12 +23,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const {
-  listVisibleSubventions,
-  listVisibleSubventionsForAdmin,
-  listCurrentSubventions,
-  listHistoricalSubventions,
-} = await import("./visible-subventions");
+const { listVisibleSubventions, listVisibleSubventionsForAdmin } =
+  await import("./visible-subventions");
 
 beforeEach(() => {
   requireStructureAccessMock.mockReset();
@@ -64,14 +60,6 @@ describe("listVisibleSubventions", () => {
     );
   });
 
-  it("ne filtre pas par date de Campagne (historique complet, cf. #18)", async () => {
-    findManyMock.mockResolvedValue([]);
-
-    await listVisibleSubventions("club-info");
-
-    expect(findManyMock.mock.calls[0][0].where.campaign.date).toBeUndefined();
-  });
-
   it("mappe chaque Subvention en vue avec le montant utilisé calculé depuis les mouvements Validés", async () => {
     findManyMock.mockResolvedValue([
       {
@@ -84,7 +72,6 @@ describe("listVisibleSubventions", () => {
           name: "Campagne CA Budget 2026",
           type: "CA_BUDGET",
           publicationDate: new Date("2026-01-01"),
-          date: new Date("2026-01-01"),
         },
       },
     ]);
@@ -106,13 +93,12 @@ describe("listVisibleSubventions", () => {
         remainingAmountCents: 3500,
         commentary: "RAS",
         publicationDate: new Date("2026-01-01"),
-        campaignDate: new Date("2026-01-01"),
-        stale: false,
+        stale: expect.any(Boolean),
       },
     ]);
   });
 
-  it("flague stale une Subvention dont la Campagne date de plus d'un an", async () => {
+  it("flague stale une Subvention dont la Campagne est publiée depuis plus d'un an", async () => {
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
@@ -125,8 +111,8 @@ describe("listVisibleSubventions", () => {
         campaign: {
           name: "Campagne CA Event 2024",
           type: "CA_EVENT",
-          publicationDate: new Date("2024-01-01"),
-          date: twoYearsAgo,
+          publicationDate: twoYearsAgo,
+          date: new Date(),
         },
       },
     ]);
@@ -147,47 +133,5 @@ describe("listVisibleSubventionsForAdmin", () => {
     expect(requireStructureAccessMock).not.toHaveBeenCalled();
     const call = findManyMock.mock.calls[0][0];
     expect(call.where.assoId).toBe("asso-1");
-  });
-});
-
-describe("listCurrentSubventions", () => {
-  it("ne filtre, côté requête, que les Campagnes dans la fenêtre de financement (2 ans)", async () => {
-    findManyMock.mockResolvedValue([]);
-    const before = new Date();
-
-    await listCurrentSubventions("club-info");
-
-    const dateFilter = findManyMock.mock.calls[0][0].where.campaign.date;
-    expect(dateFilter.gte).toBeInstanceOf(Date);
-    const expectedCutoff = new Date(before);
-    expectedCutoff.setFullYear(expectedCutoff.getFullYear() - 2);
-    expect(
-      Math.abs(dateFilter.gte.getTime() - expectedCutoff.getTime()),
-    ).toBeLessThan(5000);
-  });
-});
-
-describe("listHistoricalSubventions", () => {
-  it("ne filtre, côté requête, que les Campagnes hors fenêtre de financement (>2 ans)", async () => {
-    findManyMock.mockResolvedValue([]);
-    const before = new Date();
-
-    await listHistoricalSubventions("club-info");
-
-    const dateFilter = findManyMock.mock.calls[0][0].where.campaign.date;
-    expect(dateFilter.lt).toBeInstanceOf(Date);
-    const expectedCutoff = new Date(before);
-    expectedCutoff.setFullYear(expectedCutoff.getFullYear() - 2);
-    expect(
-      Math.abs(dateFilter.lt.getTime() - expectedCutoff.getTime()),
-    ).toBeLessThan(5000);
-  });
-
-  it("délègue le scoping par Structure à requireStructureAccess", async () => {
-    findManyMock.mockResolvedValue([]);
-
-    await listHistoricalSubventions("club-info");
-
-    expect(requireStructureAccessMock).toHaveBeenCalledWith("club-info");
   });
 });

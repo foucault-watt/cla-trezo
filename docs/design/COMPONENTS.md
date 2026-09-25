@@ -222,31 +222,15 @@ Type-based accent colors) — **A won** and is implemented in
   Subvention is spent rather than filling up. Matches the existing
   `FundingSourcesPanel` convention; keep it consistent if this pattern shows
   up elsewhere rather than picking the opposite convention per page.
-- A stale Campagne (`campaignDate` >1 year, cf. `isSubventionStale`) shows a
-  `text-error` "Campagne ancienne" flag next to the date, and every
-  Subvention card in it gets the same warning line as
-  `FundingSourcesPanel` ("Subvention ancienne — risque de refus par
-  l'Admin.") — staleness is a Campagne-level fact (same `campaignDate` for
-  every Subvention in it), so all cards in a stale section render red
-  together, never mixed.
-- **Historique, loaded on demand.** The page's default query
-  (`listCurrentSubventions`) only fetches Subventions within the 2-year
-  funding window (`isSubventionWithinFundingWindow` /
-  `fundingWindowCutoff`, cf. `lib/expense-reports/line-warnings.ts` — the
-  same cutoff the Note de frais funding-source panel already uses to
-  decide "current vs old", reused rather than re-invented). Older
-  Subventions live behind a `collapse-arrow` "Historique" section at the
-  bottom of the page (`historique-section.tsx`), fetched via a Server
-  Action only the first time it's opened — never on initial page load, to
-  avoid paying for a full-history query (Subvention + FinancialMovement
-  aggregation) on every visit. Rows there are flat (not grouped by
-  Campagne — this section is a single reference list, not the primary
-  scan surface) and non-interactive: reason, Type badge, Campagne + date,
-  montant restant, and `commentary` inline in italic. An earlier version
-  made each row expand-on-click to a per-Ligne usage breakdown
-  (`FinancialMovement` → `ExpenseReportLine`) — cut as more interaction
-  than the historique section warrants; re-introduce only if a real need
-  for that drill-down shows up.
+- Campagnes are split into three age bands by **publication date** (never
+  the Campagne's own date), cf. `lib/subventions/subvention-age.ts` — the
+  same rule the Note de frais funding-source panel and the "Subvention
+  ancienne" Warning use, so the three can never disagree. "Récentes" (≤ 1
+  year) stay open; "Subventions de plus d'un an" (≤ 2 years) is collapsed with a
+  `text-error` flag, and every Subvention card in it gets the same warning
+  line as `FundingSourcesPanel` — staleness is a Campagne-level fact, so all
+  cards in a stale section render red together, never mixed; "Historique"
+  (> 2 years, outside the funding window) is collapsed and compact.
 
 ## Page structure (list-style admin pages)
 
