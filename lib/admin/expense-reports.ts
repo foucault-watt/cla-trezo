@@ -89,7 +89,7 @@ export type ExpenseReportOverviewForAsso = {
 /**
  * Notes de frais d'une seule Structure, tous statuts confondus (y compris
  * Brouillon), pour l'onglet "Notes de frais" en lecture seule de la page
- * Admin détail d'Asso (cf. #associations-lab) — contrairement à
+ * Admin détail d'Asso — contrairement à
  * listExpenseReportsForAdmin qui liste toutes les Structures mais exclut les
  * Brouillons, cette vue par Asso n'a pas besoin de ce filtre : elle sert à
  * avoir une vue d'ensemble de la Structure, pas une file de traitement.

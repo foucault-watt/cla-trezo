@@ -27,6 +27,8 @@ export type AssoOverview = {
   type: AssoType | null;
   status: AssoStatus;
   solde: SoldeView;
+  /** Date du dernier mouvement du Solde, null si aucun. */
+  lastActivityAt: Date | null;
   subventionsPubliees: number;
   notesDeFraisEnAttente: number;
 };
@@ -77,6 +79,10 @@ function toOverview(asso: {
     type: asso.type,
     status: asso.status,
     solde: computeSolde(asso.type, asso.financialMovements),
+    lastActivityAt: asso.financialMovements.reduce<Date | null>(
+      (latest, m) => (!latest || m.createdAt > latest ? m.createdAt : latest),
+      null,
+    ),
     subventionsPubliees: asso._count.subventions,
     notesDeFraisEnAttente: asso._count.expenseReports,
   };

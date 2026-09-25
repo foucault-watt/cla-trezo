@@ -1384,75 +1384,6 @@ export const iconUsages: IconUsage[] = [
     context: "bouton de confirmation dans la modale",
   },
 
-  // app/app/admin/layout.tsx
-  {
-    icon: "Gauge",
-    visibleText: "Atelier Dashboard",
-    ariaLabel: null,
-    file: "app/app/admin/layout.tsx",
-    context: "lien de navigation Admin vers l'atelier Dashboard",
-  },
-
-  // app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx
-  {
-    icon: "Wallet",
-    visibleText: "Solde actuel",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
-    context: "figure de la tuile stat Solde actuel (Club uniquement)",
-  },
-  {
-    icon: "Receipt",
-    visibleText: "Notes de frais en attente",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
-    context: "figure de la tuile stat Notes de frais",
-  },
-  {
-    icon: "HandCoins",
-    visibleText: "Subventions restantes",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-a-timeline.tsx",
-    context: "figure de la tuile stat Subventions",
-  },
-
-  // app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx
-  {
-    icon: "Wallet",
-    visibleText: "Solde actuel",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
-    context: "carte Solde de la grille (Club uniquement)",
-  },
-  {
-    icon: "Receipt",
-    visibleText: "Notes de frais",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
-    context: "carte Notes de frais de la grille",
-  },
-  {
-    icon: "HandCoins",
-    visibleText: "Subventions",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
-    context: "carte Subventions de la grille",
-  },
-  {
-    icon: "History",
-    visibleText: "Dernière activité",
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
-    context: "carte Dernière activité de la grille",
-  },
-  {
-    icon: "ArrowRight",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/admin/developpement/dashboard-lab/_components/variant-b-grid.tsx",
-    context: "chevron décoratif en bas des cartes Notes de frais / Subventions",
-  },
-
   // app/app/_components/member-asso-card.tsx (suite)
   {
     icon: "ArrowRight",
@@ -1631,5 +1562,28 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/layout.tsx",
     context: "alerte d'une Note Rejetée, avec le motif du rejet",
+  },
+
+  // app/app/admin/associations/_components/associations-list.tsx
+  {
+    icon: "Search",
+    visibleText: "Rechercher une Asso…",
+    ariaLabel: null,
+    file: "app/app/admin/associations/_components/associations-list.tsx",
+    context: "aria-hidden, champ de recherche de la barre de filtres",
+  },
+  {
+    icon: "X",
+    visibleText: "Réinitialiser",
+    ariaLabel: null,
+    file: "app/app/admin/associations/_components/associations-list.tsx",
+    context: "aria-hidden, bouton qui efface recherche et filtres",
+  },
+  {
+    icon: "ArrowDownUp",
+    visibleText: null,
+    ariaLabel: "Trier par",
+    file: "app/app/admin/associations/_components/associations-list.tsx",
+    context: "aria-hidden, devant le menu de tri de la liste des Assos",
   },
 ];

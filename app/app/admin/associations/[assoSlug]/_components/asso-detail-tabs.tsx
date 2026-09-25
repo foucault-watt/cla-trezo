@@ -18,10 +18,7 @@ type InnerTab = "apercu" | "solde" | "subventions" | "notes-de-frais" | "documen
  * (un seul chiffre + Membres), Solde (Club uniquement, réutilise le vrai
  * SoldeCard de la vue Structure), Subventions, Notes de frais (lecture
  * seule) et Documents. Le nom/type/statut de l'Asso sont déjà affichés par
- * la page parente (page.tsx), pas répétés ici. Cf. le prototype validé
- * app/app/admin/developpement/associations-lab/_components/variant-c-tabs.tsx
- * pour la référence de design — celui-ci en est la version câblée aux
- * vraies données.
+ * la page parente (page.tsx), pas répétés ici.
  */
 export function AssoDetailTabs({ asso }: { asso: AssoDetail }) {
   const [tab, setTab] = useState<InnerTab>("apercu");
