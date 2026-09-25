@@ -339,7 +339,7 @@ function EditableReimbursementRow({
             />
           </form>
         </td>
-        <td className="min-w-52 align-top">
+        <td className="min-w-40 align-top">
           <input
             form={formId}
             className="input input-sm w-full"
@@ -356,7 +356,7 @@ function EditableReimbursementRow({
             }
           />
         </td>
-        <td className="min-w-44 align-top">
+        <td className="min-w-36 align-top">
           <select
             form={formId}
             className="select select-sm w-full"
@@ -397,7 +397,7 @@ function EditableReimbursementRow({
             />
           )}
         </td>
-        <td className="min-w-56 align-top">
+        <td className="min-w-44 align-top">
           <FundingSourceSelect
             formId={formId}
             value={fields.fundingChoice}
@@ -431,26 +431,22 @@ function EditableReimbursementRow({
             <span className="text-base-content/50">€</span>
           </label>
         </td>
-        <td className="min-w-20 align-top">
-          {line?.warnings.length ? (
-            <div
-              className="tooltip tooltip-left"
-              data-tip={line.warnings.join(" · ")}
-            >
-              <span
-                className="badge badge-warning gap-1"
-                aria-label={line.warnings.join(" ")}
-              >
-                <TriangleAlert size={12} />
-                {line.warnings.length}
-              </span>
-            </div>
-          ) : (
-            <span className="text-base-content/30">—</span>
-          )}
-        </td>
-        <td className="min-w-24 align-top">
+        <td className="align-top">
           <div className="flex items-center justify-end gap-1">
+            {line?.warnings.length ? (
+              <div
+                className="tooltip tooltip-left"
+                data-tip={line.warnings.join(" · ")}
+              >
+                <span
+                  className="badge badge-warning gap-1"
+                  aria-label={line.warnings.join(" ")}
+                >
+                  <TriangleAlert size={12} />
+                  {line.warnings.length}
+                </span>
+              </div>
+            ) : null}
             {line ? (
               <button
                 type="button"
@@ -505,7 +501,7 @@ function EditableReimbursementRow({
       </tr>
       {!state.ok && state.error && (
         <tr>
-          <td colSpan={7} className="pt-0">
+          <td colSpan={6} className="pt-0">
             <div role="alert" className="alert alert-error alert-soft py-2">
               {state.error}
             </div>
@@ -564,7 +560,7 @@ function ReadOnlyReimbursementRow({ line }: { line: ExpenseReportLineDetail }) {
           : fundingSourceLabel[line.fundingSource]}
       </td>
       <td className="text-right">{formatCents(line.amountCents)}</td>
-      <td>
+      <td className="text-right">
         {line.warnings.length ? (
           <span
             className="badge badge-warning gap-1"
@@ -573,11 +569,8 @@ function ReadOnlyReimbursementRow({ line }: { line: ExpenseReportLineDetail }) {
             <TriangleAlert size={12} />
             {line.warnings.length}
           </span>
-        ) : (
-          "—"
-        )}
+        ) : null}
       </td>
-      <td />
     </tr>
   );
 }
@@ -634,7 +627,7 @@ export function ReimbursementsTable({
         </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-          <table className="table min-w-[70rem]">
+          <table className="table [&_td]:px-2 [&_th]:px-2">
             <thead className="bg-base-200/70">
               <tr>
                 <th>Date</th>
@@ -642,8 +635,9 @@ export function ReimbursementsTable({
                 <th>Type</th>
                 <th>Financement</th>
                 <th className="text-right">Montant</th>
-                <th>Alertes</th>
-                <th />
+                <th>
+                  <span className="sr-only">Alertes et actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -680,7 +674,7 @@ export function ReimbursementsTable({
               )}
               {editable && !adding && (
                 <tr>
-                  <td colSpan={7} className="p-0">
+                  <td colSpan={6} className="p-0">
                     <button
                       type="button"
                       className="btn btn-ghost btn-block justify-start rounded-none text-base-content/70"
@@ -699,7 +693,7 @@ export function ReimbursementsTable({
                   Total
                 </th>
                 <th className="text-right">{formatCents(total)}</th>
-                <th colSpan={2} />
+                <th />
               </tr>
             </tfoot>
           </table>
@@ -709,11 +703,7 @@ export function ReimbursementsTable({
         <div role="status" className="alert alert-warning alert-soft">
           <TriangleAlert size={18} />
           <span>
-            {pluralize(
-              warningCount,
-              "dépense comporte",
-              "dépenses comportent",
-            )}{" "}
+            {pluralize(warningCount, "dépense comporte", "dépenses comportent")}{" "}
             une alerte. Cela ne bloque pas la soumission.
           </span>
         </div>

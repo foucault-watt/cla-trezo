@@ -317,7 +317,7 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "components/expense-reports/reimbursements-table.tsx",
     context:
-      "badge de compte d'alertes sur une ligne (aria-label = liste des alertes)",
+      "badge de compte d'alertes, dans la colonne d'actions de la dépense (aria-label = liste des alertes)",
   },
   {
     icon: "Trash2",
