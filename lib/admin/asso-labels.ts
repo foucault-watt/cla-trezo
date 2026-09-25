@@ -6,23 +6,13 @@ export const assoTypeLabel: Record<AssoType, string> = {
   ASSOCIATION_1901: "Association loi 1901",
 };
 
-export const assoTypeDescription: Record<AssoType, string> = {
-  CLUB: "Asso interne de CLA, sans compte bancaire propre.\nSon argent est géré par CLA et suivi via un Solde interne dans l'application.",
-  COMMISSION:
-    "Asso interne de CLA disposant de son propre compte bancaire.\nPas de Solde interne, suivi uniquement par Subventions.",
-  ASSOCIATION_1901:
-    "Asso juridiquement indépendante de CLA disposant de son propre compte bancaire.\nPas de Solde interne, suivi uniquement par Subventions.",
-};
-
-export const assoTypeOptions: {
-  value: AssoType;
-  label: string;
-  description: string;
-}[] = (Object.keys(assoTypeLabel) as AssoType[]).map((value) => ({
-  value,
-  label: assoTypeLabel[value],
-  description: assoTypeDescription[value],
-}));
+/**
+ * Le Type vient du SSO CLA (cf. lib/auth/cla.ts) : seule une Structure
+ * héritée que le SSO ne renvoie pas peut rester sans Type.
+ */
+export function assoTypeDisplayLabel(type: AssoType | null): string {
+  return type ? assoTypeLabel[type] : "Non classée";
+}
 
 export const assoStatusLabel: Record<AssoStatus, string> = {
   ACTIVE: "Actif",

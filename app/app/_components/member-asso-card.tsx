@@ -2,7 +2,7 @@
 // grille classique à partir de sm.
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
-import { assoTypeLabel } from "@/lib/admin/asso-labels";
+import { assoTypeDisplayLabel } from "@/lib/admin/asso-labels";
 import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
 import type { MemberAssoCard as MemberAssoCardData } from "./home-types";
 
@@ -15,9 +15,9 @@ export function MemberAssoCard({ card }: { card: MemberAssoCardData }) {
       <div className="card-body gap-1.5">
         <div className="flex items-start justify-between gap-2">
           <Building2 className="text-base-content/60" size={24} />
-          {card.overview?.type && (
+          {card.overview && (
             <span className="badge badge-outline badge-sm">
-              {assoTypeLabel[card.overview.type]}
+              {assoTypeDisplayLabel(card.overview.type)}
             </span>
           )}
         </div>

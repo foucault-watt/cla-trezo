@@ -95,9 +95,9 @@ model Asso {
   slug      String     @unique
   name      String
   status    AssoStatus
-  // Null tant qu'un Admin n'a pas classifié la Structure (Club / Commission /
-  // Association loi 1901) : les Structures créées à la volée depuis la sync
-  // CLA SSO n'ont pas cette information, cf. lib/auth/cla.ts.
+  // Imposé par le SSO CLA (Club / Commission / Association loi 1901, BDX
+  // assimilé à Association loi 1901), cf. lib/auth/cla.ts. Null seulement pour
+  // une Structure héritée que le SSO ne renvoie pas (affichée "Non classée").
   type      AssoType?
   // Asso fictive du mode démo (cf. lib/auth/demo.ts), permanente en base mais
   // exclue des listings Admin (lib/admin/associations.ts,

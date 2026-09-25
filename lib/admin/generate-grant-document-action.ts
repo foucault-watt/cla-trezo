@@ -87,7 +87,7 @@ export async function generateGrantDocumentAction(
     return {
       ok: false,
       error:
-        "Le type de la Structure n'est pas renseigné : classez-la avant de générer le document.",
+        "Cette Structure est « Non classée ». Aucun Document d’octroi ne peut être généré tant que son Type n’a pas été fourni par le SSO CLA.",
     };
   }
 

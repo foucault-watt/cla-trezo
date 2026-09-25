@@ -14,7 +14,7 @@ import { DocumentsList } from "./documents-list";
 type InnerTab = "apercu" | "solde" | "subventions" | "notes-de-frais" | "documents";
 
 /**
- * Onglets de la page Admin détail d'Asso, une fois le Type défini — Aperçu
+ * Onglets de la page Admin détail d'Asso — Aperçu
  * (un seul chiffre + Membres), Solde (Club uniquement, réutilise le vrai
  * SoldeCard de la vue Structure), Subventions, Notes de frais (lecture
  * seule) et Documents. Le nom/type/statut de l'Asso sont déjà affichés par
@@ -26,8 +26,6 @@ type InnerTab = "apercu" | "solde" | "subventions" | "notes-de-frais" | "documen
 export function AssoDetailTabs({ asso }: { asso: AssoDetail }) {
   const [tab, setTab] = useState<InnerTab>("apercu");
   const assoType = asso.type;
-  if (!assoType) return null;
-
   const isClub = assoType === "CLUB";
 
   const tabs: { key: InnerTab; label: string }[] = [
@@ -85,13 +83,19 @@ export function AssoDetailTabs({ asso }: { asso: AssoDetail }) {
           </div>
         )}
 
-        {tab === "documents" && (
-          <DocumentsList
-            assoId={asso.id}
-            assoType={assoType}
-            subventions={asso.subventions}
-          />
-        )}
+        {tab === "documents" &&
+          (assoType ? (
+            <DocumentsList
+              assoId={asso.id}
+              assoType={assoType}
+              subventions={asso.subventions}
+            />
+          ) : (
+            // Le Document d'octroi découle du Type (cf. ADR-0007).
+            <p className="text-sm text-base-content/60">
+              Pas de Document d&apos;octroi pour une Asso non classée.
+            </p>
+          ))}
       </div>
     </div>
   );

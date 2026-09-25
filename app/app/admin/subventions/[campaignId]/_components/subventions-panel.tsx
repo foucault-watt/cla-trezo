@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Download, FileDown, FileText } from "lucide-react";
 import type { GrantDocumentRow } from "@/lib/admin/grant-documents";
+import { assoTypeDisplayLabel } from "@/lib/admin/asso-labels";
 import { formatCents } from "@/lib/money";
 import { pluralize } from "@/lib/plural";
 import { Stat, StatsBar } from "@/components/ui/stats";
@@ -98,17 +99,9 @@ export function SubventionsPanel({
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                       {typeMissing ? (
-                        <>
-                          <span className="badge badge-error badge-soft badge-sm">
-                            Type de Structure non renseigné
-                          </span>
-                          <Link
-                            href={`/app/admin/associations/${row.assoSlug}`}
-                            className="link"
-                          >
-                            Classer la Structure
-                          </Link>
-                        </>
+                        <span className="badge badge-error badge-soft badge-sm">
+                          {assoTypeDisplayLabel(null)}
+                        </span>
                       ) : row.document ? (
                         <>
                           <span className="text-base-content/60">

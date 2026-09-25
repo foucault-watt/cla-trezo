@@ -22,7 +22,7 @@ function movement(overrides: Partial<SoldeMovement>): SoldeMovement {
 }
 
 describe("computeSolde", () => {
-  it("n'existe pas tant que le Type de la Structure n'est pas classifié par un Admin", () => {
+  it("n'existe pas pour une Structure sans Type", () => {
     expect(computeSolde(null, [])).toEqual({ status: "type_undefined" });
   });
 

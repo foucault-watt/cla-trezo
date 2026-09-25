@@ -5,7 +5,7 @@ Application de gestion financière pour Centrale Lille Associations (CLA) : note
 ## Language
 
 **Asso**:
-Terme générique désignant toute entité gérée par l'application : un Club, une Commission ou une Association loi 1901.
+Terme générique désignant toute entité gérée par l'application : un Club, une Commission ou une Association loi 1901. Son Type (Club, Commission, Association loi 1901) et son nom viennent du SSO CLA, qui fait foi ; un BDX y est assimilé à une Association loi 1901. Une Structure héritée que le SSO ne renvoie pas peut rester sans Type (« Non classée »).
 
 **Club**:
 Structure interne à CLA, sans compte bancaire propre ni personnalité juridique séparée. Son argent est géré par CLA et suivi via un solde interne dans l'application.

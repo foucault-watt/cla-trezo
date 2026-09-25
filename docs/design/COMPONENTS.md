@@ -157,7 +157,7 @@ picker at `/app`, and the `/login` card.
 canvas is `base-200` (the border and the background it sits on become the
 same color). Use `border border-base-300` instead, same as everywhere else
 in this ladder. This bit us once already (`grid-view.tsx`, `solde-card.tsx`,
-`manual-movement-form.tsx`, `asso-type-picker.tsx` all used bare
+`manual-movement-form.tsx` all used bare
 `card-border` and went invisible) — grep for `card-border` before adding a
 new card and swap it for the explicit border.
 

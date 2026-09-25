@@ -251,7 +251,7 @@ describe("generateGrantDocumentAction", () => {
     expectNothingWritten();
   });
 
-  it("refuse tant que le type de la Structure n'est pas renseigné", async () => {
+  it("refuse de générer un document pour une Structure Non classée", async () => {
     assoFindUniqueMock.mockResolvedValue(asso(null));
 
     const result = await generateGrantDocumentAction(
@@ -261,7 +261,7 @@ describe("generateGrantDocumentAction", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(!result.ok && result.error).toContain("type de la Structure");
+    expect(!result.ok && result.error).toContain("Non classée");
     expectNothingWritten();
   });
 

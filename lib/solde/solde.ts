@@ -90,9 +90,8 @@ export type SoldeView =
  * Un Club n'a de Solde visible qu'après une première Entrée manuelle de
  * l'Admin (origin MANUAL) : tant qu'aucune n'existe, le solde n'est pas
  * considéré comme initialisé, même si des mouvements EXPENSE_REPORT
- * existaient déjà. Une Structure dont le Type n'a pas encore été classifié
- * par un Admin (cf. lib/admin/asso-type.ts) n'a pas non plus de Solde tant
- * que ce choix n'est pas fait, même si elle deviendra un Club ensuite.
+ * existaient déjà. Une Structure sans Type (Structure héritée que le SSO CLA
+ * ne renvoie pas) n'a pas non plus de Solde.
  */
 export function computeSolde(
   assoType: AssoType | null,

@@ -6,7 +6,7 @@ import { Building2 } from "lucide-react";
 import {
   assoStatusBadgeClass,
   assoStatusLabel,
-  assoTypeLabel,
+  assoTypeDisplayLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
 import { pluralize } from "@/lib/plural";
@@ -21,22 +21,18 @@ export function OtherAssoCard({ asso }: { asso: AssoOverview }) {
       <div className="card-body items-center justify-center gap-1.5">
         <Building2 className="text-base-content/60" size={28} />
         <h2 className="card-title">{asso.name}</h2>
-        {(asso.type || asso.status !== "ACTIVE") && (
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {asso.type && (
-              <span className="badge badge-outline badge-sm">
-                {assoTypeLabel[asso.type]}
-              </span>
-            )}
-            {asso.status !== "ACTIVE" && (
-              <span
-                className={`badge badge-sm ${assoStatusBadgeClass[asso.status]}`}
-              >
-                {assoStatusLabel[asso.status]}
-              </span>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          <span className="badge badge-outline badge-sm">
+            {assoTypeDisplayLabel(asso.type)}
+          </span>
+          {asso.status !== "ACTIVE" && (
+            <span
+              className={`badge badge-sm ${assoStatusBadgeClass[asso.status]}`}
+            >
+              {assoStatusLabel[asso.status]}
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-lg">
           <AssoSoldeBadge solde={asso.solde} size="sm" />
         </p>

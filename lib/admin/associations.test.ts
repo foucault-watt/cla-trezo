@@ -66,7 +66,7 @@ describe("listAssociations", () => {
     expect(result[1].solde).toEqual({ status: "not_applicable" });
   });
 
-  it("renvoie type_undefined pour une Structure sans Type encore classifié par un Admin", async () => {
+  it("renvoie type_undefined pour une Structure sans Type", async () => {
     findManyMock.mockResolvedValue([asso({ type: null })]);
 
     const result = await listAssociations();

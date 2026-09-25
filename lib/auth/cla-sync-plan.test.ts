@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { AssoType } from "@/app/generated/prisma/enums";
 import {
   planClaSync,
   type ClaSyncExisting,
@@ -13,15 +14,22 @@ function asso(
     name: overrides.slug.toUpperCase(),
     status: "ACTIVE",
     isDemo: false,
+    type: null,
     ...overrides,
   };
 }
 
-function ssoRole(associationSlug: string, role: string, associationName?: string) {
+function ssoRole(
+  associationSlug: string,
+  role: string,
+  associationName?: string,
+  associationType?: AssoType,
+) {
   return {
     associationSlug,
     associationName: associationName ?? associationSlug.toUpperCase(),
     role,
+    associationType,
   };
 }
 
@@ -31,12 +39,15 @@ describe("planClaSync, périmètre user", () => {
   it("crée la Structure inconnue en ACTIVE et le rôle de l'utilisateur", () => {
     const plan = planClaSync(
       EMPTY,
-      { username: "alice", associationRoles: [ssoRole("bde", "Trésorier", "BDE")] },
+      {
+        username: "alice",
+        associationRoles: [ssoRole("bde", "Trésorier", "BDE")],
+      },
       "user",
     );
 
     expect(plan.assosToCreate).toEqual([
-      { slug: "bde", name: "BDE", status: "ACTIVE" },
+      { slug: "bde", name: "BDE", status: "ACTIVE", type: null },
     ]);
     expect(plan.rolesToCreate).toEqual([
       { username: "alice", assoSlug: "bde", role: "Trésorier" },
@@ -70,7 +81,9 @@ describe("planClaSync, périmètre user", () => {
     const plan = planClaSync(
       {
         assos: [asso({ slug: "bde" })],
-        roles: [{ id: "r1", username: "alice", assoSlug: "bde", role: "Secrétaire" }],
+        roles: [
+          { id: "r1", username: "alice", assoSlug: "bde", role: "Secrétaire" },
+        ],
       },
       { username: "alice", associationRoles: [ssoRole("bde", "Trésorier")] },
       "user",
@@ -85,15 +98,20 @@ describe("planClaSync, périmètre user", () => {
     const plan = planClaSync(
       {
         assos: [asso({ slug: "bde", name: "BDE" })],
-        roles: [{ id: "r1", username: "alice", assoSlug: "bde", role: "Trésorier" }],
+        roles: [
+          { id: "r1", username: "alice", assoSlug: "bde", role: "Trésorier" },
+        ],
       },
-      { username: "alice", associationRoles: [ssoRole("bde", "Trésorier", "BDE")] },
+      {
+        username: "alice",
+        associationRoles: [ssoRole("bde", "Trésorier", "BDE")],
+      },
       "user",
     );
 
     expect(plan).toEqual({
       assosToCreate: [],
-      assosToRename: [],
+      assosToUpdate: [],
       rolesToCreate: [],
       rolesToUpdate: [],
       roleIdsToDelete: [],
@@ -107,13 +125,18 @@ describe("planClaSync, périmètre user", () => {
         assos: [asso({ slug: "bde", name: "BDE", status: "INACTIVE" })],
         roles: [],
       },
-      { username: "alice", associationRoles: [ssoRole("bde", "Trésorier", "Bureau des élèves")] },
+      {
+        username: "alice",
+        associationRoles: [ssoRole("bde", "Trésorier", "Bureau des élèves")],
+      },
       "user",
     );
 
     expect(plan.assosToCreate).toEqual([]);
-    // Seul le nom suit le SSO ; aucune bascule de statut dans le plan.
-    expect(plan.assosToRename).toEqual([{ id: "id-bde", name: "Bureau des élèves" }]);
+    // Sans Type fourni, seul le nom change ; aucune bascule de statut.
+    expect(plan.assosToUpdate).toEqual([
+      { id: "id-bde", name: "Bureau des élèves" },
+    ]);
     expect(plan.rolesToCreate).toEqual([
       { username: "alice", assoSlug: "bde", role: "Trésorier" },
     ]);
@@ -124,7 +147,10 @@ describe("planClaSync, périmètre user", () => {
       EMPTY,
       {
         username: "alice",
-        associationRoles: [ssoRole("bde", "Président"), ssoRole("bde", "Trésorier")],
+        associationRoles: [
+          ssoRole("bde", "Président"),
+          ssoRole("bde", "Trésorier"),
+        ],
       },
       "user",
     );
@@ -160,7 +186,9 @@ describe("planClaSync, périmètre user", () => {
     const plan = planClaSync(
       {
         assos: [asso({ slug: "bde" })],
-        roles: [{ id: "r9", username: "bob", assoSlug: "bde", role: "Président" }],
+        roles: [
+          { id: "r9", username: "bob", assoSlug: "bde", role: "Président" },
+        ],
       },
       { username: "alice", associationRoles: [] },
       "user",
@@ -183,12 +211,12 @@ describe("planClaSync, périmètre user", () => {
       },
       {
         username: "alice",
-        associationRoles: [ssoRole("old", "Trésorier", "Nouveau nom")],
+        associationRoles: [ssoRole("old", "Trésorier", "Nouveau nom", "CLUB")],
       },
       "user",
     );
 
-    expect(plan.assosToRename).toEqual([]);
+    expect(plan.assosToUpdate).toEqual([]);
     expect(plan.rolesToUpdate).toEqual([]);
     expect(plan.rolesToCreate).toEqual([]);
     expect(plan.roleIdsToDelete).toEqual([]);
@@ -197,6 +225,37 @@ describe("planClaSync, périmètre user", () => {
     expect(plan.userRoles).toEqual([
       { assoSlug: "old", assoName: "Ancienne", role: "Président" },
     ]);
+  });
+
+  it("préserve le nom, le Type et les rôles d'une démo renvoyée par le SSO", () => {
+    const plan = planClaSync(
+      {
+        assos: [
+          asso({ slug: "demo", name: "Club Démo", isDemo: true, type: "CLUB" }),
+        ],
+        roles: [
+          { id: "r1", username: "alice", assoSlug: "demo", role: "Trésorier" },
+        ],
+      },
+      {
+        username: "alice",
+        associationRoles: [
+          ssoRole("demo", "Président", "Nouveau nom", "ASSOCIATION_1901"),
+        ],
+      },
+      "user",
+    );
+
+    expect(plan).toEqual({
+      assosToCreate: [],
+      assosToUpdate: [],
+      rolesToCreate: [],
+      rolesToUpdate: [],
+      roleIdsToDelete: [],
+      userRoles: [
+        { assoSlug: "demo", assoName: "Club Démo", role: "Trésorier" },
+      ],
+    });
   });
 
   it("ne donne pas accès à une Structure ARCHIVED sans rôle déjà en base", () => {
@@ -208,5 +267,80 @@ describe("planClaSync, périmètre user", () => {
 
     expect(plan.rolesToCreate).toEqual([]);
     expect(plan.userRoles).toEqual([]);
+  });
+});
+
+describe("planClaSync, Type des Structures", () => {
+  it("crée une Structure inconnue avec le Type du SSO", () => {
+    const plan = planClaSync(
+      EMPTY,
+      {
+        username: "alice",
+        associationRoles: [
+          ssoRole("bde", "Trésorier", "BDE", "ASSOCIATION_1901"),
+        ],
+      },
+      "user",
+    );
+
+    expect(plan.assosToCreate).toEqual([
+      { slug: "bde", name: "BDE", status: "ACTIVE", type: "ASSOCIATION_1901" },
+    ]);
+  });
+
+  it("écrase le nom et le Type d'une Structure par ceux du SSO", () => {
+    const plan = planClaSync(
+      {
+        assos: [
+          asso({ slug: "rock", name: "Rock", type: null }),
+          asso({ slug: "jazz", name: "Jazz", type: "COMMISSION" }),
+        ],
+        roles: [],
+      },
+      {
+        username: "alice",
+        associationRoles: [
+          ssoRole("rock", "Président", "Club Rock", "CLUB"),
+          ssoRole("jazz", "Président", "Jazz", "CLUB"),
+        ],
+      },
+      "user",
+    );
+
+    expect(plan.assosToUpdate).toEqual([
+      { id: "id-rock", name: "Club Rock", type: "CLUB" },
+      { id: "id-jazz", type: "CLUB" },
+    ]);
+  });
+
+  it("garde le Type existant quand le SSO ne l'envoie pas", () => {
+    const plan = planClaSync(
+      {
+        assos: [asso({ slug: "jazz", name: "Jazz", type: "CLUB" })],
+        roles: [],
+      },
+      {
+        username: "alice",
+        associationRoles: [ssoRole("jazz", "Président", "Jazz")],
+      },
+      "user",
+    );
+
+    expect(plan.assosToUpdate).toEqual([]);
+  });
+
+  it("laisse le Type nul d'une Structure créée sans Type SSO", () => {
+    const plan = planClaSync(
+      EMPTY,
+      {
+        username: "alice",
+        associationRoles: [ssoRole("jazz", "Président", "Jazz")],
+      },
+      "user",
+    );
+
+    expect(plan.assosToCreate).toEqual([
+      { slug: "jazz", name: "Jazz", status: "ACTIVE", type: null },
+    ]);
   });
 });

@@ -2,13 +2,29 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import type { SessionStructure, SessionUser } from "@/lib/session";
 import { planClaSync, type ClaSyncPlan } from "@/lib/auth/cla-sync-plan";
+import type { AssoType } from "@/app/generated/prisma/enums";
 
 export class ClaAuthError extends Error {}
+
+// Type SSO → Type de Structure : le BDX est assimilé à une Association loi
+// 1901 (cf. CONTEXT.md). Un Type inconnu fait échouer la validation.
+const claAssociationTypes = {
+  club: "CLUB",
+  commission: "COMMISSION",
+  asso_1901: "ASSOCIATION_1901",
+  bdx: "ASSOCIATION_1901",
+} as const satisfies Record<string, AssoType>;
+
+const claAssociationTypeSchema = z
+  .enum(Object.keys(claAssociationTypes) as [keyof typeof claAssociationTypes])
+  .transform((type): AssoType => claAssociationTypes[type]);
 
 const claAssociationRoleSchema = z.object({
   associationSlug: z.string().min(1),
   associationName: z.string().min(1),
   role: z.string().min(1),
+  // Optionnel : seuls les services autorisés côté SSO le reçoivent.
+  associationType: claAssociationTypeSchema.optional(),
 });
 
 const claPayloadSchema = z.object({
@@ -74,7 +90,10 @@ function groupIdsByRole(
   return idsByRole;
 }
 
-function requireAssoId(assoIdBySlug: Map<string, string>, slug: string): string {
+function requireAssoId(
+  assoIdBySlug: Map<string, string>,
+  slug: string,
+): string {
   const assoId = assoIdBySlug.get(slug);
   if (!assoId) {
     throw new Error(`Structure introuvable après synchro CLA : ${slug}`);
@@ -88,16 +107,17 @@ const syncAssoSelect = {
   name: true,
   status: true,
   isDemo: true,
+  type: true,
 } as const;
 
 /**
  * Crée ou met à jour l'utilisateur et aligne ses rôles de Structure sur ceux
  * renvoyés par CLA, qui fait foi : un rôle qui n'est plus renvoyé est
  * supprimé, un poste changé met à jour la ligne existante, sans historique.
- * Une Structure inconnue en base est créée à la volée en ACTIVE (Type absent,
- * à classifier par un Admin). Les règles vivent dans planClaSync
- * (lib/auth/cla-sync-plan.ts) ; ici on lit l'existant et on applique le plan
- * en écritures groupées.
+ * Une Structure inconnue en base est créée à la volée en ACTIVE, avec le nom
+ * et le Type du SSO, qui les impose aussi aux Structures existantes.
+ * Les règles vivent dans planClaSync (lib/auth/cla-sync-plan.ts) ; ici on lit
+ * l'existant et on applique le plan en écritures groupées.
  */
 export async function syncUserFromCla(
   payload: ClaAuthPayload,
@@ -122,7 +142,9 @@ export async function syncUserFromCla(
     });
 
     const ssoSlugs = [
-      ...new Set(payload.associationRoles.map((entry) => entry.associationSlug)),
+      ...new Set(
+        payload.associationRoles.map((entry) => entry.associationSlug),
+      ),
     ];
     const ssoAssos = await tx.asso.findMany({
       where: { slug: { in: ssoSlugs } },
@@ -153,14 +175,12 @@ export async function syncUserFromCla(
     const now = new Date();
     if (plan.assosToCreate.length > 0) {
       await tx.asso.createMany({
-        // type volontairement absent : un Admin doit classifier la Structure
-        // (cf. lib/admin/asso-type.ts).
         data: plan.assosToCreate.map((asso) => ({ ...asso, createdAt: now })),
         skipDuplicates: true,
       });
     }
-    for (const { id, name } of plan.assosToRename) {
-      await tx.asso.update({ where: { id }, data: { name } });
+    for (const { id, ...data } of plan.assosToUpdate) {
+      await tx.asso.update({ where: { id }, data });
     }
 
     const assoIdBySlug = new Map(

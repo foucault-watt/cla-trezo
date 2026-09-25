@@ -55,6 +55,55 @@ describe("validateClaTicket", () => {
     );
   });
 
+  function mockPayload(associationRoles: object[]) {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          payload: { ...validPayload, associationRoles },
+        }),
+      ),
+    );
+  }
+
+  it("accepte un rôle sans associationType (SSO pas encore à jour)", async () => {
+    mockPayload([
+      { associationSlug: "cla", associationName: "CLA", role: "membre" },
+    ]);
+
+    const payload = await validateClaTicket("ticket-123");
+
+    expect(payload.associationRoles[0].associationType).toBeUndefined();
+  });
+
+  it("convertit le Type SSO en Type de Structure, BDX assimilé à Association loi 1901", async () => {
+    mockPayload([
+      { associationSlug: "a", associationName: "A", role: "r", associationType: "club" },
+      { associationSlug: "b", associationName: "B", role: "r", associationType: "commission" },
+      { associationSlug: "c", associationName: "C", role: "r", associationType: "asso_1901" },
+      { associationSlug: "d", associationName: "D", role: "r", associationType: "bdx" },
+    ]);
+
+    const payload = await validateClaTicket("ticket-123");
+
+    expect(payload.associationRoles.map((r) => r.associationType)).toEqual([
+      "CLUB",
+      "COMMISSION",
+      "ASSOCIATION_1901",
+      "ASSOCIATION_1901",
+    ]);
+  });
+
+  it("lève une ClaAuthError pour un Type SSO inconnu", async () => {
+    mockPayload([
+      { associationSlug: "a", associationName: "A", role: "r", associationType: "fanfare" },
+    ]);
+
+    await expect(validateClaTicket("ticket-123")).rejects.toThrow(
+      ClaAuthError,
+    );
+  });
+
   it("lève une ClaAuthError si le serveur CLA répond une erreur HTTP", async () => {
     vi.mocked(fetch).mockResolvedValue(new Response("", { status: 500 }));
 

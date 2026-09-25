@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { BackLink } from "@/components/nav/back-link";
 import {
   grantDocumentKindLabels,
@@ -99,15 +98,8 @@ export default async function GrantDocumentPreparationPage({
       ) : (
         <div role="alert" className="alert alert-error alert-soft">
           <span>
-            Le type de cette Structure n’est pas renseigné : impossible de
-            savoir s’il faut une Convention de subvention (Association loi 1901)
-            ou un Ordre de financement (Club, Commission).{" "}
-            <Link
-              className="link font-medium"
-              href={`/app/admin/associations/${preparation.assoSlug}`}
-            >
-              Classer la Structure
-            </Link>
+            Cette Structure est « Non classée ». Aucun Document d’octroi ne peut
+            être généré tant que son Type n’a pas été fourni par le SSO CLA.
           </span>
         </div>
       )}

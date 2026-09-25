@@ -9,11 +9,20 @@ import {
   assoStatusBadgeClass,
   assoStatusDotClass,
   assoStatusLabel,
+  assoTypeDisplayLabel,
 } from "@/lib/admin/asso-labels";
 import type { AssoOverview } from "@/lib/admin/associations";
 import { pluralize } from "@/lib/plural";
 import { AssoSoldeBadge } from "@/components/solde/asso-solde-badge";
-import { AssoTypeAlert } from "./asso-type-alert";
+
+// Structure héritée que le SSO CLA ne renvoie pas : pas de Type à imposer.
+function UnclassifiedBadge() {
+  return (
+    <span className="badge badge-ghost badge-sm whitespace-nowrap">
+      {assoTypeDisplayLabel(null)}
+    </span>
+  );
+}
 
 export function AssociationRow({
   asso,
@@ -47,7 +56,7 @@ export function AssociationRow({
         </div>
         {asso.type === null && (
           <div className="pl-[1.125rem]">
-            <AssoTypeAlert type={asso.type} />
+            <UnclassifiedBadge />
           </div>
         )}
         <div className="flex items-center justify-between pl-[1.125rem] text-xs text-base-content/60">
@@ -75,7 +84,7 @@ export function AssociationRow({
         />
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className="truncate font-medium">{asso.name}</span>
-          <AssoTypeAlert type={asso.type} />
+          {asso.type === null && <UnclassifiedBadge />}
         </div>
         {/* Libellés complets plutôt qu'abrégés (« subv. ») : la liste n'a pas
             d'en-têtes de colonnes, le texte doit se suffire. La colonne

@@ -1,4 +1,4 @@
-import type { AssoStatus } from "@/app/generated/prisma/enums";
+import type { AssoStatus, AssoType } from "@/app/generated/prisma/enums";
 
 /**
  * Planification pure de la synchronisation Trezo ← SSO CLA : à partir de
@@ -11,12 +11,17 @@ import type { AssoStatus } from "@/app/generated/prisma/enums";
  * Une seule ligne par couple User × Structure : plusieurs postes dans la
  * même Structure sont fusionnés en un seul rôle ("Président, Trésorier").
  *
- * Une Structure ARCHIVED ou de démo n'est jamais modifiée : ni nom, ni rôles.
+ * Le SSO fait aussi foi pour le nom et le Type des Structures qu'il renvoie ;
+ * sans Type SSO (service non autorisé côté SSO), le Type existant est gardé.
+ *
+ * Une Structure ARCHIVED ou de démo n'est jamais modifiée : ni nom, ni Type,
+ * ni rôles.
  * La session n'y donne accès que via un rôle déjà en base, confirmé par le SSO.
  *
  * Périmètre `user` (toute connexion) : n'aligne que les rôles de
  * l'utilisateur connecté, crée les Structures inconnues en ACTIVE, suit le
- * nom renvoyé par le SSO et ne change jamais le statut d'une Structure.
+ * nom et le Type renvoyés par le SSO et ne change jamais le statut d'une
+ * Structure.
  */
 
 export type ClaSyncScope = "user";
@@ -27,6 +32,7 @@ export type ClaSyncExistingAsso = {
   name: string;
   status: AssoStatus;
   isDemo: boolean;
+  type: AssoType | null;
 };
 
 export type ClaSyncExistingRole = {
@@ -45,6 +51,7 @@ export type ClaSyncSsoRole = {
   associationSlug: string;
   associationName: string;
   role: string;
+  associationType?: AssoType;
 };
 
 export type ClaSyncSso = {
@@ -53,8 +60,14 @@ export type ClaSyncSso = {
 };
 
 export type ClaSyncPlan = {
-  assosToCreate: { slug: string; name: string; status: AssoStatus }[];
-  assosToRename: { id: string; name: string }[];
+  assosToCreate: {
+    slug: string;
+    name: string;
+    status: AssoStatus;
+    type: AssoType | null;
+  }[];
+  /** Seuls les champs qui changent sont présents. */
+  assosToUpdate: { id: string; name?: string; type?: AssoType }[];
   rolesToCreate: { username: string; assoSlug: string; role: string }[];
   rolesToUpdate: { id: string; role: string }[];
   roleIdsToDelete: string[];
@@ -68,23 +81,40 @@ function isProtected(asso: ClaSyncExistingAsso): boolean {
 
 /** Un rôle par Structure : postes multiples fusionnés dans l'ordre du SSO. */
 function mergeRolesBySlug(roles: ClaSyncSsoRole[]): ClaSyncSsoRole[] {
-  const bySlug = new Map<string, { name: string; roles: string[] }>();
+  const bySlug = new Map<
+    string,
+    { name: string; type?: AssoType; roles: string[] }
+  >();
   for (const entry of roles) {
     const merged = bySlug.get(entry.associationSlug);
     if (!merged) {
       bySlug.set(entry.associationSlug, {
         name: entry.associationName,
+        type: entry.associationType,
         roles: [entry.role],
       });
     } else if (!merged.roles.includes(entry.role)) {
       merged.roles.push(entry.role);
     }
   }
-  return [...bySlug].map(([associationSlug, { name, roles }]) => ({
+  return [...bySlug].map(([associationSlug, { name, type, roles }]) => ({
     associationSlug,
     associationName: name,
+    associationType: type,
     role: roles.join(", "),
   }));
+}
+
+function assoUpdate(
+  asso: ClaSyncExistingAsso,
+  entry: ClaSyncSsoRole,
+): ClaSyncPlan["assosToUpdate"][number] | null {
+  const update: ClaSyncPlan["assosToUpdate"][number] = { id: asso.id };
+  if (asso.name !== entry.associationName) update.name = entry.associationName;
+  if (entry.associationType && asso.type !== entry.associationType) {
+    update.type = entry.associationType;
+  }
+  return Object.keys(update).length > 1 ? update : null;
 }
 
 export function planClaSync(
@@ -98,7 +128,7 @@ export function planClaSync(
 
   const plan: ClaSyncPlan = {
     assosToCreate: [],
-    assosToRename: [],
+    assosToUpdate: [],
     rolesToCreate: [],
     rolesToUpdate: [],
     roleIdsToDelete: [],
@@ -115,9 +145,11 @@ export function planClaSync(
         slug: entry.associationSlug,
         name: entry.associationName,
         status: "ACTIVE",
+        type: entry.associationType ?? null,
       });
-    } else if (!isProtected(asso) && asso.name !== entry.associationName) {
-      plan.assosToRename.push({ id: asso.id, name: entry.associationName });
+    } else if (!isProtected(asso)) {
+      const update = assoUpdate(asso, entry);
+      if (update) plan.assosToUpdate.push(update);
     }
     if (!asso || !isProtected(asso)) {
       plan.userRoles.push({

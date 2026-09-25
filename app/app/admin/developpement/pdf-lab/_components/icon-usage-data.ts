@@ -978,24 +978,6 @@ export const iconUsages: IconUsage[] = [
     context: "cohérent avec convention-preparation-form.tsx",
   },
 
-  // app/app/admin/associations/_components/asso-type-alert.tsx
-  {
-    icon: "TriangleAlert",
-    visibleText: "Type à définir",
-    ariaLabel: null,
-    file: "app/app/admin/associations/_components/asso-type-alert.tsx",
-  },
-
-  // app/app/admin/associations/[assoSlug]/_components/asso-type-picker.tsx
-  {
-    icon: "Building2 / Landmark / Scale",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/admin/associations/[assoSlug]/_components/asso-type-picker.tsx",
-    context:
-      "une icône par type d'asso (CLUB/COMMISSION/ASSOCIATION_1901), texte fourni dynamiquement par assoTypeOptions (lib/admin/asso-labels)",
-  },
-
   // app/app/admin/_components/dashboard/queue-list.tsx
   {
     icon: "Clock",
@@ -1537,16 +1519,6 @@ export const iconUsages: IconUsage[] = [
     file: "components/asso/member-login-badge.tsx",
     context:
       'texte visible dynamique "Vu·e le {date}" ; badge orange avec tooltip explicatif quand la dernière connexion dépasse STALE_LOGIN_DAYS',
-  },
-
-  // app/app/admin/associations/[assoSlug]/_components/asso-detail-tabs.tsx
-  {
-    icon: "Building2 / Landmark / Scale",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/admin/associations/[assoSlug]/_components/asso-detail-tabs.tsx",
-    context:
-      "icône d'en-tête selon le Type de l'Asso, cohérent avec asso-type-picker.tsx",
   },
 
   // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx
