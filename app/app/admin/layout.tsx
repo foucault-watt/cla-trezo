@@ -16,6 +16,10 @@ import { SectionBreadcrumbs } from "@/components/nav/section-breadcrumbs";
 import { SidebarDrawer } from "@/components/nav/sidebar-drawer";
 import { requireAdmin } from "@/lib/auth/guards";
 
+// Le loading.tsx du segment isole les pages du cookies() de requireAdmin() :
+// sans ça, `next build` tente de les prérendre et interroge la base.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "Administration",
