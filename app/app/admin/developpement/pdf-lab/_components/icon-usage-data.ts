@@ -1598,6 +1598,26 @@ export const iconUsages: IconUsage[] = [
       "icône d'en-tête selon le Type de l'Asso, cohérent avec asso-type-picker.tsx",
   },
 
+  // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx
+  {
+    icon: "FileText",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/associations/[assoSlug]/_components/documents-list.tsx",
+    context:
+      "aria-hidden, à côté du libellé du document (Convention de subvention ou Ordre de financement)",
+  },
+
+  // app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx
+  {
+    icon: "Clock3",
+    visibleText: "Subventions de plus d'un an",
+    ariaLabel: null,
+    file: "app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx",
+    context:
+      "aria-hidden, en-tête de section, cohérent avec subventions-ledger.tsx",
+  },
+
   // components/ui/empty-state.tsx (icône passée en prop)
   {
     icon: "Receipt",
@@ -1688,25 +1708,5 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "app/app/admin/notes-de-frais/[reportId]/layout.tsx",
     context: "alerte d'une Note Rejetée, avec le motif du rejet",
-  },
-
-  // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx
-  {
-    icon: "FileText",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/admin/associations/[assoSlug]/_components/documents-list.tsx",
-    context:
-      "aria-hidden, à côté du libellé du document (Convention de subvention ou Ordre de financement)",
-  },
-
-  // app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx
-  {
-    icon: "Clock3",
-    visibleText: "Subventions de plus d'un an",
-    ariaLabel: null,
-    file: "app/app/admin/associations/[assoSlug]/_components/subventions-tab.tsx",
-    context:
-      "aria-hidden, en-tête de section, cohérent avec subventions-ledger.tsx",
   },
 ];
