@@ -49,10 +49,84 @@ describe("validateClaTicket", () => {
     const payload = await validateClaTicket("ticket-123");
 
     expect(payload.username).toBe("jdupont");
+    expect(payload.allAssociations).toBeUndefined();
     expect(fetch).toHaveBeenCalledWith(
       "https://cla.example.com/authentification/trezo/ticket-123",
       { cache: "no-store" },
     );
+  });
+
+  it("accepte le catalogue complet et convertit ses Types SSO", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          payload: {
+            ...validPayload,
+            isAdmin: true,
+            allAssociations: ["club", "commission", "asso_1901", "bdx"].map(
+              (type) => ({
+                slug: type,
+                name: type,
+                type,
+                members: [
+                  {
+                    username: "alice",
+                    firstName: "Alice",
+                    lastName: "Martin",
+                    role: "Trésorier",
+                  },
+                ],
+              }),
+            ),
+          },
+        }),
+      ),
+    );
+    const payload = await validateClaTicket("ticket");
+    expect(payload.allAssociations?.map((asso) => asso.type)).toEqual([
+      "CLUB",
+      "COMMISSION",
+      "ASSOCIATION_1901",
+      "ASSOCIATION_1901",
+    ]);
+    expect(payload.allAssociations?.[0].members).toEqual([
+      {
+        username: "alice",
+        firstName: "Alice",
+        lastName: "Martin",
+        role: "Trésorier",
+      },
+    ]);
+  });
+
+  it("conserve un catalogue vide explicitement fourni", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          payload: { ...validPayload, allAssociations: [] },
+        }),
+      ),
+    );
+    expect((await validateClaTicket("ticket")).allAssociations).toEqual([]);
+  });
+
+  it.each([
+    { slug: "a", name: "A", type: "inconnu", members: [] },
+    { slug: "a", name: "A", members: [] },
+    { slug: "a", name: "A", type: "club" },
+    { slug: "a", name: "A", type: "club", members: [{ username: "alice" }] },
+  ])("rejette un catalogue incomplet ou un Type inconnu : %j", async (asso) => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          payload: { ...validPayload, allAssociations: [asso] },
+        }),
+      ),
+    );
+    await expect(validateClaTicket("ticket")).rejects.toThrow(ClaAuthError);
   });
 
   function mockPayload(associationRoles: object[]) {
@@ -78,10 +152,30 @@ describe("validateClaTicket", () => {
 
   it("convertit le Type SSO en Type de Structure, BDX assimilé à Association loi 1901", async () => {
     mockPayload([
-      { associationSlug: "a", associationName: "A", role: "r", associationType: "club" },
-      { associationSlug: "b", associationName: "B", role: "r", associationType: "commission" },
-      { associationSlug: "c", associationName: "C", role: "r", associationType: "asso_1901" },
-      { associationSlug: "d", associationName: "D", role: "r", associationType: "bdx" },
+      {
+        associationSlug: "a",
+        associationName: "A",
+        role: "r",
+        associationType: "club",
+      },
+      {
+        associationSlug: "b",
+        associationName: "B",
+        role: "r",
+        associationType: "commission",
+      },
+      {
+        associationSlug: "c",
+        associationName: "C",
+        role: "r",
+        associationType: "asso_1901",
+      },
+      {
+        associationSlug: "d",
+        associationName: "D",
+        role: "r",
+        associationType: "bdx",
+      },
     ]);
 
     const payload = await validateClaTicket("ticket-123");
@@ -96,20 +190,21 @@ describe("validateClaTicket", () => {
 
   it("lève une ClaAuthError pour un Type SSO inconnu", async () => {
     mockPayload([
-      { associationSlug: "a", associationName: "A", role: "r", associationType: "fanfare" },
+      {
+        associationSlug: "a",
+        associationName: "A",
+        role: "r",
+        associationType: "fanfare",
+      },
     ]);
 
-    await expect(validateClaTicket("ticket-123")).rejects.toThrow(
-      ClaAuthError,
-    );
+    await expect(validateClaTicket("ticket-123")).rejects.toThrow(ClaAuthError);
   });
 
   it("lève une ClaAuthError si le serveur CLA répond une erreur HTTP", async () => {
     vi.mocked(fetch).mockResolvedValue(new Response("", { status: 500 }));
 
-    await expect(validateClaTicket("ticket-123")).rejects.toThrow(
-      ClaAuthError,
-    );
+    await expect(validateClaTicket("ticket-123")).rejects.toThrow(ClaAuthError);
   });
 
   it("lève une ClaAuthError si la réponse ne correspond pas au schéma attendu", async () => {
@@ -117,8 +212,6 @@ describe("validateClaTicket", () => {
       new Response(JSON.stringify({ success: true, payload: {} })),
     );
 
-    await expect(validateClaTicket("ticket-123")).rejects.toThrow(
-      ClaAuthError,
-    );
+    await expect(validateClaTicket("ticket-123")).rejects.toThrow(ClaAuthError);
   });
 });

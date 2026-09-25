@@ -112,6 +112,7 @@ describe("planClaSync, périmètre user", () => {
     expect(plan).toEqual({
       assosToCreate: [],
       assosToUpdate: [],
+      usersToCreate: [],
       rolesToCreate: [],
       rolesToUpdate: [],
       roleIdsToDelete: [],
@@ -249,6 +250,7 @@ describe("planClaSync, périmètre user", () => {
     expect(plan).toEqual({
       assosToCreate: [],
       assosToUpdate: [],
+      usersToCreate: [],
       rolesToCreate: [],
       rolesToUpdate: [],
       roleIdsToDelete: [],

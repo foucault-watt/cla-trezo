@@ -94,6 +94,8 @@ model Asso {
   id        String     @id @default(uuid()) @db.Uuid
   slug      String     @unique
   name      String
+  // Catalogue SSO : absence → INACTIVE, retour → ACTIVE ; ARCHIVED et démo
+  // préservés. Jamais supprimée par la synchro (relations financières).
   status    AssoStatus
   // Imposé par le SSO CLA (Club / Commission / Association loi 1901, BDX
   // assimilé à Association loi 1901), cf. lib/auth/cla.ts. Null seulement pour

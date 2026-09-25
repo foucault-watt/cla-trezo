@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import type { SessionStructure, SessionUser } from "@/lib/session";
 import { planClaSync, type ClaSyncPlan } from "@/lib/auth/cla-sync-plan";
 import type { AssoType } from "@/app/generated/prisma/enums";
+import type { Prisma } from "@/app/generated/prisma/client";
+import type { ClaSyncAssociation } from "@/lib/auth/cla-sync-plan";
 
 export class ClaAuthError extends Error {}
 
@@ -34,6 +36,23 @@ const claPayloadSchema = z.object({
   cursus: z.string().optional(),
   isAdmin: z.boolean(),
   associationRoles: z.array(claAssociationRoleSchema).default([]),
+  allAssociations: z
+    .array(
+      z.object({
+        slug: z.string().min(1),
+        name: z.string().min(1),
+        type: claAssociationTypeSchema,
+        members: z.array(
+          z.object({
+            username: z.string().min(1),
+            firstName: z.string().min(1),
+            lastName: z.string().min(1),
+            role: z.string().min(1),
+          }),
+        ),
+      }),
+    )
+    .optional(),
 });
 
 const claResponseSchema = z.object({
@@ -110,6 +129,115 @@ const syncAssoSelect = {
   type: true,
 } as const;
 
+/** Noms différents par Structure : un UPDATE groupé et paramétré, sans N+1. */
+async function updateAssos(tx: Prisma.TransactionClient, plan: ClaSyncPlan) {
+  if (plan.assosToUpdate.length === 0) return;
+  await tx.$executeRaw`
+    UPDATE "asso" AS a
+    SET "name" = COALESCE(p.name, a."name"),
+        "type" = COALESCE(p.type::"AssoType", a."type"),
+        "status" = COALESCE(p.status::"AssoStatus", a."status")
+    FROM jsonb_to_recordset(${JSON.stringify(plan.assosToUpdate)}::jsonb)
+      AS p(id uuid, name text, type text, status text)
+    WHERE a.id = p.id AND a.status <> 'ARCHIVED' AND NOT a.is_demo
+  `;
+}
+
+/** Catalogue Admin : lectures et écritures groupées, aucune suppression de User ou Structure. */
+export async function syncAllAssociationsFromCla(
+  allAssociations: ClaSyncAssociation[],
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const assos = await tx.asso.findMany({ select: syncAssoSelect });
+    const users = await tx.user.findMany({
+      select: { id: true, username: true },
+    });
+    const roles = await tx.refAssoUser.findMany({
+      select: {
+        id: true,
+        role: true,
+        user: { select: { username: true } },
+        asso: { select: { slug: true } },
+      },
+    });
+    const plan = planClaSync(
+      {
+        assos,
+        users,
+        roles: roles.map(({ id, role, user, asso }) => ({
+          id,
+          role,
+          username: user.username,
+          assoSlug: asso.slug,
+        })),
+      },
+      { username: "", associationRoles: [], allAssociations },
+      "full",
+    );
+    const now = new Date();
+    const assoIdBySlug = new Map(assos.map((asso) => [asso.slug, asso.id]));
+    const userIdByUsername = new Map(
+      users.map((user) => [user.username, user.id]),
+    );
+    if (plan.assosToCreate.length) {
+      await tx.asso.createMany({
+        data: plan.assosToCreate,
+        skipDuplicates: true,
+      });
+      const created = await tx.asso.findMany({
+        where: { slug: { in: plan.assosToCreate.map((asso) => asso.slug) } },
+        select: { id: true, slug: true },
+      });
+      for (const asso of created) assoIdBySlug.set(asso.slug, asso.id);
+    }
+    await updateAssos(tx, plan);
+    if (plan.usersToCreate.length) {
+      await tx.user.createMany({
+        data: plan.usersToCreate,
+        skipDuplicates: true,
+      });
+      const created = await tx.user.findMany({
+        where: {
+          username: { in: plan.usersToCreate.map((user) => user.username) },
+        },
+        select: { id: true, username: true },
+      });
+      for (const user of created) userIdByUsername.set(user.username, user.id);
+    }
+    if (plan.roleIdsToDelete.length) {
+      await tx.refAssoUser.deleteMany({
+        where: { id: { in: plan.roleIdsToDelete } },
+      });
+    }
+    if (plan.rolesToUpdate.length) {
+      // Les postes personnalisés peuvent tous être distincts : un seul UPDATE.
+      await tx.$executeRaw`
+        UPDATE "ref_asso_user" AS r SET role = p.role, created_at = ${now}
+        FROM jsonb_to_recordset(${JSON.stringify(plan.rolesToUpdate)}::jsonb) AS p(id uuid, role text)
+        WHERE r.id = p.id
+      `;
+    }
+    if (plan.rolesToCreate.length) {
+      await tx.refAssoUser.createMany({
+        data: plan.rolesToCreate.map(({ username, assoSlug, role }) => {
+          const userId = userIdByUsername.get(username);
+          if (!userId)
+            throw new Error(
+              `Utilisateur introuvable après synchro CLA : ${username}`,
+            );
+          return {
+            userId,
+            assoId: requireAssoId(assoIdBySlug, assoSlug),
+            role,
+            createdAt: now,
+          };
+        }),
+        skipDuplicates: true,
+      });
+    }
+  });
+}
+
 /**
  * Crée ou met à jour l'utilisateur et aligne ses rôles de Structure sur ceux
  * renvoyés par CLA, qui fait foi : un rôle qui n'est plus renvoyé est
@@ -179,9 +307,7 @@ export async function syncUserFromCla(
         skipDuplicates: true,
       });
     }
-    for (const { id, ...data } of plan.assosToUpdate) {
-      await tx.asso.update({ where: { id }, data });
-    }
+    await updateAssos(tx, plan);
 
     const assoIdBySlug = new Map(
       [...existingAssos.values()].map((asso) => [asso.slug, asso.id]),

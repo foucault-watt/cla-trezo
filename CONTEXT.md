@@ -7,6 +7,8 @@ Application de gestion financière pour Centrale Lille Associations (CLA) : note
 **Asso**:
 Terme générique désignant toute entité gérée par l'application : un Club, une Commission ou une Association loi 1901. Son Type (Club, Commission, Association loi 1901) et son nom viennent du SSO CLA, qui fait foi ; un BDX y est assimilé à une Association loi 1901. Une Structure héritée que le SSO ne renvoie pas peut rester sans Type (« Non classée »).
 
+Le catalogue des Structures actives vient du SSO CLA. Une Structure qui en disparaît devient inactive, sans perdre son historique financier ; l'archivage manuel et les Structures de démo sont préservés.
+
 **Club**:
 Structure interne à CLA, sans compte bancaire propre ni personnalité juridique séparée. Son argent est géré par CLA et suivi via un solde interne dans l'application.
 _Avoid_: asso (abus de langage courant, à éviter dans le code et les échanges métier)
@@ -19,7 +21,7 @@ Structure juridiquement indépendante de CLA, avec son propre compte bancaire. F
 _Avoid_: association (seule, sans qualificatif — pour éviter la confusion avec le sens générique du mot)
 
 **Membre**:
-Personne qui occupe un poste (Président, Trésorier…) dans une Structure. Le SSO CLA fait foi : les rôles sont alignés sur lui à chaque connexion, sans historique — un poste qu'il ne renvoie plus disparaît, un poste changé remplace l'ancien. Une personne a au plus un rôle par Structure (plusieurs postes sont fusionnés, ex. "Président, Trésorier").
+Personne qui occupe un poste (Président, Trésorier…) dans une Structure. Le SSO CLA fait foi pour tous les membres, même jamais connectés : un poste qu'il ne renvoie plus disparaît, un poste changé remplace l'ancien, sans historique. Une personne a au plus un rôle par Structure (plusieurs postes sont fusionnés, ex. "Président, Trésorier").
 
 **Solde**:
 Argent d'un Club géré par CLA, suivi dans l'application. Alimenté par des entrées manuelles et diminué par des sorties manuelles ou des Notes de frais financées dessus. Concerne uniquement les Clubs.
