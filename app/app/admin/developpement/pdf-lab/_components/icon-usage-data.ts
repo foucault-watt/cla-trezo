@@ -282,25 +282,32 @@ export const iconUsages: IconUsage[] = [
     context: "titre du panneau repliable",
   },
   {
-    icon: "ChevronDown",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
-    context: "connecteur décoratif entre étapes (version mobile)",
-  },
-  {
-    icon: "ChevronRight",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
-    context: "connecteur décoratif entre étapes (version desktop)",
-  },
-  {
     icon: "Lock",
-    visibleText: null,
+    visibleText: "Plus modifiable ensuite",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
-    context: 'à côté de l\'étape "Soumettre" en surbrillance',
+    context: 'sous l\'étape "Soumettre" en surbrillance',
+  },
+  {
+    icon: "CheckCircle2",
+    visibleText: "Validée",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
+    context: "décision possible de l'Admin CLA (étape 4)",
+  },
+  {
+    icon: "Pencil",
+    visibleText: "Modifiée puis validée",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
+    context: "décision possible de l'Admin CLA (étape 4)",
+  },
+  {
+    icon: "XCircle",
+    visibleText: "Rejetée : à refaire de zéro",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
+    context: "décision possible de l'Admin CLA (étape 4)",
   },
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/reimbursements-table.tsx
@@ -1080,38 +1087,6 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/subventions/[campaignId]/_components/asso-select.tsx",
     context:
       "chevron de dropdown, à côté du nom de l'asso sélectionnée ou d'un placeholder",
-  },
-
-  // app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx
-  {
-    icon: "Info",
-    visibleText: null,
-    ariaLabel: "Voir les décisions possibles de l'Admin CLA",
-    file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context: "bouton icône seul, déclenche le popover",
-  },
-  {
-    icon: "CheckCircle2",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context:
-      'dans la liste des décisions possibles ("La valide telle quelle.")',
-  },
-  {
-    icon: "Pencil",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context:
-      'dans la liste des décisions possibles ("La modifie, puis la valide.")',
-  },
-  {
-    icon: "XCircle",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/notes-de-frais/_components/admin-outcomes-popover.tsx",
-    context: 'dans la liste des décisions possibles ("La rejette...")',
   },
 
   // Boutons complétés le 2026-08-23 pour homogénéiser avec le reste du site

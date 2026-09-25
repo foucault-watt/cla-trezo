@@ -1,111 +1,87 @@
-import { ChevronDown, ChevronRight, Info, Lock } from "lucide-react";
-import { Fragment } from "react";
-import { AdminOutcomesPopover } from "./admin-outcomes-popover";
+import { CheckCircle2, Info, Lock, Pencil, XCircle } from "lucide-react";
 
-type Step =
-  | { kind: "text"; label: string; detail: string; highlight?: boolean }
-  | { kind: "admin" };
+type Step = {
+  label: string;
+  detail: React.ReactNode;
+  highlight?: boolean;
+};
 
-const STEPS: Step[] = [
-  { kind: "text", label: "Créer", detail: "La note démarre en Brouillon." },
-  {
-    kind: "text",
-    label: "Compléter",
-    detail: "Dépenses et justificatifs.",
-  },
-  {
-    kind: "text",
-    label: "Soumettre",
-    detail: "Vous ne pouvez plus la modifier : elle part chez l'Admin CLA.",
-    highlight: true,
-  },
-  { kind: "admin" },
+const ADMIN_OUTCOMES = [
+  { icon: CheckCircle2, color: "text-success", label: "Validée" },
+  { icon: Pencil, color: "text-info", label: "Modifiée puis validée" },
+  { icon: XCircle, color: "text-error", label: "Rejetée : à refaire de zéro" },
 ];
 
-function StepBadge({
-  tone,
-  children,
-}: {
-  tone: "default" | "highlight" | "pending";
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-        tone === "highlight"
-          ? "bg-primary text-primary-content"
-          : tone === "pending"
-            ? "bg-warning/20 text-warning"
-            : "bg-base-300 text-base-content/70"
-      }`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Connector() {
-  return (
-    <div className="flex items-center justify-center py-1 text-base-content/30 lg:px-1 lg:py-0">
-      <ChevronDown size={16} className="lg:hidden" />
-      <ChevronRight size={16} className="hidden lg:block" />
-    </div>
-  );
-}
+const STEPS: Step[] = [
+  { label: "Créer", detail: "La note démarre en Brouillon." },
+  { label: "Compléter", detail: "Ajoutez dépenses et justificatifs." },
+  {
+    label: "Soumettre",
+    highlight: true,
+    detail: (
+      <>
+        Elle part chez l&apos;Admin CLA.
+        <span className="mt-1 flex items-center gap-1 font-medium text-base-content/80">
+          <Lock size={12} className="shrink-0" />
+          Plus modifiable ensuite
+        </span>
+      </>
+    ),
+  },
+  {
+    label: "Décision de l'Admin CLA",
+    detail: (
+      <ul className="flex flex-col gap-0.5">
+        {ADMIN_OUTCOMES.map(({ icon: Icon, color, label }) => (
+          <li key={label} className="flex items-center gap-1.5">
+            <Icon size={13} className={`shrink-0 ${color}`} />
+            {label}
+          </li>
+        ))}
+      </ul>
+    ),
+  },
+];
 
 export function ExpenseReportGuide() {
   return (
     <div className="collapse-arrow collapse mb-6 border border-base-300 bg-base-100 shadow-md">
       <input type="checkbox" />
       <div className="collapse-title flex items-center gap-2 font-medium">
-        <Info size={16} className="text-base-content/60" />
+        <Info size={16} className="shrink-0 text-base-content/60" />
         Comment fonctionne une Note de frais ?
       </div>
       <div className="collapse-content">
-        <div className="mx-auto flex max-w-4xl flex-col lg:flex-row lg:items-stretch">
+        <ol className="grid lg:grid-cols-4 lg:gap-6">
           {STEPS.map((step, i) => (
-            <Fragment key={i}>
-              {i > 0 && <Connector />}
-              <div
-                className={`min-w-0 flex-1 rounded-box border p-3 ${
-                  step.kind === "text" && step.highlight
-                    ? "border-primary/50 bg-primary/5"
-                    : "border-base-300"
+            <li
+              key={step.label}
+              className="relative flex gap-3 pb-5 last:pb-0 lg:flex-col lg:gap-2 lg:pb-0"
+            >
+              {i < STEPS.length - 1 && (
+                <span
+                  aria-hidden
+                  className="absolute top-8 bottom-1 left-3.5 w-px bg-base-300 lg:top-3.5 lg:right-[-1rem] lg:bottom-auto lg:left-10 lg:h-px lg:w-auto"
+                />
+              )}
+              <span
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                  step.highlight
+                    ? "bg-primary text-primary-content"
+                    : "bg-base-200 text-base-content/70"
                 }`}
               >
-                {step.kind === "text" ? (
-                  <>
-                    <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <StepBadge
-                        tone={step.highlight ? "highlight" : "default"}
-                      >
-                        {i + 1}
-                      </StepBadge>
-                      {step.label}
-                      {step.highlight && (
-                        <Lock size={12} className="text-primary" />
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-base-content/60">
-                      {step.detail}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <StepBadge tone="pending">{i + 1}</StepBadge>
-                      Décision de l&apos;Admin CLA
-                      <AdminOutcomesPopover />
-                    </div>
-                    <p className="mt-1 text-xs text-base-content/60">
-                      Valide, modifie ou rejette la note.
-                    </p>
-                  </>
-                )}
+                {i + 1}
+              </span>
+              <div className="min-w-0 pt-0.5 lg:pt-0">
+                <p className="text-sm font-medium">{step.label}</p>
+                <div className="mt-0.5 text-xs text-base-content/60">
+                  {step.detail}
+                </div>
               </div>
-            </Fragment>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </div>
   );
