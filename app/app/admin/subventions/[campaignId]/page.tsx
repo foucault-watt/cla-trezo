@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/nav/back-link";
-import { listGrantDocumentStatuses } from "@/lib/admin/grant-documents";
+import { listGrantDocumentRows } from "@/lib/admin/grant-documents";
 import {
   getSubventionCampaign,
   listAssosForSelect,
@@ -35,10 +35,10 @@ export default async function AdminSubventionCampaignDetailPage({
   params: Promise<{ campaignId: string }>;
 }) {
   const { campaignId } = await params;
-  const [campaign, assos, grantDocumentStatuses] = await Promise.all([
+  const [campaign, assos, grantDocumentRows] = await Promise.all([
     getSubventionCampaign(campaignId),
     listAssosForSelect(),
-    listGrantDocumentStatuses(campaignId),
+    listGrantDocumentRows(campaignId),
   ]);
   if (!campaign) {
     notFound();
@@ -75,9 +75,10 @@ export default async function AdminSubventionCampaignDetailPage({
 
       <SubventionsPanel
         campaignId={campaign.id}
-        initialSubventions={campaign.subventions}
+        subventions={campaign.subventions}
+        totalAmountCents={campaign.totalAmountCents}
         assos={assos}
-        grantDocumentStatuses={grantDocumentStatuses}
+        grantDocumentRows={grantDocumentRows}
       />
 
       <div className="mt-8">

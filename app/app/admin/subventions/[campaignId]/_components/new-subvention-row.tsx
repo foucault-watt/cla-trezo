@@ -19,7 +19,7 @@ export function NewSubventionRow({
 }: {
   campaignId: string;
   assos: { id: string; name: string }[];
-  onSaved: (subvention: NonNullable<AddSubventionState["subvention"]>) => void;
+  onSaved: () => void;
   onCancel: () => void;
 }) {
   const { push: pushToast } = useToast();
@@ -32,8 +32,8 @@ export function NewSubventionRow({
   const [lastHandledState, setLastHandledState] = useState(state);
   if (state !== lastHandledState) {
     setLastHandledState(state);
-    if (state.ok && state.subvention) {
-      onSaved(state.subvention);
+    if (state.ok) {
+      onSaved();
     }
   }
 
@@ -96,10 +96,7 @@ export function NewSubventionRow({
           </fieldset>
 
           {!state.ok && state.error && (
-            <div
-              role="alert"
-              className="alert alert-error alert-soft alert-sm"
-            >
+            <div role="alert" className="alert alert-error alert-soft alert-sm">
               <span>{state.error}</span>
             </div>
           )}

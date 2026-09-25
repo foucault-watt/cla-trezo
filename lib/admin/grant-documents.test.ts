@@ -1,17 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { campaignFindUniqueMock, assoFindUniqueMock, settingsFindUniqueMock } =
-  vi.hoisted(() => ({
-    campaignFindUniqueMock: vi.fn(),
-    assoFindUniqueMock: vi.fn(),
-    settingsFindUniqueMock: vi.fn(),
-  }));
+const {
+  campaignFindUniqueMock,
+  assoFindUniqueMock,
+  settingsFindUniqueMock,
+  subventionFindManyMock,
+  grantDocumentFindManyMock,
+} = vi.hoisted(() => ({
+  campaignFindUniqueMock: vi.fn(),
+  assoFindUniqueMock: vi.fn(),
+  settingsFindUniqueMock: vi.fn(),
+  subventionFindManyMock: vi.fn(),
+  grantDocumentFindManyMock: vi.fn(),
+}));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     subventionCampaign: { findUnique: campaignFindUniqueMock },
     asso: { findUnique: assoFindUniqueMock },
     conventionPdfSettings: { findUnique: settingsFindUniqueMock },
+    subvention: { findMany: subventionFindManyMock },
+    grantDocument: { findMany: grantDocumentFindManyMock },
   },
 }));
 
@@ -20,6 +29,7 @@ import {
   getGrantDocumentPreparation,
   grantDocumentKindForAssoType,
   isGrantDocumentStale,
+  listGrantDocumentRows,
   usageDeadlineFromGenerationDate,
 } from "./grant-documents";
 
@@ -243,5 +253,69 @@ describe("getGrantDocumentPreparation", () => {
     expect(
       await getGrantDocumentPreparation("campaign-1", "asso-1", generatedOn),
     ).toBeNull();
+  });
+});
+
+describe("listGrantDocumentRows", () => {
+  const club = { id: "asso-club", name: "Zumba", slug: "zumba", type: "CLUB" };
+  const asso1901 = {
+    id: "asso-1901",
+    name: "Arts",
+    slug: "arts",
+    type: "ASSOCIATION_1901",
+  };
+
+  it("regroupe par Structure, totalise et trie par nom", async () => {
+    subventionFindManyMock.mockResolvedValue([
+      { amountCents: 1000, updatedAt: new Date("2026-01-01"), asso: club },
+      { amountCents: 500, updatedAt: new Date("2026-01-01"), asso: club },
+      { amountCents: 300, updatedAt: new Date("2026-01-01"), asso: asso1901 },
+    ]);
+    grantDocumentFindManyMock.mockResolvedValue([]);
+
+    const rows = await listGrantDocumentRows("campaign-1");
+
+    expect(rows).toEqual([
+      {
+        assoId: "asso-1901",
+        assoName: "Arts",
+        assoSlug: "arts",
+        kind: "CONVENTION",
+        subventionCount: 1,
+        totalAmountCents: 300,
+        document: null,
+      },
+      {
+        assoId: "asso-club",
+        assoName: "Zumba",
+        assoSlug: "zumba",
+        kind: "ORDRE_DE_FINANCEMENT",
+        subventionCount: 2,
+        totalAmountCents: 1500,
+        document: null,
+      },
+    ]);
+  });
+
+  it("signale un document à régénérer après l'ajout d'une Subvention", async () => {
+    subventionFindManyMock.mockResolvedValue([
+      { amountCents: 1000, updatedAt: new Date("2026-01-01"), asso: club },
+      { amountCents: 500, updatedAt: new Date("2026-01-01"), asso: club },
+    ]);
+    grantDocumentFindManyMock.mockResolvedValue([
+      {
+        assoId: "asso-club",
+        kind: "ORDRE_DE_FINANCEMENT",
+        generatedAt: new Date("2026-02-01"),
+        subventionCount: 1,
+      },
+    ]);
+
+    const [row] = await listGrantDocumentRows("campaign-1");
+
+    expect(row.document).toEqual({
+      generatedAt: new Date("2026-02-01"),
+      stale: true,
+    });
   });
 });

@@ -103,7 +103,7 @@ describe("addSubventionAction", () => {
     expect(subventionCreateMock).not.toHaveBeenCalled();
   });
 
-  it("crée la Subvention avec le montant converti en centimes et renvoie la ligne créée", async () => {
+  it("crée la Subvention avec le montant converti en centimes", async () => {
     const result = await addSubventionAction({ ok: false }, formData(valid));
 
     expect(subventionCreateMock).toHaveBeenCalledWith({
@@ -115,23 +115,14 @@ describe("addSubventionAction", () => {
         commentary: valid.commentary,
       },
     });
-    expect(result).toEqual({
-      ok: true,
-      subvention: {
-        id: "sub-1",
-        assoId: valid.assoId,
-        reason: valid.reason,
-        amountCents: 35050,
-        commentary: valid.commentary,
-      },
-    });
+    expect(result).toEqual({ ok: true });
   });
 
-  it("revalide la liste des Campagnes mais pas la page de détail, mise à jour côté client", async () => {
+  it("revalide la liste des Campagnes et la page de détail (totaux, Documents d'octroi à régénérer)", async () => {
     await addSubventionAction({ ok: false }, formData(valid));
 
     expect(revalidatePathMock).toHaveBeenCalledWith("/app/admin/subventions");
-    expect(revalidatePathMock).not.toHaveBeenCalledWith(
+    expect(revalidatePathMock).toHaveBeenCalledWith(
       `/app/admin/subventions/${valid.campaignId}`,
     );
   });
@@ -145,8 +136,8 @@ describe("addSubventionAction", () => {
     const second = await addSubventionAction({ ok: false }, formData(valid));
 
     expect(subventionCreateMock).toHaveBeenCalledTimes(2);
-    expect(first.subvention?.id).toBe("sub-1");
-    expect(second.subvention?.id).toBe("sub-2");
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
   });
 });
 

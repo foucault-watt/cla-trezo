@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { formatCentsForPdf } from "@/lib/money";
 import { fixture as conventionFixture } from "@/pdf-lab/templates/convention/fixture";
 import { fixture as financementFixture } from "@/pdf-lab/templates/financement/fixture";
 
@@ -175,6 +176,50 @@ describe("generateGrantDocumentAction", () => {
     expect(grantDocumentUpsertMock.mock.calls[0][0].create.kind).toBe(
       "CONVENTION",
     );
+  });
+
+  it("recalcule le total depuis les lignes plutôt que de croire celui envoyé", async () => {
+    await generateGrantDocumentAction("campaign-1", "asso-1", {
+      ...financementFixture,
+      expenses: [
+        { date: "01/01/2026", description: "A", amount: "100,00 €" },
+        { date: "01/01/2026", description: "B", amount: "50,50 €" },
+      ],
+      total: "999 999,00 €",
+    });
+
+    expect(renderOrdreDeFinancementPdfMock.mock.calls[0][0].total).toBe(
+      formatCentsForPdf(15050),
+    );
+  });
+
+  it("recalcule aussi le total d'une Convention", async () => {
+    assoFindUniqueMock.mockResolvedValue(asso("ASSOCIATION_1901"));
+
+    await generateGrantDocumentAction("campaign-1", "asso-1", {
+      ...conventionFixture,
+      totalAmount: "1,00 €",
+    });
+
+    expect(renderConventionPdfMock.mock.calls[0][0].totalAmount).toBe(
+      formatCentsForPdf(175000),
+    );
+  });
+
+  it("refuse une ligne dont le montant est illisible", async () => {
+    const result = await generateGrantDocumentAction("campaign-1", "asso-1", {
+      ...financementFixture,
+      expenses: [
+        { date: "01/01/2026", description: "A", amount: "cent euros" },
+      ],
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error:
+        "Un montant de ligne est illisible : corrigez-le avant de générer le document.",
+    });
+    expectNothingWritten();
   });
 
   it("refuse une Convention sans adresse bénéficiaire", async () => {

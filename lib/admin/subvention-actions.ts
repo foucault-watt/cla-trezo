@@ -10,17 +10,7 @@ import {
   parseSubventionDeleteForm,
 } from "./subvention-input";
 
-export type AddSubventionState = {
-  ok: boolean;
-  error?: string;
-  subvention?: {
-    id: string;
-    assoId: string;
-    reason: string;
-    amountCents: number;
-    commentary: string | null;
-  };
-};
+export type AddSubventionState = { ok: boolean; error?: string };
 
 /**
  * Ajoute une Subvention accordée à une Structure dans le cadre d'une
@@ -50,7 +40,7 @@ export async function addSubventionAction(
     return { ok: false, error: "Campagne introuvable." };
   }
 
-  const subvention = await prisma.subvention.create({
+  await prisma.subvention.create({
     data: {
       campaignId: parsed.data.campaignId,
       assoId: parsed.data.assoId,
@@ -60,22 +50,13 @@ export async function addSubventionAction(
     },
   });
 
-  // Pas de revalidatePath sur la page de détail de Campagne : le client met
-  // à jour l'affichage directement avec la ligne créée (cf. SubventionsPanel)
-  // pour éviter d'attendre le re-rendu serveur complet à chaque ajout. La
-  // page de liste des campagnes reste revalidée pour ses totaux agrégés.
+  // La page de détail est revalidée comme pour une modification : elle
+  // recalcule totaux et état des Documents d'octroi (un document déjà généré
+  // pour cette Structure passe "À régénérer").
+  revalidatePath(`/app/admin/subventions/${parsed.data.campaignId}`);
   revalidatePath("/app/admin/subventions");
 
-  return {
-    ok: true,
-    subvention: {
-      id: subvention.id,
-      assoId: subvention.assoId,
-      reason: subvention.reason,
-      amountCents: subvention.amountCents,
-      commentary: subvention.commentary,
-    },
-  };
+  return { ok: true };
 }
 
 export type UpdateSubventionState = { ok: boolean; error?: string };
@@ -138,7 +119,9 @@ export async function deleteSubventionAction(
   const subvention = await prisma.subvention.findUnique({
     where: { id: parsed.data.id },
     select: {
-      _count: { select: { expenseReportLines: true, financialMovements: true } },
+      _count: {
+        select: { expenseReportLines: true, financialMovements: true },
+      },
     },
   });
   if (!subvention) {

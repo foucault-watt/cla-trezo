@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { representativesForPrimarySection } from "@/lib/admin/convention-preparation-fields";
-import { formatCentsForPdf } from "@/lib/money";
+import { grantDocumentTotal } from "@/lib/admin/grant-document-total";
 import { GenerateGrantDocumentButton } from "./generate-grant-document-button";
 import type {
   ConventionParty,
@@ -11,12 +11,6 @@ import type {
   ConventionSignatureBlock,
   SubsidyConventionPdfData,
 } from "@/pdf-lab/templates/convention/types";
-
-function parseFormattedAmount(value: string): number | null {
-  const normalized = value.replace(/[\s\u00a0\u202f€]/g, "").replace(",", ".");
-  const amount = Number(normalized);
-  return Number.isFinite(amount) ? Math.round(amount * 100) : null;
-}
 
 function BeneficiaryRepresentativeFields({
   representatives,
@@ -223,16 +217,7 @@ export function ConventionPreparationForm({
       const expenses = current.expenses.map((expense, itemIndex) =>
         itemIndex === index ? { ...expense, [field]: value } : expense,
       );
-      const amounts = expenses.map((expense) =>
-        parseFormattedAmount(expense.amount),
-      );
-      const totalAmount = amounts.every(
-        (amount): amount is number => amount !== null,
-      )
-        ? formatCentsForPdf(
-            amounts.reduce((total, amount) => total + amount, 0),
-          )
-        : current.totalAmount;
+      const totalAmount = grantDocumentTotal(expenses) ?? current.totalAmount;
       return { ...current, expenses, totalAmount };
     });
   }

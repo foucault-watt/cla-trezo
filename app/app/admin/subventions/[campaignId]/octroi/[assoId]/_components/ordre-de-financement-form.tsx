@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { formatCentsForPdf } from "@/lib/money";
+import { grantDocumentTotal } from "@/lib/admin/grant-document-total";
 import type { FinancementPdfData } from "@/pdf-lab/templates/financement/types";
 import { GenerateGrantDocumentButton } from "./generate-grant-document-button";
-
-function parseFormattedAmount(value: string): number | null {
-  const normalized = value.replace(/[\s  €]/g, "").replace(",", ".");
-  const amount = Number(normalized);
-  return Number.isFinite(amount) ? Math.round(amount * 100) : null;
-}
 
 type TextField = Exclude<keyof FinancementPdfData, "expenses">;
 
@@ -53,12 +47,7 @@ export function OrdreDeFinancementForm({
       const expenses = current.expenses.map((expense, itemIndex) =>
         itemIndex === index ? { ...expense, [key]: value } : expense,
       );
-      const amounts = expenses.map((expense) =>
-        parseFormattedAmount(expense.amount),
-      );
-      const total = amounts.every((amount): amount is number => amount !== null)
-        ? formatCentsForPdf(amounts.reduce((sum, amount) => sum + amount, 0))
-        : current.total;
+      const total = grantDocumentTotal(expenses) ?? current.total;
       return { ...current, expenses, total };
     });
   }

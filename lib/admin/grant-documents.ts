@@ -72,7 +72,7 @@ type PreparationSource = {
   generatedOn: Date;
 };
 
-function totalAmountCents(subventions: PreparationSubvention[]) {
+function totalAmountCents(subventions: readonly { amountCents: number }[]) {
   return subventions.reduce((total, line) => total + line.amountCents, 0);
 }
 
@@ -293,26 +293,34 @@ export async function requireGrantDocumentPreparation(
   return preparation;
 }
 
-export type GrantDocumentStatus = {
+export type GrantDocumentRow = {
+  assoId: string;
+  assoName: string;
   assoSlug: string;
   kind: GrantDocumentKind | null;
+  subventionCount: number;
+  totalAmountCents: number;
   document: { generatedAt: Date; stale: boolean } | null;
 };
 
 /**
- * État du Document d'octroi de chaque Structure bénéficiaire d'une Campagne,
- * indexé par Structure : type attendu (null si Structure non classée) et
- * document généré, avec son éventuel besoin de régénération.
+ * Une ligne par Structure bénéficiaire d'une Campagne, triée par nom : ses
+ * Subventions (nombre, total), le type de Document d'octroi attendu (null si
+ * Structure non classée) et le document généré, avec son éventuel besoin de
+ * régénération. Tout est lu en base à chaque rendu : après un ajout, une
+ * modification ou une suppression de Subvention, la liste reflète toujours
+ * l'état réel (cf. revalidatePath dans subvention-actions.ts).
  */
-export async function listGrantDocumentStatuses(
+export async function listGrantDocumentRows(
   campaignId: string,
-): Promise<Record<string, GrantDocumentStatus>> {
+): Promise<GrantDocumentRow[]> {
   const [subventions, documents] = await Promise.all([
     prisma.subvention.findMany({
       where: { campaignId },
       select: {
+        amountCents: true,
         updatedAt: true,
-        asso: { select: { id: true, slug: true, type: true } },
+        asso: { select: { id: true, name: true, slug: true, type: true } },
       },
     }),
     prisma.grantDocument.findMany({
@@ -328,35 +336,33 @@ export async function listGrantDocumentStatuses(
 
   const byAsso = new Map<
     string,
-    { slug: string; type: AssoType | null; subventions: { updatedAt: Date }[] }
+    {
+      asso: { id: string; name: string; slug: string; type: AssoType | null };
+      subventions: { amountCents: number; updatedAt: Date }[];
+    }
   >();
-  for (const subvention of subventions) {
-    const current = byAsso.get(subvention.asso.id) ?? {
-      slug: subvention.asso.slug,
-      type: subvention.asso.type,
-      subventions: [],
-    };
-    current.subventions.push({ updatedAt: subvention.updatedAt });
-    byAsso.set(subvention.asso.id, current);
+  for (const { asso, ...subvention } of subventions) {
+    const current = byAsso.get(asso.id) ?? { asso, subventions: [] };
+    current.subventions.push(subvention);
+    byAsso.set(asso.id, current);
   }
 
-  const statuses: Record<string, GrantDocumentStatus> = {};
-  for (const [assoId, asso] of byAsso) {
+  return Array.from(byAsso.values(), ({ asso, subventions }) => {
     const kind = grantDocumentKindForAssoType(asso.type);
-    const document = documents.find((item) => item.assoId === assoId);
-    statuses[assoId] = {
+    const document = documents.find((item) => item.assoId === asso.id);
+    return {
+      assoId: asso.id,
+      assoName: asso.name,
       assoSlug: asso.slug,
       kind,
+      subventionCount: subventions.length,
+      totalAmountCents: totalAmountCents(subventions),
       document: document
         ? {
             generatedAt: document.generatedAt,
-            stale: isGrantDocumentStale(document, {
-              kind,
-              subventions: asso.subventions,
-            }),
+            stale: isGrantDocumentStale(document, { kind, subventions }),
           }
         : null,
     };
-  }
-  return statuses;
+  }).sort((a, b) => a.assoName.localeCompare(b.assoName, "fr"));
 }

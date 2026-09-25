@@ -11,6 +11,7 @@ import {
 import { getCampaignStatus } from "@/lib/subventions/status";
 import { subsidyConventionPdfDataSchema } from "@/pdf-lab/templates/convention/schema";
 import { financementPdfDataSchema } from "@/pdf-lab/templates/financement/schema";
+import { grantDocumentTotal } from "./grant-document-total";
 import { grantDocumentKindForAssoType } from "./grant-documents";
 import {
   renderConventionPdf,
@@ -23,6 +24,8 @@ export type GenerateGrantDocumentState =
 
 const INVALID_DATA_ERROR = "Les données du document sont invalides.";
 const GENERATION_FAILED_ERROR = "La génération du document a échoué.";
+const UNREADABLE_AMOUNT_ERROR =
+  "Un montant de ligne est illisible : corrigez-le avant de générer le document.";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -33,7 +36,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 /**
  * Génère (ou régénère) le Document d'octroi d'une Structure pour une
  * Campagne publiée (ADR-0007) : le type de document est déduit du type de
- * la Structure, jamais du client. Le nouveau fichier est écrit avant de
+ * la Structure, jamais du client, et le total est recalculé depuis les
+ * lignes envoyées (cf. grant-document-total.ts) plutôt que repris tel quel. Le nouveau fichier est écrit avant de
  * mettre à jour l'enregistrement, et l'ancien fichier n'est supprimé
  * qu'ensuite — un échec ne laisse jamais un enregistrement sans fichier.
  */
@@ -110,11 +114,15 @@ export async function generateGrantDocumentAction(
       },
     });
     if (!parsed.success) return { ok: false, error: INVALID_DATA_ERROR };
-    render = () => renderConventionPdf(parsed.data);
+    const totalAmount = grantDocumentTotal(parsed.data.expenses);
+    if (!totalAmount) return { ok: false, error: UNREADABLE_AMOUNT_ERROR };
+    render = () => renderConventionPdf({ ...parsed.data, totalAmount });
   } else {
     const parsed = financementPdfDataSchema.safeParse(data);
     if (!parsed.success) return { ok: false, error: INVALID_DATA_ERROR };
-    render = () => renderOrdreDeFinancementPdf(parsed.data);
+    const total = grantDocumentTotal(parsed.data.expenses);
+    if (!total) return { ok: false, error: UNREADABLE_AMOUNT_ERROR };
+    render = () => renderOrdreDeFinancementPdf({ ...parsed.data, total });
   }
 
   const generatedAt = new Date();

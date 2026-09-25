@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Download, FileDown, FileText } from "lucide-react";
-import type { GrantDocumentStatus } from "@/lib/admin/grant-documents";
+import type { GrantDocumentRow } from "@/lib/admin/grant-documents";
 import { formatCents } from "@/lib/money";
 import { pluralize } from "@/lib/plural";
 import { Stat, StatsBar } from "@/components/ui/stats";
 import { SubventionsTable } from "./subventions-table";
-import type { AddSubventionState } from "@/lib/admin/subvention-actions";
 
 const grantDocumentKindLabel = {
   CONVENTION: "Convention de subvention",
@@ -29,50 +27,24 @@ type Subvention = {
   commentary: string | null;
 };
 
+/**
+ * Affiche uniquement ce que le serveur calcule : chaque ajout, modification
+ * ou suppression de Subvention revalide la page (cf. subvention-actions.ts),
+ * qui renvoie la liste, les totaux et l'état des Documents d'octroi à jour.
+ */
 export function SubventionsPanel({
   campaignId,
-  initialSubventions,
+  subventions,
+  totalAmountCents,
   assos,
-  grantDocumentStatuses,
+  grantDocumentRows,
 }: {
   campaignId: string;
-  initialSubventions: Subvention[];
+  subventions: Subvention[];
+  totalAmountCents: number;
   assos: { id: string; name: string }[];
-  grantDocumentStatuses: Record<string, GrantDocumentStatus>;
+  grantDocumentRows: GrantDocumentRow[];
 }) {
-  const [subventions, setSubventions] = useState(initialSubventions);
-
-  const totalAmountCents = subventions.reduce(
-    (sum, s) => sum + s.amountCents,
-    0,
-  );
-
-  const conventionGroups = useMemo(
-    () =>
-      Array.from(
-        subventions
-          .reduce((groups, subvention) => {
-            const current = groups.get(subvention.assoId);
-            groups.set(subvention.assoId, {
-              assoId: subvention.assoId,
-              assoName: subvention.assoName,
-              linesCount: (current?.linesCount ?? 0) + 1,
-              totalAmountCents:
-                (current?.totalAmountCents ?? 0) + subvention.amountCents,
-            });
-            return groups;
-          }, new Map<string, { assoId: string; assoName: string; linesCount: number; totalAmountCents: number }>())
-          .values(),
-      ),
-    [subventions],
-  );
-
-  function handleAdded(created: NonNullable<AddSubventionState["subvention"]>) {
-    const assoName =
-      assos.find((asso) => asso.id === created.assoId)?.name ?? "";
-    setSubventions((prev) => [{ ...created, assoName }, ...prev]);
-  }
-
   return (
     <>
       <StatsBar className="mt-6">
@@ -91,7 +63,6 @@ export function SubventionsPanel({
           campaignId={campaignId}
           subventions={subventions}
           assos={assos}
-          onAdded={handleAdded}
         />
       </section>
 
@@ -101,32 +72,29 @@ export function SubventionsPanel({
         <div className="mb-4">
           <h3 className="font-semibold">Documents d’octroi</h3>
           <p className="text-xs text-base-content/60">
-            Un document par Structure regroupe toutes ses Subventions dans
-            cette campagne : Convention de subvention pour une Association loi 1901,
+            Un document par Structure regroupe toutes ses Subventions dans cette
+            campagne : Convention de subvention pour une Association loi 1901,
             Ordre de financement pour un Club ou une Commission.
           </p>
         </div>
 
-        {conventionGroups.length === 0 ? (
+        {grantDocumentRows.length === 0 ? (
           <p className="text-sm text-base-content/70">
             Ajoutez une Subvention pour préparer un document d’octroi.
           </p>
         ) : (
           <ul className="list rounded-box border border-base-300">
-            {conventionGroups.map((group) => {
-              const status = grantDocumentStatuses[group.assoId];
-              const typeMissing = status !== undefined && status.kind === null;
+            {grantDocumentRows.map((row) => {
+              const typeMissing = row.kind === null;
               return (
-                <li className="list-row items-center" key={group.assoId}>
+                <li className="list-row items-center" key={row.assoId}>
                   <FileDown size={20} className="text-base-content/60" />
                   <div>
-                    <p className="font-medium">{group.assoName}</p>
+                    <p className="font-medium">{row.assoName}</p>
                     <p className="text-xs text-base-content/60">
-                      {status?.kind && (
-                        <>{grantDocumentKindLabel[status.kind]} · </>
-                      )}
-                      {pluralize(group.linesCount, "subvention")} ·{" "}
-                      {formatCents(group.totalAmountCents)}
+                      {row.kind && <>{grantDocumentKindLabel[row.kind]} · </>}
+                      {pluralize(row.subventionCount, "subvention")} ·{" "}
+                      {formatCents(row.totalAmountCents)}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                       {typeMissing ? (
@@ -135,21 +103,21 @@ export function SubventionsPanel({
                             Type de Structure non renseigné
                           </span>
                           <Link
-                            href={`/app/admin/associations/${status.assoSlug}`}
+                            href={`/app/admin/associations/${row.assoSlug}`}
                             className="link"
                           >
                             Classer la Structure
                           </Link>
                         </>
-                      ) : status?.document ? (
+                      ) : row.document ? (
                         <>
                           <span className="text-base-content/60">
                             Généré le{" "}
                             {generatedAtFormatter.format(
-                              status.document.generatedAt,
+                              row.document.generatedAt,
                             )}
                           </span>
-                          {status.document.stale && (
+                          {row.document.stale && (
                             <span className="badge badge-warning badge-soft badge-sm">
                               À régénérer
                             </span>
@@ -163,9 +131,9 @@ export function SubventionsPanel({
                     </div>
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
-                    {status?.document && (
+                    {row.document && (
                       <a
-                        href={`/app/admin/subventions/${campaignId}/octroi/${group.assoId}/document`}
+                        href={`/app/admin/subventions/${campaignId}/octroi/${row.assoId}/document`}
                         className="btn btn-sm btn-ghost"
                       >
                         <Download size={16} />
@@ -174,13 +142,11 @@ export function SubventionsPanel({
                     )}
                     {!typeMissing && (
                       <Link
-                        href={`/app/admin/subventions/${campaignId}/octroi/${group.assoId}`}
+                        href={`/app/admin/subventions/${campaignId}/octroi/${row.assoId}`}
                         className="btn btn-sm"
                       >
                         <FileText size={16} />
-                        {status?.document
-                          ? "Régénérer"
-                          : "Préparer le document"}
+                        {row.document ? "Régénérer" : "Préparer le document"}
                       </Link>
                     )}
                   </div>
