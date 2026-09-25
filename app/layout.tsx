@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 const description =
-  "Suivi des soldes, subventions et notes de frais des associations pour les assos de Centrale Lille Associations";
+  "Suivi des soldes, subventions et notes de frais des Clubs, Commissions et Associations loi 1901 de Centrale Lille Associations";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

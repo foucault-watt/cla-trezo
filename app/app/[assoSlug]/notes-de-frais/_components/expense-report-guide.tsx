@@ -23,7 +23,7 @@ const STEPS: Step[] = [
         Elle part chez l&apos;Admin CLA.
         <span className="mt-1 flex items-center gap-1 font-medium text-base-content/80">
           <Lock size={12} className="shrink-0" />
-          Plus modifiable ensuite
+          Verrouillée dès sa prise en charge
         </span>
       </>
     ),

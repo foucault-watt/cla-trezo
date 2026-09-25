@@ -32,8 +32,8 @@ const features = [
   },
   {
     icon: HandCoins,
-    title: "Demandes de subvention",
-    desc: "Consultez vos demandes de subvention et suivez leur montant restant",
+    title: "Subventions",
+    desc: "Consultez les subventions accordées et suivez leur montant restant",
   },
   {
     icon: Receipt,

@@ -35,7 +35,7 @@ const navItems = [
   },
   {
     href: "/app/admin/associations",
-    label: "Associations",
+    label: "Assos",
     icon: <Building2 size={18} />,
   },
   {

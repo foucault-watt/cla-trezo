@@ -18,7 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { assoSlug } = await params;
   const asso = await getAssociationDetail(assoSlug);
-  return { title: asso?.name ?? "Association introuvable" };
+  return { title: asso?.name ?? "Asso introuvable" };
 }
 
 export default async function AdminAssociationDetailPage({
@@ -34,7 +34,7 @@ export default async function AdminAssociationDetailPage({
 
   return (
     <div>
-      <BackLink href="/app/admin/associations" label="Toutes les Associations" />
+      <BackLink href="/app/admin/associations" label="Toutes les Assos" />
 
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>

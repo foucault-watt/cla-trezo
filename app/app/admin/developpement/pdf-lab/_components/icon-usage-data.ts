@@ -260,7 +260,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "HandCoins",
-    visibleText: "Demandes de subvention",
+    visibleText: "Subventions",
     ariaLabel: null,
     file: "app/page.tsx",
     context: "carte de mise en avant, landing page",
@@ -283,7 +283,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "Lock",
-    visibleText: "Plus modifiable ensuite",
+    visibleText: "Verrouillée dès sa prise en charge",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
     context: 'sous l\'étape "Soumettre" en surbrillance',
@@ -824,7 +824,7 @@ export const iconUsages: IconUsage[] = [
   },
   {
     icon: "Building2",
-    visibleText: "Associations",
+    visibleText: "Assos",
     ariaLabel: null,
     file: "app/app/admin/layout.tsx",
   },
@@ -1202,7 +1202,7 @@ export const iconUsages: IconUsage[] = [
   {
     icon: "ArrowLeft",
     visibleText:
-      "Toutes les Notes de frais / Toutes les campagnes / Toutes les Associations / {nom de la campagne} / Accueil",
+      "Toutes les Notes de frais / Toutes les campagnes / Toutes les Assos / {nom de la campagne} / Accueil",
     ariaLabel: null,
     file: "components/nav/back-link.tsx",
     context:
