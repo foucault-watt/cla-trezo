@@ -403,9 +403,9 @@ export function SupportingDocumentsPanel({
                 href={HONOR_STATEMENT_TEMPLATE_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="link link-hover inline-flex items-center gap-1 self-start text-xs text-base-content/50 italic"
+                className="link link-hover link-primary inline-flex items-center gap-1 self-start text-sm font-medium"
               >
-                <ExternalLink size={13} />
+                <ExternalLink size={15} />
                 Template d&apos;attestation sur l&apos;honneur à dupliquer
               </a>
             )}
