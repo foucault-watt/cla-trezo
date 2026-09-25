@@ -257,6 +257,7 @@ export function BeneficiaryForm({
   assoSlug,
   reportId,
   members,
+  currentUserId,
   beneficiary,
   reportStatus,
   reportTitle,
@@ -269,6 +270,7 @@ export function BeneficiaryForm({
   assoSlug: string;
   reportId: string;
   members: AssoMember[];
+  currentUserId: string;
   beneficiary: {
     userId: string | null;
     firstname: string | null;
@@ -283,15 +285,25 @@ export function BeneficiaryForm({
   warnings: string[];
   backHref: string;
 }) {
-  const initialDraft: BeneficiaryDraft = {
+  const persistedDraft: BeneficiaryDraft = {
     kind: beneficiary.userId ? "MEMBER" : "CUSTOM",
     memberId: beneficiary.userId ?? "",
     customFirstname: beneficiary.userId ? "" : (beneficiary.firstname ?? ""),
     customLastname: beneficiary.userId ? "" : (beneficiary.lastname ?? ""),
     iban: "",
   };
-  const initialPersistedIdentity = identitySignature(initialDraft, members);
-  const initialSignature = draftSignature(initialDraft, members);
+  // Sans bénéficiaire enregistré, on présélectionne la personne connectée :
+  // c'est le cas le plus courant, il ne reste qu'à saisir son IBAN.
+  const hasPersistedBeneficiary = Boolean(
+    beneficiary.userId || beneficiary.firstname || beneficiary.lastname,
+  );
+  const initialDraft: BeneficiaryDraft =
+    !hasPersistedBeneficiary &&
+    members.some((member) => member.userId === currentUserId)
+      ? { ...persistedDraft, kind: "MEMBER", memberId: currentUserId }
+      : persistedDraft;
+  const initialPersistedIdentity = identitySignature(persistedDraft, members);
+  const initialSignature = draftSignature(persistedDraft, members);
   const formRef = useRef<HTMLFormElement>(null);
   const latestDraftRef = useRef(initialDraft);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -413,9 +425,12 @@ export function BeneficiaryForm({
   const dirty = currentSignature !== lastSavedSignature;
   const identityChanged = currentIdentity !== persistedIdentity;
   const typedIbanInvalid = Boolean(draft.iban.trim()) && !validIban(draft.iban);
+  // L'avertissement « l'ancien ne sera pas réutilisé » n'a de sens que s'il
+  // existe réellement un IBAN enregistré pour un autre bénéficiaire.
+  const ibanReplacedWarning =
+    persistedHasIban && identityChanged && !draft.iban.trim();
   const ibanHintVisible =
-    (persistedHasIban && !identityChanged) ||
-    (identityChanged && !draft.iban.trim());
+    (persistedHasIban && !identityChanged) || ibanReplacedWarning;
   const beneficiaryName = currentBeneficiaryName(draft, members);
   const saveError =
     !pending &&
@@ -590,7 +605,7 @@ export function BeneficiaryForm({
                 Laissez vide pour le conserver.
               </p>
             )}
-            {identityChanged && !draft.iban.trim() && (
+            {ibanReplacedWarning && (
               <p
                 id="beneficiary-iban-hint"
                 className="mb-2 text-sm text-warning"
@@ -647,11 +662,17 @@ export function BeneficiaryForm({
                 {saveError} Modifiez le champ pour réessayer.
               </span>
             ) : !complete && dirty ? (
-              <span className="text-warning">
-                {typedIbanInvalid
-                  ? "Corrigez l’IBAN pour enregistrer."
-                  : "Complétez le bénéficiaire et son IBAN."}
-              </span>
+              typedIbanInvalid ? (
+                <span className="text-warning">
+                  Corrigez l’IBAN pour enregistrer.
+                </span>
+              ) : (
+                <span className="text-base-content/60">
+                  {beneficiaryName
+                    ? `Renseignez l’IBAN de ${beneficiaryName} pour enregistrer.`
+                    : "Complétez le bénéficiaire et son IBAN."}
+                </span>
+              )
             ) : dirty ? (
               <span className="text-base-content/50">Modification…</span>
             ) : state.ok ? (
