@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BackLink } from "@/components/nav/back-link";
 import {
@@ -13,6 +14,19 @@ const dateTimeFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeStyle: "short",
   timeZone: "Europe/Paris",
 });
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ campaignId: string; assoId: string }>;
+}): Promise<Metadata> {
+  const { campaignId, assoId } = await params;
+  const preparation = await requireGrantDocumentPreparation(campaignId, assoId);
+  const kindLabel = preparation.kind
+    ? grantDocumentKindLabels[preparation.kind]
+    : "Document d’octroi";
+  return { title: `${kindLabel} — ${preparation.assoName}` };
+}
 
 export default async function GrantDocumentPreparationPage({
   params,

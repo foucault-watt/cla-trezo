@@ -259,7 +259,7 @@ function LedgerContent({
   );
 
   return (
-    <div className="pb-24">
+    <div>
       <PageHeading isDemo={isDemo} />
 
       <section className="mt-8">
@@ -286,8 +286,8 @@ function LedgerContent({
         </div>
       </section>
 
-      <OldCampaignsSection campaigns={bands.old} />
-      <HistorySection campaigns={bands.history} />
+      {bands.old.length > 0 && <OldCampaignsSection campaigns={bands.old} />}
+      {bands.history.length > 0 && <HistorySection campaigns={bands.history} />}
     </div>
   );
 }

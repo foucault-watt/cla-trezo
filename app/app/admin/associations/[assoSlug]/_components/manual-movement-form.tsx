@@ -67,7 +67,7 @@ export function ManualMovementForm({
               min="0.01"
               step="0.01"
               className="input w-full"
-              placeholder="0.00"
+              placeholder="0,00"
               required
             />
           </fieldset>

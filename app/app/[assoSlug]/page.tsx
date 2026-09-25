@@ -5,6 +5,7 @@ import { SoldeNotInitializedAlert } from "@/components/solde/solde-not-initializ
 import { Stat, StatsBar } from "@/components/ui/stats";
 import { getDashboardOverview } from "@/lib/dashboard/dashboard-overview";
 import { formatCents } from "@/lib/money";
+import { pluralize } from "@/lib/plural";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -36,7 +37,7 @@ export default async function DashboardPage({
         <Stat
           title="Notes de frais en attente"
           value={overview.notesDeFrais.enAttente}
-          desc={`${overview.notesDeFrais.totalLast365Days} sur les 12 derniers mois`}
+          desc={`${pluralize(overview.notesDeFrais.totalLast365Days, "note")} sur les 12 derniers mois`}
         />
         <Stat
           title="Subventions restantes"

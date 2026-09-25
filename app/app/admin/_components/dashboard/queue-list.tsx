@@ -13,7 +13,11 @@ export function QueueList({ data }: { data: DashboardData }) {
     <div className="rounded-box border border-base-300 bg-base-100 shadow-md">
       <div className="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <h2 className="font-semibold">En attente de traitement</h2>
-        <span className="badge badge-warning">{data.queue.length}</span>
+        <span
+          className={`badge ${data.queue.length > 0 ? "badge-warning" : "badge-ghost"}`}
+        >
+          {data.queue.length}
+        </span>
       </div>
       <div>
         {data.queue.length === 0 && (

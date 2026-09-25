@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/nav/back-link";
 import { listGrantDocumentStatuses } from "@/lib/admin/grant-documents";
@@ -13,6 +14,20 @@ import {
 import { EditCampaignForm } from "./_components/edit-campaign-form";
 import { DeleteCampaignButton } from "./_components/delete-campaign-button";
 import { SubventionsPanel } from "./_components/subventions-panel";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ campaignId: string }>;
+}): Promise<Metadata> {
+  const { campaignId } = await params;
+  const campaign = await getSubventionCampaign(campaignId);
+  return {
+    title: campaign
+      ? `${subventionTypeLabel[campaign.type]} ${campaign.name}`
+      : "Campagne introuvable",
+  };
+}
 
 export default async function AdminSubventionCampaignDetailPage({
   params,

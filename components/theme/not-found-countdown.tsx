@@ -15,7 +15,7 @@ export function NotFoundCountdown() {
       return;
     }
 
-    const timeout = setTimeout(() => setSecondsLeft((s) => s - 1), 700);
+    const timeout = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(timeout);
   }, [secondsLeft, router]);
 
@@ -27,7 +27,7 @@ export function NotFoundCountdown() {
           {secondsLeft}
         </span>
       </span>
-      seconde{secondsLeft > 0 ? "s" : ""}
+      seconde{secondsLeft > 1 ? "s" : ""}
     </p>
   );
 }

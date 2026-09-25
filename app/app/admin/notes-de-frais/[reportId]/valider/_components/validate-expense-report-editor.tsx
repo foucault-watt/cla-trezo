@@ -129,8 +129,9 @@ export function ValidateExpenseReportEditor({
     });
   }
 
-  function finish() {
-    successModalRef.current?.close();
+  // La Note est désormais Validée : quelle que soit la façon de fermer la
+  // modale de succès (Terminer, ✕, Échap, fond), on quitte /valider.
+  function leaveValidation() {
     router.push(`/app/admin/notes-de-frais/${reportId}/remboursements`);
   }
 
@@ -222,7 +223,11 @@ export function ValidateExpenseReportEditor({
         </div>
       </Modal>
 
-      <Modal ref={successModalRef} title="Note de frais validée">
+      <Modal
+        ref={successModalRef}
+        title="Note de frais validée"
+        onClose={leaveValidation}
+      >
         <p className="text-sm text-base-content/80">
           La validation a réussi. Téléchargez le ou les PDF générés :
         </p>
@@ -240,7 +245,11 @@ export function ValidateExpenseReportEditor({
           ))}
         </ul>
         <div className="modal-action">
-          <button type="button" className="btn btn-primary" onClick={finish}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => successModalRef.current?.close()}
+          >
             <CheckCircle2 size={18} />
             Terminer
           </button>

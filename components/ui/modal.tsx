@@ -58,8 +58,13 @@ export function useModalAutoClose(
  */
 export const Modal = forwardRef<
   ModalHandle,
-  { title: string; children: ReactNode }
->(function Modal({ title, children }, ref) {
+  {
+    title: string;
+    children: ReactNode;
+    /** Appelé à chaque fermeture : bouton ✕, Échap, clic sur le fond ou `close()`. */
+    onClose?: () => void;
+  }
+>(function Modal({ title, children, onClose }, ref) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const mounted = useSyncExternalStore(
     subscribeNever,
@@ -75,7 +80,7 @@ export const Modal = forwardRef<
   if (!mounted) return null;
 
   return createPortal(
-    <dialog ref={dialogRef} className="modal">
+    <dialog ref={dialogRef} className="modal" onClose={onClose}>
       <div className="modal-box">
         <form method="dialog">
           <button
