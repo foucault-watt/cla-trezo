@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Ban } from "lucide-react";
 import { BackLink } from "@/components/nav/back-link";
 import { getExpenseReportDetail } from "@/lib/expense-reports/expense-reports";
@@ -64,7 +65,33 @@ export default async function ExpenseReportWizardLayout({
           </span>
         </div>
       </div>
-      {!context.editable && report.status === "TAKEN_OVER" && (
+      {context.readOnlyAsAdmin &&
+        (report.status === "DRAFT" ||
+          report.status === "SUBMITTED" ||
+          report.status === "TAKEN_OVER") && (
+          <div role="status" className="alert alert-info alert-soft mt-5">
+            <div>
+              <p>
+                Vous consultez cette Note de frais en tant qu&apos;Admin, en
+                lecture seule.{" "}
+                {report.status === "DRAFT"
+                  ? "Elle est encore en Brouillon : l'Asso doit la soumettre avant que vous puissiez la prendre en charge."
+                  : report.status === "SUBMITTED"
+                    ? "Pour la modifier, prenez-la en charge depuis l'espace Admin."
+                    : "Elle se modifie depuis l'espace Admin."}
+              </p>
+              {report.status !== "DRAFT" && (
+                <Link
+                  href={`/app/admin/notes-de-frais/${reportId}`}
+                  className="link link-primary mt-1 inline-block text-sm font-medium"
+                >
+                  Ouvrir dans l&apos;espace Admin
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      {!context.readOnlyAsAdmin && report.status === "TAKEN_OVER" && (
         <div role="status" className="alert alert-info alert-soft mt-5">
           L&apos;Admin CLA traite désormais cette Note de frais. Elle est
           disponible en lecture seule.

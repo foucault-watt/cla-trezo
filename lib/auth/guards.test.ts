@@ -31,8 +31,12 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-const { requireStructureAccess, requireUser, requireAdmin } =
-  await import("./guards");
+const {
+  requireStructureAccess,
+  requireStructureMember,
+  requireUser,
+  requireAdmin,
+} = await import("./guards");
 
 const member: SessionUser = {
   id: "user-1",
@@ -186,6 +190,33 @@ describe("requireStructureAccess — Asso démo", () => {
 
     expect(result.user).toBe(member);
     expect(getDemoSessionMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireStructureMember", () => {
+  it("laisse passer un membre sur sa propre Structure", async () => {
+    getSessionMock.mockResolvedValue({ user: member });
+
+    const { structure } = await requireStructureMember("cla");
+
+    expect(structure.assoId).toBe("asso-cla");
+  });
+
+  it("refuse un Admin non membre : il ne modifie une Note qu'après l'avoir prise en charge (ADR-0001)", async () => {
+    getSessionMock.mockResolvedValue({ user: admin });
+    findUniqueMock.mockResolvedValue({ id: "asso-cla", name: "CLA" });
+
+    await expect(requireStructureMember("cla")).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("laisse passer un Admin qui est aussi membre de la Structure", async () => {
+    getSessionMock.mockResolvedValue({
+      user: { ...admin, structures: member.structures },
+    });
+
+    const { structure } = await requireStructureMember("cla");
+
+    expect(structure.role).toBe("membre");
   });
 });
 

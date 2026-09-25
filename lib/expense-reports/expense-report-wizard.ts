@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import type { ExpenseReportStatus } from "@/app/generated/prisma/enums";
+import { isExpenseReportMutable } from "./expense-report-lifecycle";
 import { getExpenseReportDetail } from "./expense-reports";
 import {
   EXPENSE_REPORT_STEPS,
@@ -32,6 +34,26 @@ export function computeExpenseReportStepCompletion(report: {
   };
 }
 
+/**
+ * Note modifiable depuis l'espace Structure : statut encore ouvert à la
+ * Structure (cf. expense-report-lifecycle.ts) et accès de membre — un Admin
+ * non membre n'y a qu'une lecture (ADR-0001).
+ */
+export function isEditableInStructureSpace({
+  status,
+  assoId,
+  readOnlyAsAdmin,
+}: {
+  status: ExpenseReportStatus;
+  assoId: string;
+  readOnlyAsAdmin: boolean;
+}): boolean {
+  return (
+    !readOnlyAsAdmin &&
+    isExpenseReportMutable({ status, actor: { type: "STRUCTURE", assoId } })
+  );
+}
+
 export async function loadExpenseReportWizard(
   assoSlug: string,
   reportId: string,
@@ -41,9 +63,11 @@ export async function loadExpenseReportWizard(
   return {
     ...context,
     completion,
-    editable:
-      context.report.status === "DRAFT" ||
-      context.report.status === "SUBMITTED",
+    editable: isEditableInStructureSpace({
+      status: context.report.status,
+      assoId: context.assoId,
+      readOnlyAsAdmin: context.readOnlyAsAdmin,
+    }),
   };
 }
 

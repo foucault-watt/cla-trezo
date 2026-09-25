@@ -4,6 +4,7 @@ import type {
   AssoType,
   ExpenseReportStatus,
 } from "@/app/generated/prisma/enums";
+import { isReadOnlyAdminAccess } from "@/lib/auth/access";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
 import {
@@ -75,6 +76,11 @@ export type TypeDepenseOption = { id: string; label: string };
 export type ExpenseReportDetailContext = {
   report: ExpenseReportDetail;
   assoId: string;
+  /**
+   * Admin non membre de la Structure : lecture seule dans l'espace Structure,
+   * il ne modifie la Note qu'après l'avoir prise en charge (ADR-0001).
+   */
+  readOnlyAsAdmin: boolean;
   assoType: AssoType | null;
   typeDepenses: TypeDepenseOption[];
   visibleSubventions: VisibleSubvention[];
@@ -145,6 +151,7 @@ export const getExpenseReportDetail = cache(async function (
       ),
     },
     assoId: structure.assoId,
+    readOnlyAsAdmin: isReadOnlyAdminAccess(structure),
     assoType: asso?.type ?? null,
     typeDepenses: typeDepenses.map((t) => ({ id: t.id, label: t.label })),
     // Restreint au panneau de sélection lors de l'ajout d'une Ligne : la

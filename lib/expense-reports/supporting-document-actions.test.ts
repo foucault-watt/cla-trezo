@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const {
-  requireStructureAccessMock,
+  requireStructureMemberMock,
   reportFindUniqueMock,
   documentFindManyMock,
   documentFindUniqueMock,
@@ -14,7 +14,7 @@ const {
   writeStoredFileMock,
   deleteStoredFileMock,
 } = vi.hoisted(() => ({
-  requireStructureAccessMock: vi.fn(),
+  requireStructureMemberMock: vi.fn(),
   reportFindUniqueMock: vi.fn(),
   documentFindManyMock: vi.fn(),
   documentFindUniqueMock: vi.fn(),
@@ -29,7 +29,7 @@ const {
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
-  requireStructureAccess: requireStructureAccessMock,
+  requireStructureMember: requireStructureMemberMock,
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -92,7 +92,7 @@ const validFields = {
 };
 
 beforeEach(() => {
-  requireStructureAccessMock.mockReset().mockResolvedValue(structureAccess);
+  requireStructureMemberMock.mockReset().mockResolvedValue(structureAccess);
   reportFindUniqueMock.mockReset().mockResolvedValue(draftReport);
   documentFindManyMock.mockReset().mockResolvedValue([]);
   documentFindUniqueMock.mockReset();
@@ -118,7 +118,7 @@ beforeEach(() => {
 });
 
 describe("addSupportingDocumentsAction", () => {
-  it("refuse une saisie invalide sans appeler requireStructureAccess", async () => {
+  it("refuse une saisie invalide sans appeler requireStructureMember", async () => {
     const result = await addSupportingDocumentsAction(
       { ok: false },
       formData({ ...validFields, documentType: "AUTRE" }, [
@@ -127,7 +127,7 @@ describe("addSupportingDocumentsAction", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(requireStructureAccessMock).not.toHaveBeenCalled();
+    expect(requireStructureMemberMock).not.toHaveBeenCalled();
   });
 
   it("refuse une Note introuvable ou d'une autre Structure", async () => {

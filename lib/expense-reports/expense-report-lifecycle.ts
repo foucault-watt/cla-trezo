@@ -77,6 +77,19 @@ export const PENDING_EXPENSE_REPORT_STATUSES: ExpenseReportStatus[] = [
   "TAKEN_OVER",
 ];
 
+/** Même règle que assertExpenseReportMutable, en booléen — pour l'affichage. */
+export function isExpenseReportMutable({
+  status,
+  actor,
+}: {
+  status: ExpenseReportStatus;
+  actor: ExpenseReportActor;
+}): boolean {
+  return MUTABLE_RULES.some(
+    (rule) => rule.status === status && rule.actor === actor.type,
+  );
+}
+
 /**
  * Vérifie qu'une Ligne ou un Justificatif peut être ajouté/modifié dans le
  * statut courant, par cet acteur. La Structure modifie le contenu tant que
@@ -91,10 +104,7 @@ export function assertExpenseReportMutable({
   status: ExpenseReportStatus;
   actor: ExpenseReportActor;
 }): void {
-  const allowed = MUTABLE_RULES.some(
-    (rule) => rule.status === status && rule.actor === actor.type,
-  );
-  if (!allowed) {
+  if (!isExpenseReportMutable({ status, actor })) {
     throw new ExpenseReportLifecycleError(
       `Cette Note de frais n'est plus modifiable (statut ${status}).`,
     );

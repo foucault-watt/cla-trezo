@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const {
-  requireStructureAccessMock,
+  requireStructureMemberMock,
   reportCreateMock,
   reportFindUniqueMock,
   reportUpdateMock,
@@ -24,7 +24,7 @@ const {
   deleteStoredFileMock,
   redirectMock,
 } = vi.hoisted(() => ({
-  requireStructureAccessMock: vi.fn(),
+  requireStructureMemberMock: vi.fn(),
   reportCreateMock: vi.fn(),
   reportFindUniqueMock: vi.fn(),
   reportUpdateMock: vi.fn(),
@@ -51,7 +51,7 @@ const {
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
-  requireStructureAccess: requireStructureAccessMock,
+  requireStructureMember: requireStructureMemberMock,
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -110,7 +110,7 @@ const structureAccess = {
 };
 
 beforeEach(() => {
-  requireStructureAccessMock.mockReset();
+  requireStructureMemberMock.mockReset();
   reportCreateMock.mockReset();
   reportFindUniqueMock.mockReset();
   reportUpdateMock.mockReset();
@@ -132,7 +132,7 @@ beforeEach(() => {
   revalidatePathMock.mockReset();
   deleteStoredFileMock.mockReset();
   redirectMock.mockClear();
-  requireStructureAccessMock.mockResolvedValue(structureAccess);
+  requireStructureMemberMock.mockResolvedValue(structureAccess);
   lineFindManyMock.mockResolvedValue([]);
   financialMovementFindManyMock.mockResolvedValue([]);
   transactionMock.mockImplementation((operations: Promise<unknown>[]) =>
@@ -151,14 +151,14 @@ describe("createExpenseReportAction", () => {
     description: "Déplacement en car",
   };
 
-  it("refuse un titre vide sans appeler requireStructureAccess", async () => {
+  it("refuse un titre vide sans appeler requireStructureMember", async () => {
     const result = await createExpenseReportAction(
       { ok: false },
       formData({ ...valid, title: "   " }),
     );
 
     expect(result.ok).toBe(false);
-    expect(requireStructureAccessMock).not.toHaveBeenCalled();
+    expect(requireStructureMemberMock).not.toHaveBeenCalled();
     expect(reportCreateMock).not.toHaveBeenCalled();
   });
 
@@ -507,14 +507,14 @@ describe("deleteExpenseReportAction", () => {
     assoSlug: "club-info",
   };
 
-  it("refuse un id invalide sans appeler requireStructureAccess", async () => {
+  it("refuse un id invalide sans appeler requireStructureMember", async () => {
     const result = await deleteExpenseReportAction(
       { ok: false },
       formData({ ...valid, id: "not-a-uuid" }),
     );
 
     expect(result.ok).toBe(false);
-    expect(requireStructureAccessMock).not.toHaveBeenCalled();
+    expect(requireStructureMemberMock).not.toHaveBeenCalled();
   });
 
   it("refuse une Note introuvable ou d'une autre Structure", async () => {

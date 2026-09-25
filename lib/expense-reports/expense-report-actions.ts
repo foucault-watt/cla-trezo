@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireStructureAccess } from "@/lib/auth/guards";
+import { requireStructureMember } from "@/lib/auth/guards";
 import { toAmountCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { deleteStoredFile } from "@/lib/storage/file-storage";
@@ -59,7 +59,7 @@ export async function createExpenseReportAction(
     };
   }
 
-  const { structure, user } = await requireStructureAccess(
+  const { structure, user } = await requireStructureMember(
     parsed.data.assoSlug,
   );
 
@@ -184,7 +184,7 @@ export async function updateExpenseReportAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -227,7 +227,7 @@ export async function submitExpenseReportAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -324,7 +324,7 @@ export async function submitExpenseReportWithBeneficiaryAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
     select: {
@@ -424,7 +424,7 @@ export async function deleteExpenseReportAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
 
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
@@ -497,7 +497,7 @@ export async function addReimbursementAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.expenseReportId },
     select: { id: true, assoId: true, status: true },
@@ -564,7 +564,7 @@ export async function updateReimbursementAction(
       values,
     };
   }
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
   const line = await prisma.expenseReportLine.findUnique({
     where: { id: parsed.data.id },
     select: {
@@ -632,7 +632,7 @@ export async function deleteReimbursementAction(
   if (!z.string().uuid().safeParse(id).success || !assoSlug) {
     return { ok: false, error: "Saisie invalide." };
   }
-  const { structure } = await requireStructureAccess(assoSlug);
+  const { structure } = await requireStructureMember(assoSlug);
   const line = await prisma.expenseReportLine.findUnique({
     where: { id },
     select: {
@@ -674,7 +674,7 @@ export async function updateExpenseReportBeneficiaryAction(
       error: parsed.error.issues[0]?.message ?? "Saisie invalide.",
     };
   }
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
   const report = await prisma.expenseReport.findUnique({
     where: { id: parsed.data.id },
     select: {

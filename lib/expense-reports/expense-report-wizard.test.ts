@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { firstIncompleteExpenseReportStep } from "./expense-report-steps";
-import { computeExpenseReportStepCompletion } from "./expense-report-wizard";
+import {
+  computeExpenseReportStepCompletion,
+  isEditableInStructureSpace,
+} from "./expense-report-wizard";
 
 function report({
   lines = [],
@@ -78,5 +81,21 @@ describe("firstIncompleteExpenseReportStep", () => {
         beneficiaire: true,
       }),
     ).toBe("beneficiaire");
+  });
+});
+
+describe("isEditableInStructureSpace", () => {
+  it("ouvre le Brouillon et la Note Soumise à un membre de la Structure", () => {
+    expect(isEditableInStructureSpace({ status: "DRAFT", assoId: "asso-1", readOnlyAsAdmin: false })).toBe(true);
+    expect(isEditableInStructureSpace({ status: "SUBMITTED", assoId: "asso-1", readOnlyAsAdmin: false })).toBe(true);
+  });
+
+  it("ferme la Note dès sa Prise en charge (ADR-0001)", () => {
+    expect(isEditableInStructureSpace({ status: "TAKEN_OVER", assoId: "asso-1", readOnlyAsAdmin: false })).toBe(false);
+  });
+
+  it("laisse un Admin non membre en lecture seule, même sur une Note Soumise", () => {
+    expect(isEditableInStructureSpace({ status: "DRAFT", assoId: "asso-1", readOnlyAsAdmin: true })).toBe(false);
+    expect(isEditableInStructureSpace({ status: "SUBMITTED", assoId: "asso-1", readOnlyAsAdmin: true })).toBe(false);
   });
 });

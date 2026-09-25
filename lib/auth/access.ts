@@ -43,3 +43,13 @@ export async function resolveStructureAccess(
 
   return { ok: false, reason: "forbidden" };
 }
+
+/**
+ * Accès d'un Admin à une Structure dont il n'est pas membre (role: null) :
+ * lecture seule pour les Notes de frais de l'espace Structure — il ne les
+ * modifie qu'après les avoir prises en charge, depuis l'espace Admin
+ * (cf. ADR-0001, requireStructureMember).
+ */
+export function isReadOnlyAdminAccess(structure: StructureAccess): boolean {
+  return structure.role === null;
+}

@@ -57,7 +57,7 @@ Note créée, librement modifiable par la Structure.
 Note envoyée à l'Admin. Encore modifiable par la Structure tant que l'Admin n'a pas commencé à la traiter.
 
 **Prise en charge**:
-L'Admin a commencé à traiter la note. La Structure perd définitivement la main (cf. ADR-0001).
+L'Admin a commencé à traiter la note. La Structure perd définitivement la main (cf. ADR-0001). C'est aussi le seul moyen pour l'Admin de modifier une Note : avant la Prise en charge, il ne fait que la consulter, y compris depuis l'espace d'une Structure dont il n'est pas membre.
 
 **Validée**:
 Le ou les PDF finaux ont été générés (cf. PDF final). La note est immuable (cf. ADR-0003), le Solde et les Subventions concernées sont mis à jour, l'IBAN est supprimé (cf. ADR-0002).

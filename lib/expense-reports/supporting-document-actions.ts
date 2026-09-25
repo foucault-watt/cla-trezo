@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { SupportingDocumentType } from "@/app/generated/prisma/enums";
-import { requireStructureAccess } from "@/lib/auth/guards";
+import { requireStructureMember } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
 import {
   assertExpenseReportMutable,
@@ -74,7 +74,7 @@ export async function addSupportingDocumentsAction(
   const files = extractFiles(formData);
   const documentType = parsed.data.documentType as SupportingDocumentType;
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
 
   const reportCheck = await loadEditableReport(
     parsed.data.expenseReportId,
@@ -111,7 +111,7 @@ export async function removeSupportingDocumentAction(
     };
   }
 
-  const { structure } = await requireStructureAccess(parsed.data.assoSlug);
+  const { structure } = await requireStructureMember(parsed.data.assoSlug);
 
   const document = await prisma.supportingDocument.findUnique({
     where: { id: parsed.data.id },

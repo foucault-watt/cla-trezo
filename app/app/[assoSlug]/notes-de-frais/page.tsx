@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Receipt } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isReadOnlyAdminAccess } from "@/lib/auth/access";
+import { requireStructureAccess } from "@/lib/auth/guards";
 import { listExpenseReports } from "@/lib/expense-reports/expense-reports";
 import { StatsBar } from "./_components/stats-bar";
 import { ExpenseReportsList } from "./_components/expense-reports-list";
@@ -17,7 +19,13 @@ export default async function NotesDeFraisPage({
   params: Promise<{ assoSlug: string }>;
 }) {
   const { assoSlug } = await params;
-  const reports = await listExpenseReports(assoSlug);
+  const [reports, { structure }] = await Promise.all([
+    listExpenseReports(assoSlug),
+    requireStructureAccess(assoSlug),
+  ]);
+  // Un Admin non membre consulte sans créer : il ne traite une Note qu'une
+  // fois soumise puis prise en charge, depuis l'espace Admin (ADR-0001).
+  const canCreate = !isReadOnlyAdminAccess(structure);
 
   return (
     <div>
@@ -37,13 +45,17 @@ export default async function NotesDeFraisPage({
           icon={<Receipt size={24} />}
           title="Aucune Note de frais pour l'instant"
           description="Créez une Note de frais pour vous faire rembourser une dépense engagée pour l'Asso."
-          action={<NewExpenseReportModalButton assoSlug={assoSlug} />}
+          action={
+            canCreate ? <NewExpenseReportModalButton assoSlug={assoSlug} /> : undefined
+          }
         />
       ) : (
         <>
-          <div className="mb-6">
-            <NewExpenseReportModalButton assoSlug={assoSlug} />
-          </div>
+          {canCreate && (
+            <div className="mb-6">
+              <NewExpenseReportModalButton assoSlug={assoSlug} />
+            </div>
+          )}
           <ExpenseReportsList assoSlug={assoSlug} reports={reports} />
         </>
       )}

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import {
+  isReadOnlyAdminAccess,
   resolveStructureAccess,
   type StructureAccess,
 } from "@/lib/auth/access";
@@ -39,6 +40,24 @@ export const requireStructureAccess = cache(async function (
   const { ok: _ok, ...structure } = result;
   return { structure, user: user! };
 });
+
+/**
+ * Comme requireStructureAccess, mais réservé aux membres de la Structure :
+ * pour les Server Actions qui modifient une Note de frais depuis l'espace
+ * Structure. Un Admin non membre n'y a qu'un accès en lecture — il ne modifie
+ * une Note qu'après l'avoir prise en charge, depuis l'espace Admin (cf.
+ * ADR-0001). L'écran masque déjà les contrôles (cf. isReadOnlyAdminAccess) ;
+ * ce garde-fou couvre une page restée ouverte ou une requête forgée.
+ */
+export async function requireStructureMember(
+  assoSlug: string,
+): Promise<{ structure: StructureAccess; user: SessionUser }> {
+  const access = await requireStructureAccess(assoSlug);
+  if (isReadOnlyAdminAccess(access.structure)) {
+    notFound();
+  }
+  return access;
+}
 
 /**
  * Garde-fou minimal pour les Server Actions qui n'ont pas besoin de scoping
