@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isDevAuthBypassEnabled } from "@/lib/auth/dev-config";
 import { DEMO_ASSO_SLUG } from "@/lib/auth/demo-config";
+import { getPublicOrigin } from "@/lib/public-origin";
 import { getDemoSession, getSession } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/", "/login", "/mentions-legales"];
@@ -16,12 +17,15 @@ export async function proxy(request: NextRequest) {
   // L'Asso démo tourne sur un cookie séparé (cf. lib/session.ts) : elle ne
   // passe jamais par le contrôle de session réelle ci-dessous, même pour un
   // Admin déjà connecté sans cookie démo.
-  if (pathname === DEMO_PATH_PREFIX || pathname.startsWith(`${DEMO_PATH_PREFIX}/`)) {
+  if (
+    pathname === DEMO_PATH_PREFIX ||
+    pathname.startsWith(`${DEMO_PATH_PREFIX}/`)
+  ) {
     const demoSession = await getDemoSession();
     if (demoSession.user) {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/", getPublicOrigin(request)));
   }
 
   const session = await getSession();
@@ -33,7 +37,10 @@ export async function proxy(request: NextRequest) {
     }
 
     if (isDevAuthBypassEnabled()) {
-      const devLoginUrl = new URL("/api/auth/dev-login", request.url);
+      const devLoginUrl = new URL(
+        "/api/auth/dev-login",
+        getPublicOrigin(request),
+      );
       devLoginUrl.searchParams.set(
         "redirect",
         `${pathname}${request.nextUrl.search}`,
@@ -41,17 +48,20 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(devLoginUrl);
     }
 
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", getPublicOrigin(request)));
   }
 
   if (pathname === "/login") {
     return NextResponse.redirect(
-      new URL(session.user.isAdmin ? "/app/admin" : "/app", request.url),
+      new URL(
+        session.user.isAdmin ? "/app/admin" : "/app",
+        getPublicOrigin(request),
+      ),
     );
   }
 
   if (pathname.startsWith("/app/admin") && !session.user.isAdmin) {
-    return NextResponse.redirect(new URL("/app", request.url));
+    return NextResponse.redirect(new URL("/app", getPublicOrigin(request)));
   }
 
   return NextResponse.next();

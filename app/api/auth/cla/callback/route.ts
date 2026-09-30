@@ -1,5 +1,6 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getPublicOrigin } from "@/lib/public-origin";
 import { getSession } from "@/lib/session";
 import {
   ClaAuthError,
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       new URL(
         `/login?error=${encodeURIComponent("Ticket CLA manquant.")}`,
-        request.url,
+        getPublicOrigin(request),
       ),
     );
   }
@@ -32,7 +33,10 @@ export async function GET(request: NextRequest) {
         ? error.message
         : "Erreur interne lors de l'authentification.";
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(message)}`, request.url),
+      new URL(
+        `/login?error=${encodeURIComponent(message)}`,
+        getPublicOrigin(request),
+      ),
     );
   }
 
@@ -56,6 +60,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.redirect(
-    new URL(user.isAdmin ? "/app/admin" : "/app", request.url),
+    new URL(user.isAdmin ? "/app/admin" : "/app", getPublicOrigin(request)),
   );
 }

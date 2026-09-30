@@ -4,6 +4,7 @@ import {
   normalizeDevAuthRedirect,
 } from "@/lib/auth/dev-config";
 import { getDevSessionUser } from "@/lib/auth/dev";
+import { getPublicOrigin } from "@/lib/public-origin";
 import { getSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
@@ -19,7 +20,9 @@ export async function GET(request: NextRequest) {
     const destination = normalizeDevAuthRedirect(
       request.nextUrl.searchParams.get("redirect"),
     );
-    return NextResponse.redirect(new URL(destination, request.url));
+    return NextResponse.redirect(
+      new URL(destination, getPublicOrigin(request)),
+    );
   } catch (error) {
     console.error("[DEV AUTH] Échec de la création de session :", error);
     return NextResponse.json(
