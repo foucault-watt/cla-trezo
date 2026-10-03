@@ -260,7 +260,9 @@ One header style for every page inside the app (admin, member, dev labs):
 
 Every row of key figures goes through `StatsBar` + `Stat`
 (`components/ui/stats.tsx`): daisyUI `stats` on a surface, `stat-value
-text-2xl`, optional `stat-desc`. No `stat-figure` icons, and no hand-rolled
+text-2xl`, optional `stat-desc`. Below `sm` the figures sit in a 2-column
+grid (`stat-value` down to `text-xl` so amounts fit a half column, an odd
+last figure spans both columns); horizontal from `sm` up. No `stat-figure` icons, and no hand-rolled
 grid of mini-cards — a page's key figures should look the same whether it's
 a dashboard or a list page.
 
