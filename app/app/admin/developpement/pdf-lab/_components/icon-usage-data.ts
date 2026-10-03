@@ -1586,4 +1586,27 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/associations/_components/associations-list.tsx",
     context: "aria-hidden, devant le menu de tri de la liste des Assos",
   },
+
+  // app/app/admin/stockage/_components/storage-list.tsx
+  {
+    icon: "Search",
+    visibleText: "Rechercher une Asso…",
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-list.tsx",
+    context: "aria-hidden, champ de recherche de la barre de filtres",
+  },
+  {
+    icon: "X",
+    visibleText: "Réinitialiser",
+    ariaLabel: null,
+    file: "app/app/admin/stockage/_components/storage-list.tsx",
+    context: "aria-hidden, bouton qui efface recherche et filtres",
+  },
+  {
+    icon: "ArrowDownUp",
+    visibleText: null,
+    ariaLabel: "Trier par",
+    file: "app/app/admin/stockage/_components/storage-list.tsx",
+    context: "aria-hidden, devant le menu de tri de la liste du Stockage",
+  },
 ];

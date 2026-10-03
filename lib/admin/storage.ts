@@ -1,3 +1,4 @@
+import type { AssoStatus, AssoType } from "@/app/generated/prisma/enums";
 import { EXCLUDE_DEMO_ASSO } from "@/lib/auth/demo-config";
 import { prisma } from "@/lib/prisma";
 
@@ -11,6 +12,8 @@ export type AssoStorageOverview = {
   id: string;
   slug: string;
   name: string;
+  type: AssoType | null;
+  status: AssoStatus;
   supportingDocumentsCount: number;
   pdfsCount: number;
   reportsWithFilesCount: number;
@@ -21,6 +24,8 @@ type AssoStorageSource = {
   id: string;
   slug: string;
   name: string;
+  type: AssoType | null;
+  status: AssoStatus;
   expenseReports: {
     createdAt: Date;
     _count: { supportingDocuments: number; pdfs: number };
@@ -57,6 +62,8 @@ export function toStorageOverview(asso: AssoStorageSource): AssoStorageOverview 
     id: asso.id,
     slug: asso.slug,
     name: asso.name,
+    type: asso.type,
+    status: asso.status,
     supportingDocumentsCount,
     pdfsCount,
     reportsWithFilesCount: reportsWithFiles.length,
@@ -74,6 +81,8 @@ export async function listAssoStorageOverview(): Promise<
       id: true,
       slug: true,
       name: true,
+      type: true,
+      status: true,
       expenseReports: {
         select: {
           createdAt: true,

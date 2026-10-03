@@ -25,6 +25,8 @@ describe("toStorageOverview", () => {
       id: "asso-1",
       slug: "club-info",
       name: "Club Info",
+      type: null,
+      status: "ACTIVE",
       expenseReports: [
         {
           createdAt: new Date("2022-05-01"),
@@ -52,6 +54,8 @@ describe("toStorageOverview", () => {
       id: "asso-1",
       slug: "club-info",
       name: "Club Info",
+      type: null,
+      status: "ACTIVE",
       expenseReports: [
         {
           createdAt: new Date("2024-01-10"),
