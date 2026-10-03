@@ -2,6 +2,7 @@ import { Menu } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { NAV_DRAWER_ID } from "./nav-drawer-id";
 import { NavLink } from "./nav-link";
 
 type SidebarDrawerNavItem = {
@@ -38,11 +39,11 @@ export function SidebarDrawer({
           aria-hidden="true"
         />
       )}
-      <input id="app-nav-drawer" type="checkbox" className="drawer-toggle" />
+      <input id={NAV_DRAWER_ID} type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-1 flex-col bg-base-200">
         <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3 lg:hidden">
           <label
-            htmlFor="app-nav-drawer"
+            htmlFor={NAV_DRAWER_ID}
             aria-label="Ouvrir le menu"
             className="btn btn-square btn-ghost btn-sm drawer-button"
           >
@@ -62,7 +63,7 @@ export function SidebarDrawer({
       </div>
       <div className="drawer-side z-40">
         <label
-          htmlFor="app-nav-drawer"
+          htmlFor={NAV_DRAWER_ID}
           aria-label="Fermer le menu"
           className="drawer-overlay"
         />
