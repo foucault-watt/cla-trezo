@@ -289,7 +289,7 @@ function EditableReimbursementRow({
         className={
           line
             ? "group"
-            : "bg-base-200/60 [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-neutral)]"
+            : "outline-2 -outline-offset-2 outline-primary"
         }
         onBlurCapture={(event) => {
           const nextTarget = event.relatedTarget as Node | null;
