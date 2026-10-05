@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Download, FileDown, FileText } from "lucide-react";
+import { Download, FileCheck, FileText } from "lucide-react";
 import type { GrantDocumentRow } from "@/lib/admin/grant-documents";
 import { assoTypeDisplayLabel } from "@/lib/admin/asso-labels";
 import { formatCents } from "@/lib/money";
@@ -89,7 +89,7 @@ export function SubventionsPanel({
               const typeMissing = row.kind === null;
               return (
                 <li className="list-row items-center" key={row.assoId}>
-                  <FileDown size={20} className="text-base-content/60" />
+                  <FileText size={20} className="text-base-content/60" />
                   <div>
                     <p className="font-medium">{row.assoName}</p>
                     <p className="text-xs text-base-content/60">
@@ -138,7 +138,7 @@ export function SubventionsPanel({
                         href={`/app/admin/subventions/${campaignId}/octroi/${row.assoId}`}
                         className="btn btn-sm"
                       >
-                        <FileText size={16} />
+                        <FileCheck size={16} />
                         {row.document ? "Régénérer" : "Préparer le document"}
                       </Link>
                     )}

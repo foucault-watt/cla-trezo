@@ -294,11 +294,12 @@ export const iconUsages: IconUsage[] = [
     context: "décision possible de l'Admin CLA (étape 4)",
   },
   {
-    icon: "XCircle",
+    icon: "Ban",
     visibleText: "Rejetée : à refaire de zéro",
     ariaLabel: null,
     file: "app/app/[assoSlug]/notes-de-frais/_components/expense-report-guide.tsx",
-    context: "décision possible de l'Admin CLA (étape 4)",
+    context:
+      "décision possible de l'Admin CLA (étape 4), cohérent avec reject-button.tsx",
   },
 
   // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/reimbursements-table.tsx
@@ -378,13 +379,6 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx
   {
-    icon: "CalendarDays",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: "aria-hidden, à côté de la date de publication d'une campagne",
-  },
-  {
     icon: "Clock3",
     visibleText: "Subventions de plus d'un an",
     ariaLabel: null,
@@ -392,39 +386,11 @@ export const iconUsages: IconUsage[] = [
     context: "aria-hidden, en-tête de section",
   },
   {
-    icon: "CircleCheck",
-    visibleText: "Moins de 365 jours",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: 'aria-hidden, panneau "Règle d\'usage"',
-  },
-  {
-    icon: "Clock3",
-    visibleText: "Entre 1 et 2 ans",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: 'aria-hidden, panneau "Règle d\'usage"',
-  },
-  {
-    icon: "Archive",
-    visibleText: "Plus de 2 ans",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: 'aria-hidden, panneau "Règle d\'usage"',
-  },
-  {
     icon: "History",
     visibleText: "Historique",
     ariaLabel: null,
     file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
     context: "aria-hidden, en-tête de section",
-  },
-  {
-    icon: "Info",
-    visibleText: "À ne plus utiliser pour une nouvelle dépense.",
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/subventions/_components/subventions-ledger.tsx",
-    context: "aria-hidden, note dans la section Historique",
   },
 
   // app/app/[assoSlug]/subventions/_components/grant-documents-list.tsx
@@ -660,12 +626,12 @@ export const iconUsages: IconUsage[] = [
 
   // app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx
   {
-    icon: "FileDown",
+    icon: "FileText",
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx",
     context:
-      "à côté du nom d'une Structure, section Documents d'octroi de la campagne",
+      "à côté du nom d'une Structure, section Documents d'octroi de la campagne, cohérent avec documents-list.tsx",
   },
   {
     icon: "Download",
@@ -675,12 +641,12 @@ export const iconUsages: IconUsage[] = [
     context: "télécharge le Document d'octroi déjà généré d'une Structure",
   },
   {
-    icon: "FileText",
+    icon: "FileCheck",
     visibleText: "Préparer le document / Régénérer",
     ariaLabel: null,
     file: "app/app/admin/subventions/[campaignId]/_components/subventions-panel.tsx",
     context:
-      "ouvre la page de préparation du Document d'octroi, libellé selon qu'il a déjà été généré",
+      "ouvre la page de préparation du Document d'octroi, libellé selon qu'il a déjà été généré ; cohérent avec generate-grant-document-button.tsx",
   },
 
   // app/app/admin/subventions/[campaignId]/octroi/[assoId]/_components/convention-preparation-form.tsx
@@ -995,11 +961,12 @@ export const iconUsages: IconUsage[] = [
       "icône d'activité pour l'événement \"note_finalisee\", accolée à un texte d'événement dynamique",
   },
   {
-    icon: "FileText",
+    icon: "Send",
     visibleText: null,
     ariaLabel: null,
     file: "app/app/admin/_components/dashboard/activity-list.tsx",
-    context: "icône d'activité pour l'événement \"note_soumise\"",
+    context:
+      "icône d'activité pour l'événement \"note_soumise\", cohérent avec le bouton Soumettre",
   },
   {
     icon: "HandCoins",
@@ -1599,5 +1566,86 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: "Trier par",
     file: "app/app/admin/stockage/_components/storage-list.tsx",
     context: "aria-hidden, devant le menu de tri de la liste du Stockage",
+  },
+
+  // app/app/[assoSlug]/notes-de-frais/_components/expense-reports-list.tsx
+  {
+    icon: "Search",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-reports-list.tsx",
+    context:
+      "devant le champ de recherche de la barre de filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Réinitialiser",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-reports-list.tsx",
+    context: "efface recherche et filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "History",
+    visibleText: "Historique — avant {année} ({n}) / Masquer l'historique",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/_components/expense-reports-list.tsx",
+    context: "bouton qui affiche ou masque les éléments des années précédentes",
+  },
+
+  // app/app/admin/notes-de-frais/_components/expense-reports-list.tsx
+  {
+    icon: "Search",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/_components/expense-reports-list.tsx",
+    context:
+      "devant le champ de recherche de la barre de filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Réinitialiser",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/_components/expense-reports-list.tsx",
+    context: "efface recherche et filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "History",
+    visibleText: "Historique — avant {année} ({n}) / Masquer l'historique",
+    ariaLabel: null,
+    file: "app/app/admin/notes-de-frais/_components/expense-reports-list.tsx",
+    context: "bouton qui affiche ou masque les éléments des années précédentes",
+  },
+
+  // app/app/admin/subventions/_components/campaigns-list.tsx
+  {
+    icon: "Search",
+    visibleText: null,
+    ariaLabel: null,
+    file: "app/app/admin/subventions/_components/campaigns-list.tsx",
+    context:
+      "devant le champ de recherche de la barre de filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Réinitialiser",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/_components/campaigns-list.tsx",
+    context: "efface recherche et filtres, cohérent avec associations-list.tsx",
+  },
+  {
+    icon: "History",
+    visibleText: "Historique — avant {année} ({n}) / Masquer l'historique",
+    ariaLabel: null,
+    file: "app/app/admin/subventions/_components/campaigns-list.tsx",
+    context: "bouton qui affiche ou masque les éléments des années précédentes",
+  },
+
+  // app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx
+  {
+    icon: "TriangleAlert",
+    visibleText: "{n} alerte(s) non bloquante(s)",
+    ariaLabel: null,
+    file: "app/app/[assoSlug]/notes-de-frais/[reportId]/_components/beneficiary-form.tsx",
+    context: "alerte avant soumission, cohérent avec reimbursements-table.tsx",
   },
 ];

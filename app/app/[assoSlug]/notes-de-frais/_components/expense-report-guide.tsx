@@ -1,4 +1,4 @@
-import { CheckCircle2, Info, Lock, Pencil, XCircle } from "lucide-react";
+import { Ban, CheckCircle2, Info, Lock, Pencil } from "lucide-react";
 
 type Step = {
   label: string;
@@ -9,7 +9,7 @@ type Step = {
 const ADMIN_OUTCOMES = [
   { icon: CheckCircle2, color: "text-success", label: "Validée" },
   { icon: Pencil, color: "text-info", label: "Modifiée puis validée" },
-  { icon: XCircle, color: "text-error", label: "Rejetée : à refaire de zéro" },
+  { icon: Ban, color: "text-error", label: "Rejetée : à refaire de zéro" },
 ];
 
 const STEPS: Step[] = [

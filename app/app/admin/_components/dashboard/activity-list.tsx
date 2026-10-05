@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { CheckCircle2, FileText, HandCoins, Wallet } from "lucide-react";
+import { CheckCircle2, HandCoins, Send, Wallet } from "lucide-react";
 import type { ActivityEventType, DashboardData } from "@/lib/admin/dashboard";
 import { formatCents } from "@/lib/money";
 
 const activityIcon: Record<ActivityEventType, React.ReactNode> = {
   note_finalisee: <CheckCircle2 size={16} className="text-success" />,
-  note_soumise: <FileText size={16} className="text-info" />,
+  note_soumise: <Send size={16} className="text-info" />,
   subvention_creee: <HandCoins size={16} className="text-primary" />,
   mouvement: <Wallet size={16} className="text-secondary" />,
 };
