@@ -286,11 +286,7 @@ function EditableReimbursementRow({
   return (
     <>
       <tr
-        className={
-          line
-            ? "group"
-            : "outline-2 -outline-offset-2 outline-primary"
-        }
+        className={line ? "group" : undefined}
         onBlurCapture={(event) => {
           const nextTarget = event.relatedTarget as Node | null;
           if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
