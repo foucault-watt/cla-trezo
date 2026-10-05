@@ -7,10 +7,8 @@ import {
   Receipt,
   HandCoins,
   ShieldUser,
-  Sparkles,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { DemoLoginButton } from "@/components/demo/demo-login-button";
 import { DemoLogoutButton } from "@/components/demo/demo-logout-button";
 import { DemoModeBanner } from "@/components/demo/demo-mode-banner";
 import { LastStructureTracker } from "@/components/nav/last-structure-tracker";
@@ -90,15 +88,7 @@ export default async function MemberLayout({
           icon={<LogOut size={18} />}
         />
       ) : (
-        <>
-          {user.isAdmin && (
-            <DemoLoginButton
-              className="btn btn-ghost btn-sm w-full justify-start gap-2"
-              icon={<Sparkles size={18} />}
-            />
-          )}
-          <LogoutButton />
-        </>
+        <LogoutButton />
       )}
     </div>
   );

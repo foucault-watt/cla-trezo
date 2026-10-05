@@ -210,14 +210,6 @@ export const iconUsages: IconUsage[] = [
     context:
       "icône construite ici et passée en prop à DemoLogoutButton ; le texte du bouton n'est pas visible dans ce fichier",
   },
-  {
-    icon: "Sparkles",
-    visibleText: null,
-    ariaLabel: null,
-    file: "app/app/[assoSlug]/layout.tsx",
-    context:
-      "« Essayer la démo », réservé aux Admins ; icône construite ici et passée en prop à DemoLoginButton",
-  },
 
   // components/demo/demo-mode-banner.tsx
   {
@@ -240,8 +232,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Essayer la démo",
     ariaLabel: null,
     file: "app/page.tsx",
-    context:
-      "landing page, icône passée en prop à DemoLoginButton, cohérent avec app/app/[assoSlug]/layout.tsx",
+    context: "landing page, icône passée en prop à DemoLoginButton",
   },
   {
     icon: "TrendingUp",
