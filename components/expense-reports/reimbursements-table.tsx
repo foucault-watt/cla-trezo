@@ -286,7 +286,11 @@ function EditableReimbursementRow({
   return (
     <>
       <tr
-        className={line ? "group" : "bg-primary/5"}
+        className={
+          line
+            ? "group"
+            : "bg-base-200/60 [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-neutral)]"
+        }
         onBlurCapture={(event) => {
           const nextTarget = event.relatedTarget as Node | null;
           if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
