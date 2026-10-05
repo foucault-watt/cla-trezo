@@ -7,6 +7,7 @@ import {
   HandCoins,
   LayoutDashboard,
   Receipt,
+  Tags,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { BackToAppLink } from "@/components/nav/back-to-app-link";
@@ -59,6 +60,11 @@ const navItems = [
 ];
 
 const devNavItems = [
+  {
+    href: "/app/admin/types-de-depense",
+    label: "Types de dépense",
+    icon: <Tags size={18} />,
+  },
   {
     href: "/app/admin/developpement/pdf-lab",
     label: "Développement",

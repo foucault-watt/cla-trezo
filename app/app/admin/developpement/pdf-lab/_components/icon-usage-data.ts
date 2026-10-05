@@ -219,6 +219,39 @@ export const iconUsages: IconUsage[] = [
     file: "components/demo/demo-mode-banner.tsx",
   },
 
+  // components/demo/demo-login-button.tsx
+  {
+    icon: "Building2",
+    visibleText: "On vous crée un Club fictif…",
+    ariaLabel: null,
+    file: "components/demo/demo-login-button.tsx",
+    context:
+      "étape à venir de l'écran de chargement du mode démo, cohérent avec « Assos » dans la nav admin",
+  },
+  {
+    icon: "Wallet",
+    visibleText: "On remplit son Solde…",
+    ariaLabel: null,
+    file: "components/demo/demo-login-button.tsx",
+    context:
+      "étape à venir de l'écran de chargement du mode démo, cohérent avec « Solde en temps réel » sur la landing page",
+  },
+  {
+    icon: "Receipt",
+    visibleText: "On prépare des notes de frais et des subventions…",
+    ariaLabel: null,
+    file: "components/demo/demo-login-button.tsx",
+    context: "étape à venir de l'écran de chargement du mode démo",
+  },
+  {
+    icon: "Check",
+    visibleText: null,
+    ariaLabel: null,
+    file: "components/demo/demo-login-button.tsx",
+    context:
+      "remplace l'icône d'une étape terminée de l'écran de chargement du mode démo",
+  },
+
   // app/page.tsx
   {
     icon: "LogIn",
@@ -797,10 +830,107 @@ export const iconUsages: IconUsage[] = [
     file: "app/app/admin/layout.tsx",
   },
   {
+    icon: "Tags",
+    visibleText: "Types de dépense",
+    ariaLabel: null,
+    file: "app/app/admin/layout.tsx",
+    context: "nav admin, section Outils internes",
+  },
+  {
     icon: "FlaskConical",
     visibleText: "Développement",
     ariaLabel: null,
     file: "app/app/admin/layout.tsx",
+  },
+
+  // app/app/admin/types-de-depense/_components/type-depenses-table.tsx
+  {
+    icon: "Plus",
+    visibleText: "Ajouter un Type de dépense",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/type-depenses-table.tsx",
+    context: "cohérent avec subventions-table.tsx",
+  },
+
+  // app/app/admin/types-de-depense/_components/new-type-depense-row.tsx
+  {
+    icon: "Check",
+    visibleText: null,
+    ariaLabel: "Enregistrer le Type de dépense",
+    file: "app/app/admin/types-de-depense/_components/new-type-depense-row.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: null,
+    ariaLabel: "Annuler l'ajout",
+    file: "app/app/admin/types-de-depense/_components/new-type-depense-row.tsx",
+    context: "cohérent avec new-subvention-row.tsx",
+  },
+
+  // app/app/admin/types-de-depense/_components/type-depense-row.tsx
+  {
+    icon: "Pencil",
+    visibleText: null,
+    ariaLabel: "Renommer le Type de dépense",
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+    context:
+      "bouton icône seul qui bascule vers l'icône X en mode édition, cohérent avec subvention-row.tsx",
+  },
+  {
+    icon: "Trash2",
+    visibleText: null,
+    ariaLabel: "Supprimer le Type de dépense",
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+    context: "bouton icône seul, ouvre la modale de suppression",
+  },
+  {
+    icon: "Check",
+    visibleText: null,
+    ariaLabel: "Enregistrer les modifications",
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: null,
+    ariaLabel: "Annuler la modification",
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+    context: "modale de suppression",
+  },
+  {
+    icon: "Trash2",
+    visibleText: "Supprimer",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/type-depense-row.tsx",
+    context:
+      "bouton de confirmation de la modale, avec choix d'un Type de remplacement si le Type est utilisé",
+  },
+
+  // app/app/admin/types-de-depense/_components/custom-label-row.tsx
+  {
+    icon: "Pencil",
+    visibleText: "Modifier",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/custom-label-row.tsx",
+    context: "ouvre la modale de reclassement d'un libellé personnalisé",
+  },
+  {
+    icon: "X",
+    visibleText: "Annuler",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/custom-label-row.tsx",
+  },
+  {
+    icon: "Check",
+    visibleText: "Appliquer",
+    ariaLabel: null,
+    file: "app/app/admin/types-de-depense/_components/custom-label-row.tsx",
+    context: "renomme le libellé ou impose un Type existant",
   },
 
   // app/app/admin/stockage/_components/storage-archive-button.tsx

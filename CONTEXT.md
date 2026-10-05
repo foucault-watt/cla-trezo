@@ -43,7 +43,7 @@ Classification fixe d'une Campagne de subvention (et donc, par transitivité, de
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de dépense)
 
 **Type de dépense**:
-Classification d'un Remboursement (ex: nourriture, transport, matériel). Liste pré-remplie en base de données mais extensible/personnalisable, contrairement au Type de subvention.
+Classification d'un Remboursement (ex: nourriture, transport, matériel). Liste pré-remplie en base de données mais extensible/personnalisable, contrairement au Type de subvention : l'Admin l'ajoute, la renomme ou la supprime. À défaut de Type adapté, la Structure saisit un libellé personnalisé, que l'Admin peut ensuite renommer ou remplacer par un Type existant — y compris sur une Note validée (cf. ADR-0010).
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de subvention)
 
 **Note de frais**:
