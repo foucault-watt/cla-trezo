@@ -10,7 +10,7 @@ export function CustomLabelsTable({
 }) {
   if (customLabels.length === 0) {
     return (
-      <div className="rounded-field bg-base-200 p-5">
+      <div className="rounded-box border border-base-300 bg-base-100 p-5">
         <p className="font-semibold">Aucun libellé personnalisé</p>
         <p className="mt-1 text-sm text-base-content/70">
           Tous les Remboursements utilisent un Type de la liste.
