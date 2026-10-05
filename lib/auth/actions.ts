@@ -15,13 +15,16 @@ export async function logoutAction() {
  * Provisionne/reset les fixtures démo puis ouvre une session démo, sur un
  * cookie séparé de la vraie session (cf. lib/session.ts) — ne déconnecte
  * jamais un utilisateur réel déjà connecté.
+ *
+ * Retourne l'URL de l'espace démo au lieu de rediriger : DemoLoginButton
+ * navigue lui-même, une fois son écran de chargement terminé.
  */
-export async function demoLoginAction() {
+export async function demoLoginAction(): Promise<string> {
   const demoUser = await provisionDemoFixtures();
   const demoSession = await getDemoSession();
   demoSession.user = demoUser;
   await demoSession.save();
-  redirect(`/app/${DEMO_ASSO_SLUG}`);
+  return `/app/${DEMO_ASSO_SLUG}`;
 }
 
 export async function demoLogoutAction() {

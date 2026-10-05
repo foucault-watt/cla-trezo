@@ -77,3 +77,15 @@ fieldset {
   --depth: 1;
   --noise: 0;
 }
+
+/* Écran de chargement du mode démo (components/demo/demo-login-button.tsx) */
+@keyframes demo-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
