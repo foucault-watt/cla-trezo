@@ -2,9 +2,9 @@ FROM node:22.14-bookworm-slim
 
 WORKDIR /app
 
-# Prisma / TLS
+# Prisma / TLS, et curl pour le healthcheck Coolify (lancé dans le conteneur)
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && apt-get install -y --no-install-recommends openssl ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Dépendances
