@@ -5,7 +5,10 @@ import { assertSafePathSegment } from "./path-segment";
 
 function resolveStorageRoot(): string {
   const configured = process.env.STORAGE_ROOT_DIR ?? "./uploads";
-  return path.resolve(process.cwd(), configured);
+  // turbopackIgnore : le stockage contient des fichiers déposés à l'exécution,
+  // pas du code. Sans ce commentaire, le build embarque tout le projet dans
+  // la sortie `standalone` de l'image Docker.
+  return path.resolve(/*turbopackIgnore: true*/ process.cwd(), configured);
 }
 
 function buildDocumentPath({
@@ -87,7 +90,7 @@ export function buildGrantDocumentPath({
 
 function resolveAbsolutePath(relativePath: string): string {
   const root = resolveStorageRoot();
-  const absolute = path.resolve(root, relativePath);
+  const absolute = path.resolve(/*turbopackIgnore: true*/ root, relativePath);
   if (!absolute.startsWith(root + path.sep) && absolute !== root) {
     throw new Error(
       `Chemin de fichier hors de la racine de stockage : "${relativePath}".`,
