@@ -23,8 +23,13 @@ export async function GET(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // En prod, l'image Docker n'embarque que les paquets utiles à l'app : la
+  // CLI Prisma est installée à part avec le schéma et les migrations, dans le
+  // dossier indiqué par PRISMA_CLI_DIR (cf. Dockerfile). Sans la variable, on
+  // utilise le projet courant.
+  const prismaDir = process.env.PRISMA_CLI_DIR ?? process.cwd();
   const prismaCli = path.join(
-    process.cwd(),
+    prismaDir,
     "node_modules",
     "prisma",
     "build",
@@ -35,7 +40,7 @@ export async function GET(request: NextRequest) {
     const { stdout, stderr } = await execFileAsync(
       process.execPath,
       [prismaCli, "migrate", "deploy"],
-      { cwd: process.cwd(), env: process.env, timeout: 120_000 },
+      { cwd: prismaDir, env: process.env, timeout: 120_000 },
     );
     console.log("[MIGRATE] prisma migrate deploy OK :", stdout, stderr);
     return NextResponse.json({ ok: true, stdout, stderr });
