@@ -109,7 +109,7 @@ export default async function ExpenseReportSummaryPage({
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Dépense</th>
+                <th>Nom de la dépense</th>
                 <th>Financement</th>
                 <th className="text-right">Montant</th>
               </tr>

@@ -354,7 +354,8 @@ function EditableReimbursementRow({
             name="expenseName"
             required
             autoFocus={!line}
-            placeholder="Nouvelle dépense"
+            aria-label="Nom de la dépense"
+            placeholder="Ex. : pizzas pour la soirée"
             value={fields.expenseName}
             onChange={(event) =>
               updateFields({
@@ -428,6 +429,7 @@ function EditableReimbursementRow({
               step="0.01"
               required
               aria-label="Montant en euros"
+              placeholder="0,00"
               value={fields.amount}
               onChange={(event) =>
                 updateFields({
@@ -639,7 +641,7 @@ export function ReimbursementsTable({
             <thead className="bg-base-200/70">
               <tr>
                 <th>Date</th>
-                <th>Dépense</th>
+                <th>Nom de la dépense</th>
                 <th>Type</th>
                 <th>Financement</th>
                 <th className="text-right">Montant</th>
