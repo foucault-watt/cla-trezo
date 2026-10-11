@@ -5,8 +5,8 @@ import type { AssoMemberWithLogin } from "@/lib/asso/members";
 /**
  * Liste des Membres actifs d'une Structure, pour savoir qui contacter dans
  * l'onglet Aperçu de la page Admin détail d'Asso. La fraîcheur de connexion
- * (cf. MemberLoginBadge) prévient qu'un rôle affiché peut ne plus être à
- * jour sans que ce soit une anomalie.
+ * (cf. MemberLoginBadge) distingue qui a réellement ouvert Trezo de qui n'a
+ * été qu'importé par la synchro Admin.
  */
 export function MembersList({ members }: { members: AssoMemberWithLogin[] }) {
   if (members.length === 0) {

@@ -1537,7 +1537,7 @@ export const iconUsages: IconUsage[] = [
     ariaLabel: null,
     file: "components/asso/member-login-badge.tsx",
     context:
-      'texte visible dynamique "Vu·e le {date}" ; badge orange avec tooltip explicatif quand la dernière connexion dépasse STALE_LOGIN_DAYS',
+      'texte visible dynamique "Vu·e le {date}" ; badge orange avec tooltip explicatif quand la dernière connexion dépasse STALE_LOGIN_DAYS (un Membre jamais connecté affiche "Jamais connecté·e" sans icône)',
   },
 
   // app/app/admin/associations/[assoSlug]/_components/documents-list.tsx

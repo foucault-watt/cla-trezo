@@ -1,18 +1,24 @@
 import { LogIn, TriangleAlert } from "lucide-react";
 import { formatShortDate } from "@/lib/dates";
-import { isStaleLogin } from "@/lib/asso/member-login";
+import { loginFreshness } from "@/lib/asso/member-login";
 
 /**
  * Badge de fraîcheur de connexion d'un Membre — cf. lib/asso/member-login.ts
- * pour pourquoi "jamais connecté·e" n'existe pas et pourquoi c'est
- * l'ancienneté de la connexion (pas sa présence) qui est le signal utile.
+ * pour la différence entre un Membre importé par la synchro Admin (jamais
+ * connecté) et un Membre qui a réellement ouvert Trezo.
  */
-export function MemberLoginBadge({ lastLoginAt }: { lastLoginAt: Date }) {
-  if (isStaleLogin(lastLoginAt)) {
+export function MemberLoginBadge({ lastLoginAt }: { lastLoginAt: Date | null }) {
+  if (lastLoginAt === null) {
+    return (
+      <span className="text-xs text-base-content/50">Jamais connecté·e</span>
+    );
+  }
+
+  if (loginFreshness(lastLoginAt) === "stale") {
     return (
       <span
         className="tooltip tooltip-left"
-        data-tip="Pas revu depuis longtemps : son rôle actuel ici peut ne plus être à jour, il ne se rafraîchit qu'à sa prochaine connexion."
+        data-tip="Pas revu·e sur Trezo depuis plus de 6 mois."
       >
         <span className="badge badge-warning badge-soft badge-sm gap-1">
           <TriangleAlert size={12} />

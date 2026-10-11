@@ -36,9 +36,9 @@ export async function listAssoMembers(
 export type AssoMemberWithLogin = AssoMember & {
   /** Début du rôle actuel (RefAssoUser.createdAt). */
   since: Date;
-  /** Dernier UserLog.connectedAt de ce Membre — cf. lib/asso/member-login.ts :
-   * toujours renseigné, jamais null (cf. syncUserFromCla). */
-  lastLoginAt: Date;
+  /** Dernier UserLog.connectedAt de ce Membre ; null s'il n'a jamais ouvert
+   * Trezo (compte créé par la synchro Admin, cf. lib/asso/member-login.ts). */
+  lastLoginAt: Date | null;
 };
 
 /**
@@ -74,9 +74,6 @@ export async function listAssoMembersWithLogin(
     lastname: membership.user.lastname,
     role: membership.role,
     since: membership.createdAt,
-    // Toujours présent en pratique (cf. commentaire du type) ; repli sur la
-    // date du rôle si jamais un UserLog venait à manquer (donnée historique
-    // incohérente) plutôt que de planter l'affichage.
-    lastLoginAt: membership.user.logs[0]?.connectedAt ?? membership.createdAt,
+    lastLoginAt: membership.user.logs[0]?.connectedAt ?? null,
   }));
 }

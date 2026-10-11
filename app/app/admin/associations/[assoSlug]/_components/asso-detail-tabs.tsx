@@ -143,11 +143,6 @@ function ApercuTab({
         <h3 className="mb-2 text-sm font-medium text-base-content/70">
           Membres
         </h3>
-        <p className="mb-2 text-sm text-base-content/60">
-          Pour savoir qui contacter dans cette Asso. Une connexion ancienne
-          signale que le rôle affiché n&apos;a peut-être plus été rafraîchi
-          depuis longtemps.
-        </p>
         <MembersList members={asso.members} />
       </div>
     </div>
