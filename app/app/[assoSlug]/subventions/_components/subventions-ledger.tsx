@@ -123,6 +123,11 @@ function DesktopCampaignList({
                       <span className="font-medium text-base-content/75">
                         {subvention.reason}
                       </span>
+                      {subvention.commentary && (
+                        <p className="text-xs text-base-content/60">
+                          {subvention.commentary}
+                        </p>
+                      )}
                     </td>
                     <td className="px-5 py-2 text-right tabular-nums text-base-content/70">
                       {formatCents(subvention.totalAmountCents)}
@@ -170,6 +175,11 @@ function CompactSubventionLines({
           <p className="truncate text-sm font-medium text-base-content/75">
             {subvention.reason}
           </p>
+          {subvention.commentary && (
+            <p className="text-xs text-base-content/60">
+              {subvention.commentary}
+            </p>
+          )}
           <div className="mt-1 grid grid-cols-3 gap-3 text-right text-xs">
             <span className="tabular-nums text-base-content/70">
               {formatCents(subvention.totalAmountCents)}

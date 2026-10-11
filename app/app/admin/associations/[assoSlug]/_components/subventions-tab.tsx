@@ -118,10 +118,17 @@ function CampaignCard({
         {campaign.subventions.map((subvention) => (
           <li
             key={subvention.id}
-            className="flex items-center justify-between py-1.5 text-sm"
+            className="flex items-center justify-between gap-3 py-1.5 text-sm"
           >
-            <span className="text-base-content/75">{subvention.reason}</span>
-            <span>
+            <div className="min-w-0">
+              <span className="text-base-content/75">{subvention.reason}</span>
+              {subvention.commentary && (
+                <p className="text-xs text-base-content/60">
+                  {subvention.commentary}
+                </p>
+              )}
+            </div>
+            <span className="shrink-0">
               {formatCents(subvention.usedAmountCents)} /{" "}
               {formatCents(subvention.totalAmountCents)}
             </span>
