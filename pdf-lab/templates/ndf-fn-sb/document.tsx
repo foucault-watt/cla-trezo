@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     borderBottomColor: line,
     borderBottomWidth: 1,
   },
-  paymentPage: { marginTop: 0 },
   signatureRow: { marginTop: 28, flexDirection: "row" },
   signature: { width: "50%" },
   signatureTitle: { fontWeight: 600, textDecoration: "underline" },
@@ -206,6 +205,9 @@ function ExpenseTable({
           key={`${row.date}-${row.description}-${index}`}
           style={styles.tableRow}
           wrap={false}
+          // La dernière ligne emmène le total avec elle : il ne se retrouve
+          // jamais seul en haut d'une page.
+          minPresenceAhead={index === rows.length - 1 ? 26 : undefined}
         >
           <Text style={styles.dateColumn}>{row.date}</Text>
           <Text style={styles.descriptionColumn}>{row.description}</Text>
@@ -278,8 +280,10 @@ export function ExpenseReportDocument({
           Le montant restant de la subvention suite à cette note de frais est de{" "}
           {data.grantBalance}.
         </Text>
-        <Text style={styles.conditionsTitle}>Conditions de règlement :</Text>
+        {/* Insécable : titre, moyens de paiement et signatures restent sur la
+            même page. */}
         <View wrap={false}>
+          <Text style={styles.conditionsTitle}>Conditions de règlement :</Text>
           <View style={styles.paymentHeader}>
             <Text style={styles.choiceColumn}>CHOIX</Text>
             <Text style={styles.methodColumn}>MOYEN</Text>
@@ -291,9 +295,6 @@ export function ExpenseReportDocument({
             selected={data.paymentMethod === "cash"}
             method="Espèces"
           />
-        </View>
-
-        <View break style={styles.paymentPage}>
           <PaymentChoice
             selected={data.paymentMethod === "cheque"}
             method="Chèque"
@@ -305,7 +306,7 @@ export function ExpenseReportDocument({
             details={`IBAN : ${data.iban ?? ""}`}
           />
 
-          <View style={styles.signatureRow} wrap={false}>
+          <View style={styles.signatureRow}>
             <View style={styles.signature}>
               <Text style={styles.signatureTitle}>Le destinataire,</Text>
               <Text>{data.recipientName}</Text>

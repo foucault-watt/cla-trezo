@@ -187,6 +187,9 @@ function ExpenseTable({
             key={`${row.date}-${row.description}-${index}`}
             style={styles.tableRow}
             wrap={false}
+            // La dernière ligne emmène le total avec elle : il ne se
+            // retrouve jamais seul en haut d'une page.
+            minPresenceAhead={index === rows.length - 1 ? 26 : undefined}
           >
             <Text style={styles.dateColumn}>{row.date}</Text>
             <Text style={styles.descriptionColumn}>{row.description}</Text>
@@ -262,7 +265,7 @@ export function FinancementDocument({ data }: { data: FinancementPdfData }) {
           dépensés conformément aux objets prescrits ci-dessus.
         </Text>
 
-        <Text style={styles.paragraph}>
+        <Text style={styles.paragraph} minPresenceAhead={30}>
           L’association devra fournir au CA Élèves, dans un délai d’
           <Text style={styles.bold}>un mois après la fin de l’événement</Text>{" "}
           :
@@ -276,26 +279,29 @@ export function FinancementDocument({ data }: { data: FinancementPdfData }) {
           ]}
         </BulletList>
 
-        <Text style={styles.emphasis} minPresenceAhead={80}>
-          Si l’événement génère un bénéfice dépassant 20 % du financement
-          accordé par le CA Événements, l’association devra restituer une
-          partie de la subvention. Le montant à restituer sera calculé au
-          prorata de la part de financement apportée par le CA Événements par
-          rapport aux bénéfices totaux obtenus pour l’événement.
-        </Text>
+        {/* Insécable : les signatures ne partent jamais seules sur une page. */}
+        <View wrap={false}>
+          <Text style={styles.emphasis}>
+            Si l’événement génère un bénéfice dépassant 20 % du financement
+            accordé par le CA Événements, l’association devra restituer une
+            partie de la subvention. Le montant à restituer sera calculé au
+            prorata de la part de financement apportée par le CA Événements par
+            rapport aux bénéfices totaux obtenus pour l’événement.
+          </Text>
 
-        <View style={styles.signatureRow} wrap={false}>
-          <View style={styles.signature}>
-            <Text style={styles.signatureTitle}>
-              Le responsable de l’association,
-            </Text>
-            <Text>{data.responsibleName}</Text>
-          </View>
-          <View style={styles.signature}>
-            <Text style={styles.signatureTitle}>
-              Le secrétaire général de CLA
-            </Text>
-            <Text>{data.secretaryName}</Text>
+          <View style={styles.signatureRow}>
+            <View style={styles.signature}>
+              <Text style={styles.signatureTitle}>
+                Le responsable de l’association,
+              </Text>
+              <Text>{data.responsibleName}</Text>
+            </View>
+            <View style={styles.signature}>
+              <Text style={styles.signatureTitle}>
+                Le secrétaire général de CLA
+              </Text>
+              <Text>{data.secretaryName}</Text>
+            </View>
           </View>
         </View>
       </Page>

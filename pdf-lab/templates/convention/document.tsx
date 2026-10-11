@@ -44,16 +44,6 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat",
     fontSize: 10,
   },
-  widePage: {
-    paddingTop: 92,
-    paddingRight: 42.4,
-    paddingBottom: 66,
-    paddingLeft: 42.4,
-    color: ink,
-    backgroundColor: "#ffffff",
-    fontFamily: "Montserrat",
-    fontSize: 10,
-  },
   header: {
     position: "absolute",
     top: 23.5,
@@ -187,7 +177,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     textAlign: "right",
   },
-  continuation: { marginTop: -1 },
   emphasis: { marginTop: 23, fontWeight: 700 },
   signatureSection: { marginTop: 25 },
   signatureGrid: { flexDirection: "row", marginTop: 12 },
@@ -376,7 +365,11 @@ export function SubsidyConventionDocument({
             La subvention est accordée pour les dépenses suivantes :
           </Text>
           <View style={styles.table}>
-            <View style={styles.tableHeader} wrap={false}>
+            <View
+              style={styles.tableHeader}
+              wrap={false}
+              minPresenceAhead={55}
+            >
               <Text style={styles.dateCell}>ACCORDÉ LE</Text>
               <Text style={styles.descriptionCell}>DESCRIPTION</Text>
               <Text style={styles.amountCell}>MONTANT</Text>
@@ -391,6 +384,11 @@ export function SubsidyConventionDocument({
                   key={`${expense.grantedOn}-${expense.description}-${index}`}
                   style={styles.tableRow}
                   wrap={false}
+                  // La dernière ligne emmène le total avec elle : il ne se
+                  // retrouve jamais seul en haut d'une page.
+                  minPresenceAhead={
+                    index === data.expenses.length - 1 ? 26 : undefined
+                  }
                 >
                   <Text style={[styles.dateCell, styles.medium]}>
                     {expense.grantedOn}
@@ -416,7 +414,7 @@ export function SubsidyConventionDocument({
           </Text>
         </Article>
 
-        <Article number={5} title="DROITS ET OBLIGATIONS DE CLA">
+        <Article number={4} title="DROITS ET OBLIGATIONS DE CLA">
           <Text style={styles.paragraph}>
             CLA s'engage à mettre à disposition le montant de la subvention qui
             figure à l'article 3 au plus tard 10 jours après signature de la
@@ -425,11 +423,11 @@ export function SubsidyConventionDocument({
           <Text style={styles.paragraphGap}>
             CLA se réserve le droit de réclamer le remboursement complet ou
             partiel de la somme versée auprès de l'association en cas de
-            non-respect de ses engagements décrits à l'article 6.
+            non-respect de ses engagements décrits à l'article 5.
           </Text>
         </Article>
 
-        <Article number={6} title="DROITS ET OBLIGATIONS DE L'ASSOCIATION">
+        <Article number={5} title="DROITS ET OBLIGATIONS DE L'ASSOCIATION">
           <Text style={styles.paragraph}>L'association s'engage à :</Text>
           <BulletList>
             {[
@@ -437,7 +435,7 @@ export function SubsidyConventionDocument({
               "Retourner les fonds non dépensés, soit par virement bancaire, soit par déduction sur une prochaine demande de subvention",
             ]}
           </BulletList>
-          <Text style={styles.paragraphGap}>
+          <Text style={styles.paragraphGap} minPresenceAhead={30}>
             L'association ayant reçu une subvention devra faire un compte rendu
             post-événement et fournir au CA Élèves, dans un délai d'un mois
             après la fin de l'événement, un retour détaillé incluant :
@@ -447,21 +445,10 @@ export function SubsidyConventionDocument({
               "Un bilan du déroulement de l'événement.",
               "Un bilan financier précisant l'utilisation de la subvention accordée.",
               "Si le CA Élèves en fait la demande, les justificatifs comptables correspondants.",
-            ]}
-          </BulletList>
-        </Article>
-      </Page>
-
-      <Page size="A4" style={styles.widePage}>
-        <Header />
-        <Footer />
-        <View style={styles.continuation}>
-          <BulletList>
-            {[
               "Un suivi des subventions : tenir à jour un suivi précis de toutes les subventions perçues pour l'événement ou les projets concernés, en indiquant leur origine, leur montant et leur utilisation.",
             ]}
           </BulletList>
-          <Text style={styles.paragraphGap}>
+          <Text style={styles.paragraphGap} minPresenceAhead={30}>
             En cas de demande d'autres subventions pour un événement ou un
             projet ayant déjà bénéficié d'un soutien financier du CA Élèves,
             l'association devra :
@@ -480,9 +467,9 @@ export function SubsidyConventionDocument({
             prorata de la part de financement apportée par le CA Événements par
             rapport aux bénéfices totaux obtenus pour l'événement.
           </Text>
-        </View>
+        </Article>
 
-        <Article number={7} title="LITIGES">
+        <Article number={6} title="LITIGES">
           <Text style={styles.paragraph}>
             En cas de contestation sur la validité, l'interprétation ou
             l'exécution de la convention, les parties s'accordent de tout mettre
@@ -492,7 +479,7 @@ export function SubsidyConventionDocument({
           </Text>
         </Article>
 
-        <Article number={8} title="MODIFICATIONS DE LA CONVENTION">
+        <Article number={7} title="MODIFICATIONS DE LA CONVENTION">
           <Text style={styles.paragraph}>
             En cas d'imprévu majeur nécessitant une révision de la convention
             pour s'adapter aux nouvelles spécificités de la subvention, celle-ci
@@ -532,12 +519,8 @@ export function SubsidyConventionDocument({
             date à laquelle la modification entre en vigueur.
           </Text>
         </Article>
-      </Page>
 
-      <Page size="A4" style={styles.page}>
-        <Header />
-        <Footer />
-        <Article number={9} title="DURÉE ET RÉSILIATION" first>
+        <Article number={8} title="DURÉE ET RÉSILIATION">
           <Text style={styles.paragraph}>
             Afin de laisser le temps aux parties de vérifier le respect de leurs
             engagements, la convention est valable jusqu'à 2 ans suivant la date
@@ -556,18 +539,21 @@ export function SubsidyConventionDocument({
           </Text>
         </Article>
 
-        <Article number={10} title="ENTRÉE EN VIGUEUR DE LA CONVENTION">
-          <Text style={styles.paragraph}>
-            La convention entre en vigueur le jour de sa signature par les deux
-            parties.
-          </Text>
-        </Article>
+        {/* Insécable : les signatures ne partent jamais seules sur une page. */}
+        <View wrap={false}>
+          <Article number={9} title="ENTRÉE EN VIGUEUR DE LA CONVENTION">
+            <Text style={styles.paragraph}>
+              La convention entre en vigueur le jour de sa signature par les
+              deux parties.
+            </Text>
+          </Article>
 
-        <View style={styles.signatureSection}>
-          <Text style={styles.articleTitle}>SIGNATURES</Text>
-          <View style={styles.signatureGrid}>
-            <SignatureColumn signature={data.secondPartySignature} />
-            <SignatureColumn signature={data.firstPartySignature} />
+          <View style={styles.signatureSection}>
+            <Text style={styles.articleTitle}>SIGNATURES</Text>
+            <View style={styles.signatureGrid}>
+              <SignatureColumn signature={data.secondPartySignature} />
+              <SignatureColumn signature={data.firstPartySignature} />
+            </View>
           </View>
         </View>
       </Page>

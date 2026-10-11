@@ -194,6 +194,9 @@ function ExpenseTable({ rows, total }: { rows: ExpenseRow[]; total: string }) {
           key={`${row.date}-${row.description}-${index}`}
           style={styles.tableRow}
           wrap={false}
+          // La dernière ligne emmène le total avec elle : il ne se retrouve
+          // jamais seul en haut d'une page.
+          minPresenceAhead={index === rows.length - 1 ? 26 : undefined}
         >
           <Text style={styles.dateColumn}>{row.date}</Text>
           <Text style={styles.descriptionColumn}>{row.description}</Text>
@@ -252,10 +255,10 @@ export function ExpenseBalanceDocument({
         <Text style={styles.paragraph}>Bonjour,</Text>
         <ExpenseTable rows={data.expenses} total={data.total} />
 
-        <Text style={styles.conditionsTitle} minPresenceAhead={90}>
-          Conditions de règlement :
-        </Text>
+        {/* Insécable : titre, moyens de paiement et signatures restent sur la
+            même page. */}
         <View wrap={false}>
+          <Text style={styles.conditionsTitle}>Conditions de règlement :</Text>
           <View style={styles.paymentHeader}>
             <Text style={styles.choiceColumn}>CHOIX</Text>
             <Text style={styles.methodColumn}>MOYEN</Text>
@@ -277,16 +280,16 @@ export function ExpenseBalanceDocument({
             method="Virement"
             details={`IBAN : ${data.iban ?? ""}`}
           />
-        </View>
 
-        <View style={styles.signatureRow} wrap={false}>
-          <View style={styles.signature}>
-            <Text style={styles.signatureTitle}>Le destinataire,</Text>
-            <Text>{data.recipientName}</Text>
-          </View>
-          <View style={styles.signature}>
-            <Text style={styles.signatureTitle}>Le Trésorier de CLA</Text>
-            <Text>{data.treasurerName}</Text>
+          <View style={styles.signatureRow}>
+            <View style={styles.signature}>
+              <Text style={styles.signatureTitle}>Le destinataire,</Text>
+              <Text>{data.recipientName}</Text>
+            </View>
+            <View style={styles.signature}>
+              <Text style={styles.signatureTitle}>Le Trésorier de CLA</Text>
+              <Text>{data.treasurerName}</Text>
+            </View>
           </View>
         </View>
       </Page>
