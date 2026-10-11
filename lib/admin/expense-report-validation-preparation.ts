@@ -6,6 +6,7 @@ import {
   groupExpenseReportLinesByFundingSource,
 } from "@/lib/expense-reports/expense-report-validation-grouping";
 import { prisma } from "@/lib/prisma";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import type { ExpenseReportPdfData } from "@/pdf-lab/templates/ndf-fn-sb/types";
 import type { ExpenseBalancePdfData } from "@/pdf-lab/templates/ndf-solde/types";
 import { getConventionPdfSettings } from "./convention-pdf-settings";
@@ -115,7 +116,9 @@ export async function prepareExpenseReportValidation(
           select: {
             reason: true,
             campaignId: true,
-            campaign: { select: { name: true, publicationDate: true } },
+            campaign: {
+              select: { type: true, name: true, publicationDate: true },
+            },
           },
         });
 
@@ -144,7 +147,7 @@ export async function prepareExpenseReportValidation(
           subventionId: group.subventionId,
           data: buildSubventionPdfData({
             context,
-            campaignName: subvention.campaign.name,
+            campaignName: subventionCampaignFullName(subvention.campaign),
             grantReason: subvention.reason,
             // Une Subvention n'est utilisable par une Structure que si sa
             // Campagne est Publiée (cf. listVisibleSubventionsForAsso), donc

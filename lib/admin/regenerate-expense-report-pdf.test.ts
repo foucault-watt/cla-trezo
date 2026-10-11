@@ -119,7 +119,11 @@ beforeEach(() => {
   subventionFindUniqueOrThrowMock.mockReset().mockResolvedValue({
     reason: "Achat de matériel",
     campaignId: "campaign-1",
-    campaign: { name: "Budget 2025-2026", publicationDate: new Date("2025-09-01") },
+    campaign: {
+      type: "CA_BUDGET",
+      name: "2025-2026",
+      publicationDate: new Date("2025-09-01"),
+    },
   });
   subventionFindManyMock.mockReset().mockResolvedValue([
     { reason: "Achat de matériel", amountCents: 10000 },

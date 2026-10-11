@@ -36,6 +36,7 @@ import { fundingSourceLabel } from "@/lib/expense-reports/labels";
 import { formatCents } from "@/lib/money";
 import { pluralize } from "@/lib/plural";
 import type { SoldeView } from "@/lib/solde/solde";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 
 const initialFormState: ReimbursementFormState = { ok: false };
@@ -69,6 +70,13 @@ function initialValues(line?: ExpenseReportLineDetail): EditorValues {
         ? `SUBVENTION:${line.subventionId}`
         : (line?.fundingSource ?? ""),
   };
+}
+
+function subventionFullName(subvention: VisibleSubvention) {
+  return subventionCampaignFullName({
+    type: subvention.type,
+    name: subvention.campaignName,
+  });
 }
 
 function editorValuesSignature(values: EditorValues) {
@@ -132,7 +140,7 @@ function FundingSourceSelect({
         <optgroup label="Subventions">
           {freshSubventions.map((subvention) => (
             <option key={subvention.id} value={`SUBVENTION:${subvention.id}`}>
-              {subvention.campaignName} · {subvention.reason} ·{" "}
+              {subventionFullName(subvention)} · {subvention.reason} ·{" "}
               {formatCents(subvention.remainingAmountCents)} restants
             </option>
           ))}
@@ -142,7 +150,7 @@ function FundingSourceSelect({
         <optgroup label="Subventions de plus d’un an">
           {staleSubventions.map((subvention) => (
             <option key={subvention.id} value={`SUBVENTION:${subvention.id}`}>
-              {subvention.campaignName} · {subvention.reason} ·{" "}
+              {subventionFullName(subvention)} · {subvention.reason} ·{" "}
               {formatCents(subvention.remainingAmountCents)} restants
             </option>
           ))}

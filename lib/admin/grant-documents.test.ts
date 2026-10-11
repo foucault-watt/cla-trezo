@@ -122,7 +122,8 @@ describe("isGrantDocumentStale", () => {
 function mockCampaign() {
   campaignFindUniqueMock.mockResolvedValue({
     id: "campaign-1",
-    name: "CA Event octobre",
+    type: "CA_EVENT",
+    name: "octobre",
     publicationDate: new Date("2025-10-15T12:00:00+02:00"),
     subventions: [
       { reason: "WEAC", amountCents: 65000 },
@@ -190,11 +191,14 @@ describe("getGrantDocumentPreparation", () => {
 
     expect(preparation?.kind).toBe("ORDRE_DE_FINANCEMENT");
     if (preparation?.kind !== "ORDRE_DE_FINANCEMENT") return;
+    // Le Type de subvention fait partie du nom de la Campagne : il figure
+    // dans le PDF, pas seulement la suite saisie par l'Admin ("octobre").
+    expect(preparation.campaignName).toBe("CA Événement octobre");
     expect(preparation.data).toEqual({
       period: "2025-2026",
       associationName: "AEEC Lille",
       associationStatus: "Club",
-      requestContext: "financement lors du CA Event octobre",
+      requestContext: "financement lors du CA Événement octobre",
       expenses: [
         { date: "15/10/2025", description: "WEAC", amount: "650,00 €" },
         {
@@ -243,7 +247,8 @@ describe("getGrantDocumentPreparation", () => {
   it("renvoie null quand la Structure n'a aucune Subvention dans la Campagne", async () => {
     campaignFindUniqueMock.mockResolvedValue({
       id: "campaign-1",
-      name: "CA Event octobre",
+      type: "CA_EVENT",
+      name: "octobre",
       publicationDate: null,
       subventions: [],
       grantDocuments: [],

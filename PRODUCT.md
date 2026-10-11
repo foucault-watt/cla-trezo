@@ -37,7 +37,7 @@ Avant Trézo, le suivi se faisait par échanges email et PDF manuels : les struc
 - Immutabilité : une Note de frais Validée est figée définitivement, cf. [ADR-0003](docs/adr/0003-immutabilite-post-pdf.md).
 - IBAN non persistant : l'IBAN saisi pour une note de frais est supprimé après génération du PDF, cf. [ADR-0002](docs/adr/0002-iban-non-persistant.md).
 - Verrouillage simple des notes de frais dès prise en charge par l'Admin (pas d'édition concurrente complexe), cf. [ADR-0001](docs/adr/0001-verrouillage-simple-note-de-frais.md).
-- Type de subvention : enum fixe en dur dans le code (`CA Budget`, `CA Event`, `CA Exceptionnel`), non personnalisable ; Type de dépense : liste extensible en base, cf. [ADR-0004](docs/adr/0004-type-subvention-en-dur-type-depense-en-base.md).
+- Type de subvention : enum fixe en dur dans le code (`CA Budget`, `CA Événement`, `CA Exceptionnel`), non personnalisable ; Type de dépense : liste extensible en base, cf. [ADR-0004](docs/adr/0004-type-subvention-en-dur-type-depense-en-base.md).
 - Terminologie métier stricte (Asso, Club, Commission, Solde, Subvention, Remboursement, etc.) définie dans [CONTEXT.md](CONTEXT.md) — à respecter dans le code et l'UI.
 - Authentification par session (`iron-session`), pas de SSO externe identifié dans le code actuel.
 

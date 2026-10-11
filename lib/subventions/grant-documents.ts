@@ -1,6 +1,7 @@
 import type { GrantDocumentKind } from "@/app/generated/prisma/enums";
 import { requireStructureAccess } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
+import { subventionCampaignFullName } from "./labels";
 
 export type StructureGrantDocument = {
   id: string;
@@ -54,14 +55,14 @@ export async function listGrantDocumentsForAsso(
       id: true,
       kind: true,
       generatedAt: true,
-      campaign: { select: { name: true } },
+      campaign: { select: { type: true, name: true } },
     },
   });
 
   return documents.map((document) => ({
     id: document.id,
     kind: document.kind,
-    campaignName: document.campaign.name,
+    campaignName: subventionCampaignFullName(document.campaign),
     generatedAt: document.generatedAt,
   }));
 }
@@ -83,7 +84,7 @@ export async function findGrantDocumentForAsso(
       kind: true,
       filePath: true,
       asso: { select: { name: true } },
-      campaign: { select: { name: true, publicationDate: true } },
+      campaign: { select: { type: true, name: true, publicationDate: true } },
     },
   });
   if (
@@ -99,7 +100,7 @@ export async function findGrantDocumentForAsso(
     filePath: document.filePath,
     filename: buildGrantDocumentFilename({
       kind: document.kind,
-      campaignName: document.campaign.name,
+      campaignName: subventionCampaignFullName(document.campaign),
       assoName: document.asso.name,
     }),
   };

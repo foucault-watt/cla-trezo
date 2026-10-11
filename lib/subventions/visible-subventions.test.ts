@@ -109,7 +109,7 @@ describe("listVisibleSubventions", () => {
         amountCents: 2000,
         commentary: null,
         campaign: {
-          name: "Campagne CA Event 2024",
+          name: "Campagne CA Événement 2024",
           type: "CA_EVENT",
           publicationDate: twoYearsAgo,
           date: new Date(),

@@ -16,7 +16,7 @@ export type AddSubventionState = { ok: boolean; error?: string };
  * Ajoute une Subvention accordée à une Structure dans le cadre d'une
  * Campagne existante. Une même Campagne peut porter plusieurs Subventions
  * pour la même Structure (ex : deux demandes distinctes dans la même
- * campagne CA Event) — pas de contrainte d'unicité.
+ * campagne CA Événement) — pas de contrainte d'unicité.
  */
 export async function addSubventionAction(
   _prevState: AddSubventionState,

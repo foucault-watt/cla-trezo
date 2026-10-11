@@ -4,7 +4,7 @@ export const fixture: FinancementPdfData = {
   period: "2025-2026",
   associationName: "CLIC",
   associationStatus: "Club",
-  requestContext: "financement lors du CA Evénement d’Avril",
+  requestContext: "financement lors du CA Événement d’Avril",
   expenses: [
     {
       date: "30/04/2026",

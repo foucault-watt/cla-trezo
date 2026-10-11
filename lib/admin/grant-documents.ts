@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { AssoType, GrantDocumentKind } from "@/app/generated/prisma/enums";
 import { formatCentsForPdf } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import type { SubsidyConventionPdfData } from "@/pdf-lab/templates/convention/types";
 import type { FinancementPdfData } from "@/pdf-lab/templates/financement/types";
 import type { ConventionPdfSettingsInput } from "./convention-pdf-settings-input";
@@ -216,6 +217,7 @@ export async function getGrantDocumentPreparation(
       where: { id: campaignId },
       select: {
         id: true,
+        type: true,
         name: true,
         publicationDate: true,
         subventions: {
@@ -249,9 +251,10 @@ export async function getGrantDocumentPreparation(
 
   if (!campaign || !asso || campaign.subventions.length === 0) return null;
 
+  const campaignName = subventionCampaignFullName(campaign);
   const base: PreparationBase = {
     campaignId: campaign.id,
-    campaignName: campaign.name,
+    campaignName,
     assoId: asso.id,
     assoSlug: asso.slug,
     assoName: asso.name,
@@ -259,7 +262,7 @@ export async function getGrantDocumentPreparation(
     existingDocument: campaign.grantDocuments[0] ?? null,
   };
   const source: PreparationSource = {
-    campaignName: campaign.name,
+    campaignName,
     publicationDate: campaign.publicationDate,
     assoName: asso.name,
     subventions: campaign.subventions,

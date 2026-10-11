@@ -33,7 +33,7 @@ describe("listGrantDocumentsForAsso", () => {
         id: "doc-1",
         kind: "ORDRE_DE_FINANCEMENT",
         generatedAt,
-        campaign: { name: "CA Event avril" },
+        campaign: { type: "CA_EVENT", name: "avril" },
       },
     ]);
 
@@ -51,7 +51,7 @@ describe("listGrantDocumentsForAsso", () => {
       {
         id: "doc-1",
         kind: "ORDRE_DE_FINANCEMENT",
-        campaignName: "CA Event avril",
+        campaignName: "CA Événement avril",
         generatedAt,
       },
     ]);
@@ -65,7 +65,8 @@ describe("findGrantDocumentForAsso", () => {
     filePath: "aeec/2026/octroi/campaign-1/doc.pdf",
     asso: { name: "AEEC Lille" },
     campaign: {
-      name: "CA Budget 2026",
+      type: "CA_BUDGET",
+      name: "2026",
       publicationDate: new Date("2026-01-15T12:00:00Z"),
     },
   };

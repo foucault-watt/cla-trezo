@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { formatShortDate } from "@/lib/dates";
 import type { AssoType } from "@/app/generated/prisma/enums";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import type { VisibleSubvention } from "@/lib/subventions/visible-subventions";
 import { groupSubventionsByCampaign } from "@/lib/subventions/subvention-campaigns";
 
@@ -54,7 +55,8 @@ export function DocumentsList({
             <div>
               <span>{documentLabel}</span>
               <div className="text-xs text-base-content/50">
-                {campaign.name} · {formatShortDate(campaign.publicationDate)}
+                {subventionCampaignFullName(campaign)} ·{" "}
+                {formatShortDate(campaign.publicationDate)}
               </div>
             </div>
           </div>

@@ -12,6 +12,7 @@ import { formatCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { getClubSolde } from "@/lib/solde/actions";
 import type { SoldeMovement, SoldeView } from "@/lib/solde/solde";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import { getSubventionAgeBand } from "@/lib/subventions/subvention-age";
 import {
   listVisibleSubventions,
@@ -128,7 +129,10 @@ function buildRecentActivity(
       date: s.publicationDate,
       kind: "subvention",
       label: "Subvention publiée",
-      detail: s.campaignName,
+      detail: subventionCampaignFullName({
+        type: s.type,
+        name: s.campaignName,
+      }),
     });
   }
 

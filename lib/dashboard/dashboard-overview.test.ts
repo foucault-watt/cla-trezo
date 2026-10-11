@@ -249,7 +249,7 @@ describe("getDashboardOverview", () => {
       {
         id: "s1",
         campaignId: "camp-1",
-        campaignName: "CA Budget",
+        campaignName: "2025",
         type: "CA_BUDGET",
         reason: "",
         totalAmountCents: 1000,
@@ -269,5 +269,7 @@ describe("getDashboardOverview", () => {
       "Note de frais validée",
       "Note de frais soumise",
     ]);
+    // Le Type de subvention fait partie du nom de la Campagne.
+    expect(allEvents[0].detail).toBe("CA Budget 2025");
   });
 });

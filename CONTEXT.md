@@ -28,7 +28,7 @@ Argent d'un Club géré par CLA, suivi dans l'application. Alimenté par des ent
 _Avoid_: budget, trésorerie (trop génériques, mélangent Solde et Subvention)
 
 **Campagne de subvention**:
-Regroupement administratif de Subventions portant un même Type de subvention et une même période (ex: "CA Budget 2026"). Porte le Type de subvention et la date de publication communs à toutes ses Subventions. Créée par l'Admin, qui y ajoute ensuite une ou plusieurs Subventions, éventuellement plusieurs pour la même Structure.
+Regroupement administratif de Subventions portant un même Type de subvention et une même période (ex: "CA Budget 2026"). Porte le Type de subvention et la date de publication communs à toutes ses Subventions. Créée par l'Admin, qui y ajoute ensuite une ou plusieurs Subventions, éventuellement plusieurs pour la même Structure. Le Type de subvention fait partie de son nom : l'Admin ne saisit que la suite ("2026"), mais le nom complet ("CA Budget 2026") est celui qui figure dans les PDF générés et les noms de fichiers.
 _Avoid_: financement (terme utilisé dans les PDF générés — ndf-fn-sb, Ordre de financement — pour désigner ce concept côté bénéficiaire ; à éviter en interne)
 
 **Subvention**:
@@ -39,7 +39,7 @@ _Avoid_: budget, aide, financement (trop génériques)
 Subvention dont la Campagne a été publiée il y a plus d'un an — l'âge se mesure toujours depuis la date de publication, jamais depuis la date de la Campagne. Reste utilisable pour un Remboursement (avec un Warning) jusqu'à deux ans après publication ; au-delà, elle ne peut plus être choisie et n'apparaît plus que dans l'historique.
 
 **Type de subvention**:
-Classification fixe d'une Campagne de subvention (et donc, par transitivité, de toutes ses Subventions) : `CA Budget`, `CA Event`, `CA Exceptionnel`. Enum fixe dans le code, non personnalisable. Porté par la Campagne, pas par la Subvention elle-même.
+Classification fixe d'une Campagne de subvention (et donc, par transitivité, de toutes ses Subventions) : `CA Budget`, `CA Événement`, `CA Exceptionnel`. Enum fixe dans le code, non personnalisable. Porté par la Campagne, pas par la Subvention elle-même.
 _Avoid_: catégorie (terme ambigu, utilisé aussi pour le Type de dépense)
 
 **Type de dépense**:

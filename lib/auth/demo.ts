@@ -204,14 +204,14 @@ async function resetDemoData(
         where: { id: DEMO_CAMPAIGN_ID },
         update: {
           type: "CA_BUDGET",
-          name: "CA Budget 2026 (démo)",
+          name: "2026 (démo)",
           date: daysAgo(15),
           publicationDate: daysAgo(10),
         },
         create: {
           id: DEMO_CAMPAIGN_ID,
           type: "CA_BUDGET",
-          name: "CA Budget 2026 (démo)",
+          name: "2026 (démo)",
           date: daysAgo(15),
           publicationDate: daysAgo(10),
         },

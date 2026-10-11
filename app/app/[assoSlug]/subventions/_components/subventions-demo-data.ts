@@ -11,7 +11,7 @@ export function createSubventionAgeDemoData(): VisibleSubvention[] {
     {
       id: "demo-old-grant",
       campaignId: "demo-old-campaign",
-      campaignName: "Exemple · CA Event printemps 2025",
+      campaignName: "Exemple · printemps 2025",
       type: "CA_EVENT",
       reason: "Location et logistique de l’événement",
       totalAmountCents: 240000,
@@ -24,7 +24,7 @@ export function createSubventionAgeDemoData(): VisibleSubvention[] {
     {
       id: "demo-history-grant",
       campaignId: "demo-history-campaign",
-      campaignName: "Exemple · CA Budget 2023",
+      campaignName: "Exemple · 2023",
       type: "CA_BUDGET",
       reason: "Matériel et fonctionnement",
       totalAmountCents: 120000,

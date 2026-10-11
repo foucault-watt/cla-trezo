@@ -90,6 +90,7 @@ beforeEach(() => {
     reason: `Motif ${where.id}`,
     campaignId: `campaign-of-${where.id}`,
     campaign: {
+      type: "CA_BUDGET",
       name: `Campagne ${where.id}`,
       publicationDate: day("2026-02-01"),
     },
@@ -213,7 +214,7 @@ describe("prepareExpenseReportValidation", () => {
       ([arg]) => arg.grantReason === "Motif sub-A",
     )![0];
     expect(input).toMatchObject({
-      campaignName: "Campagne sub-A",
+      campaignName: "CA Budget Campagne sub-A",
       campaignGrantedOn: day("2026-02-01"),
       campaignSubventions: [{ reason: "Motif sub-A", amountCents: 10000 }],
       reimbursedHistory: [

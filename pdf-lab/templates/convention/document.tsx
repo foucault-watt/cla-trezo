@@ -365,7 +365,7 @@ export function SubsidyConventionDocument({
           <Text style={styles.paragraph}>
             La convention fixe les droits et obligations ainsi que les termes et
             conditions applicables à la subvention octroyée aux bénéficiaires
-            lors d'une demande de subvention effectuée lors du CA Event de
+            lors d'une demande de subvention effectuée lors du CA Événement de
             décembre pour la couverture des dépenses liées à l'organisation des
             événements, telles que décrites à l'article 2.
           </Text>

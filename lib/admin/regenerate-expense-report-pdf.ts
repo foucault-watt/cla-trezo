@@ -9,6 +9,7 @@ import {
   groupExpenseReportLinesByFundingSource,
 } from "@/lib/expense-reports/expense-report-validation-grouping";
 import { prisma } from "@/lib/prisma";
+import { subventionCampaignFullName } from "@/lib/subventions/labels";
 import {
   buildExpenseReportPdfPath,
   storedFileExists,
@@ -155,7 +156,9 @@ export async function regenerateExpenseReportPdfAction(
         select: {
           reason: true,
           campaignId: true,
-          campaign: { select: { name: true, publicationDate: true } },
+          campaign: {
+            select: { type: true, name: true, publicationDate: true },
+          },
         },
       });
 
@@ -187,7 +190,7 @@ export async function regenerateExpenseReportPdfAction(
       buffer = await renderSubventionPdf(
         buildSubventionPdfData({
           context,
-          campaignName: subvention.campaign.name,
+          campaignName: subventionCampaignFullName(subvention.campaign),
           grantReason: subvention.reason,
           campaignGrantedOn: subvention.campaign.publicationDate as Date,
           campaignSubventions,

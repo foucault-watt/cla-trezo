@@ -36,7 +36,7 @@ beforeEach(() => {
     kind: "CONVENTION",
     filePath: "bde/octroi/campaign-1.pdf",
     asso: { name: "BDE" },
-    campaign: { name: "CA Budget 2026" },
+    campaign: { type: "CA_BUDGET", name: "2026" },
   });
   readStoredFileMock.mockResolvedValue(Buffer.from("%PDF-1.4"));
 });
