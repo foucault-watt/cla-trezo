@@ -80,7 +80,7 @@ export default function Home() {
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:items-stretch lg:justify-start">
               <Link
                 href="/login"
-                className="btn btn-primary w-full max-w-xs h-10"
+                className="btn btn-primary w-full max-w-xs h-10 sm:flex-1"
               >
                 <LogIn size={18} />
                 Se connecter

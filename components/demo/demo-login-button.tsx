@@ -34,7 +34,7 @@ function wait(ms: number) {
 }
 
 export function DemoLoginButton({
-  className = "btn btn-outline w-full max-w-xs h-10",
+  className = "btn btn-outline w-full max-w-xs h-10 sm:flex-1",
   icon,
 }: {
   className?: string;
