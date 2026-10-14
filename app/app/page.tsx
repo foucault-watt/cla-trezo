@@ -49,6 +49,9 @@ export default async function AppHomePage() {
           className="rounded-sm"
         />
         <span className="font-semibold">CLA Trézo</span>
+        <div className="ml-auto">
+          <LogoutButton />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4 sm:p-6">
@@ -79,7 +82,6 @@ export default async function AppHomePage() {
                 icon={<Building2 size={24} />}
                 title="Vous n'êtes membre d'aucune Asso pour le moment"
                 description="Vos Assos sont récupérées depuis vos rôles sur votre compte CLA. S'il en manque une, contactez l'équipe CLA."
-                action={<LogoutButton />}
               />
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
