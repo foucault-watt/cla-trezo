@@ -70,7 +70,13 @@ export async function getUsageOverview(filter: StatsFilter, now = new Date()) {
       WHERE created_at >= ${since(now, 30)} ${pvFilter}
       GROUP BY route ORDER BY views DESC LIMIT 15`,
     prisma.$queryRaw<
-      { id: string; name: string; users: bigint; views: bigint; actions: bigint }[]
+      {
+        id: string;
+        name: string;
+        users: bigint;
+        views: bigint;
+        actions: bigint;
+      }[]
     >`
       SELECT a.id, a.name,
              count(DISTINCT pv.user_id) AS users, count(pv.id) AS views,
@@ -93,7 +99,7 @@ export async function getUsageOverview(filter: StatsFilter, now = new Date()) {
       WITH members AS (
         SELECT DISTINCT u.id FROM "user" u
         JOIN ref_asso_user r ON r.user_id = u.id
-        WHERE NOT u.is_demo AND NOT u.is_admin
+        WHERE NOT u.is_demo AND NOT u."isAdmin"
       ), seen AS (
         SELECT m.id, GREATEST(
           (SELECT max(created_at) FROM page_view WHERE user_id = m.id),
@@ -207,7 +213,7 @@ export async function listUserActivity(
   now = new Date(),
 ): Promise<{ rows: UserActivityRow[]; total: number }> {
   const conditions = [Prisma.sql`NOT u.is_demo`];
-  if (!filter.includeAdmins) conditions.push(Prisma.sql`NOT u.is_admin`);
+  if (!filter.includeAdmins) conditions.push(Prisma.sql`NOT u."isAdmin"`);
   const query = filter.query.trim();
   if (query) {
     const pattern = `%${query.replace(/[\\%_]/g, "\\$&")}%`;
@@ -229,7 +235,7 @@ export async function listUserActivity(
         actions30: bigint;
       })[]
     >`
-      SELECT u.id, u.firstname, u.lastname, u.username, u.is_admin,
+      SELECT u.id, u.firstname, u.lastname, u.username, u."isAdmin" AS is_admin,
         (SELECT max(created_at) FROM page_view WHERE user_id = u.id) AS last_seen,
         (SELECT max(connected_at) FROM user_log WHERE user_id = u.id) AS last_login,
         (SELECT count(*) FROM page_view
@@ -382,32 +388,34 @@ export async function getUserActivity(userId: string, now = new Date()) {
   const countBy = (values: string[]) =>
     [
       ...values
-        .reduce((acc, value) => acc.set(value, (acc.get(value) ?? 0) + 1), new Map<string, number>())
+        .reduce(
+          (acc, value) => acc.set(value, (acc.get(value) ?? 0) + 1),
+          new Map<string, number>(),
+        )
         .entries(),
     ]
       .map(([key, count]) => ({ key, count }))
       .sort((a, b) => b.count - a.count);
 
   const timeline: TimelineEntry[] = [
-    ...pageViews.slice(0, 100).map(
-      (pv): TimelineEntry => ({
-        kind: "page",
-        at: pv.createdAt,
-        path: pv.path,
-        device: pv.device,
-      }),
-    ),
-    ...logins.map((log): TimelineEntry => ({ kind: "login", at: log.connectedAt })),
-    ...actions.map(
-      (action): TimelineEntry => ({
-        kind: "action",
-        at: action.createdAt,
-        action: action.action,
-        entityId: action.entityId,
-        assoName: action.assoId ? (assoNames.get(action.assoId) ?? null) : null,
-        fromAdminSpace: action.fromAdminSpace,
-      }),
-    ),
+    ...pageViews.slice(0, 100).map((pv): TimelineEntry => ({
+      kind: "page",
+      at: pv.createdAt,
+      path: pv.path,
+      device: pv.device,
+    })),
+    ...logins.map((log): TimelineEntry => ({
+      kind: "login",
+      at: log.connectedAt,
+    })),
+    ...actions.map((action): TimelineEntry => ({
+      kind: "action",
+      at: action.createdAt,
+      action: action.action,
+      entityId: action.entityId,
+      assoName: action.assoId ? (assoNames.get(action.assoId) ?? null) : null,
+      fromAdminSpace: action.fromAdminSpace,
+    })),
   ]
     .sort((a, b) => b.at.getTime() - a.at.getTime())
     .slice(0, 150);

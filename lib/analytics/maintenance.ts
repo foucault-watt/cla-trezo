@@ -48,7 +48,7 @@ export async function runAnalyticsMaintenance(now = new Date()) {
              'logins', NULL, '', count(*)::int
       FROM user_log l
       JOIN "user" u ON u.id = l.user_id
-      WHERE l.connected_at < ${cutoff}::timestamp AND NOT u.is_admin
+      WHERE l.connected_at < ${cutoff}::timestamp AND NOT u."isAdmin"
         AND l.id NOT IN (
           SELECT DISTINCT ON (user_id) id FROM user_log
           ORDER BY user_id, connected_at DESC
@@ -70,7 +70,7 @@ export async function runAnalyticsMaintenance(now = new Date()) {
       DELETE FROM page_view pv
       WHERE NOT EXISTS (SELECT 1 FROM ref_asso_user r WHERE r.user_id = pv.user_id)
         AND NOT EXISTS (
-          SELECT 1 FROM "user" u WHERE u.id = pv.user_id AND u.is_admin
+          SELECT 1 FROM "user" u WHERE u.id = pv.user_id AND u."isAdmin"
         )`,
     db.$executeRaw`
       DELETE FROM audit_log WHERE created_at < ${auditLimit}::timestamp`,
