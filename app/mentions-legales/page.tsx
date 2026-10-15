@@ -45,7 +45,7 @@ export default function MentionsLegalesPage() {
             Mentions légales
           </h1>
           <p className="mt-2 text-sm text-base-content/60">
-            Dernière mise à jour : 19 août 2026
+            Dernière mise à jour : 15 octobre 2026
           </p>
 
           <nav aria-label="Sections" className="mt-6 flex flex-wrap gap-2">
@@ -187,6 +187,30 @@ export default function MentionsLegalesPage() {
                 destinées uniquement à permettre le remboursement. Les IBAN sont
                 supprimés de l&apos;application après la génération du document
                 final de note de frais.
+              </p>
+              <p className="mt-2">
+                Pour suivre l&apos;adoption de l&apos;outil, comprendre son usage
+                et garder une trace des opérations, l&apos;application enregistre
+                pour chaque utilisateur connecté : ses connexions, les pages
+                consultées (adresse, date, type d&apos;appareil — jamais
+                l&apos;adresse IP) et un journal des créations, modifications et
+                suppressions effectuées (date et champs concernés, jamais leur
+                contenu). Ces informations sont réservées aux administrateurs de
+                CLA. Les connexions et pages consultées sont conservées 13 mois,
+                puis remplacées par des totaux anonymes ; le journal des
+                opérations est conservé 10 ans, comme les pièces comptables
+                qu&apos;il concerne.
+              </p>
+              <p className="mt-2">
+                Chaque utilisateur peut consulter ce qui est enregistré à son
+                sujet sur la page{" "}
+                <Link
+                  href="/mes-donnees"
+                  className="text-base-content underline underline-offset-2"
+                >
+                  Mes données de suivi
+                </Link>
+                .
               </p>
               <p className="mt-2">
                 Conformément à la réglementation applicable en matière de

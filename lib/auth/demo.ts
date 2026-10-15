@@ -1,4 +1,6 @@
-import { prisma } from "@/lib/prisma";
+// Reset des fixtures démo : pas une action d'utilisateur, donc hors journal
+// d'audit — sinon attribué à la vraie session éventuellement ouverte à côté.
+import { unauditedPrisma as prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/session";
 import {
   DEMO_ADMIN_USERNAME,

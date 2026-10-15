@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { prisma, type PrismaTransactionClient } from "@/lib/prisma";
 import type { SessionStructure, SessionUser } from "@/lib/session";
 import { planClaSync, type ClaSyncPlan } from "@/lib/auth/cla-sync-plan";
 import type { AssoType } from "@/app/generated/prisma/enums";
-import type { Prisma } from "@/app/generated/prisma/client";
 import type { ClaSyncAssociation } from "@/lib/auth/cla-sync-plan";
 
 export class ClaAuthError extends Error {}
@@ -130,7 +129,7 @@ const syncAssoSelect = {
 } as const;
 
 /** Noms différents par Structure : un UPDATE groupé et paramétré, sans N+1. */
-async function updateAssos(tx: Prisma.TransactionClient, plan: ClaSyncPlan) {
+async function updateAssos(tx: PrismaTransactionClient, plan: ClaSyncPlan) {
   if (plan.assosToUpdate.length === 0) return;
   await tx.$executeRaw`
     UPDATE "asso" AS a

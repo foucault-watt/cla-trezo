@@ -10,7 +10,13 @@ const DEMO_PATH_PREFIX = `/app/${DEMO_ASSO_SLUG}`;
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/auth") || pathname === "/api/health") {
+  // /api/analytics lit la session lui-même et répond toujours 204 : une
+  // redirection vers le login n'aurait aucun sens pour un sendBeacon.
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/analytics/")
+  ) {
     return NextResponse.next();
   }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTypeDepensesAdminView } from "@/lib/admin/type-depenses";
 import { CustomLabelsTable } from "./_components/custom-labels-table";
+import { SecretStatsTitle } from "./_components/secret-stats-title";
 import { TypeDepensesTable } from "./_components/type-depenses-table";
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default async function AdminTypeDepensesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Types de dépense</h1>
+        <SecretStatsTitle>Types de dépense</SecretStatsTitle>
         <p className="mt-1 max-w-3xl text-sm text-base-content/70">
           Liste proposée aux Structures pour classer chaque Remboursement.
           Renommer, supprimer ou reclasser s&apos;applique à tous les

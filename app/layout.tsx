@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { themeInitScript } from "@/lib/theme";
 import { SITE_URL } from "@/lib/site";
+import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { InlineScript } from "@/components/ui/inline-script";
 import { ToastProvider } from "@/components/ui/toast";
 import { ToastQueryFlag } from "@/components/ui/toast-query-flag";
@@ -82,6 +83,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <InlineScript html={themeInitScript} />
+        <PageViewTracker />
         <ToastProvider>
           <Suspense fallback={null}>
             <ToastQueryFlag />

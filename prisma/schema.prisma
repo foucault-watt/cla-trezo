@@ -82,6 +82,7 @@ model User {
 
   memberships               RefAssoUser[]
   logs                      UserLog[]
+  pageViews                 PageView[]
   createdExpenseReports     ExpenseReport[]     @relation("CreatedBy")
   takenExpenseReports       ExpenseReport[]     @relation("TakenByAdmin")
   beneficiaryExpenseReports ExpenseReport[]     @relation("Beneficiary")
@@ -141,7 +142,78 @@ model UserLog {
 
   user User @relation(fields: [userId], references: [id])
 
+  @@index([userId, connectedAt])
   @@map("user_log")
+}
+
+/// Page de l'app vue par un utilisateur connecté (cf. lib/analytics). Détail
+/// nominatif conservé 13 mois, puis agrégé sans identifiant dans
+/// UsageMonthlyStat et supprimé (cf. lib/analytics/retention.ts).
+model PageView {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  /// Structure de l'URL (/app/[assoSlug]/...), null hors espace Structure.
+  assoId    String?  @map("asso_id") @db.Uuid
+  path      String
+  /// `path` dont les identifiants et le slug d'Asso sont remplacés, pour
+  /// regrouper les pages de même nature (cf. normalizeRoute).
+  route     String
+  /// "mobile" | "tablet" | "desktop" — jamais l'IP ni le user-agent complet.
+  device    String
+  /// Admin au moment de la visite, pour le filtre « sans admins ».
+  isAdmin   Boolean  @map("is_admin")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("page_view")
+}
+
+/// Compteurs mensuels anonymes, issus du détail nominatif purgé après 13 mois.
+model UsageMonthlyStat {
+  id     String   @id @default(uuid()) @db.Uuid
+  /// Premier jour du mois agrégé.
+  month  DateTime @db.Date
+  /// "page_views" | "active_users" | "logins"
+  metric String
+  assoId String?  @map("asso_id") @db.Uuid
+  /// Route normalisée pour "page_views", vide sinon.
+  route  String   @default("")
+  value  Int
+
+  @@index([month])
+  @@map("usage_monthly_stat")
+}
+
+/// Journal d'audit : une ligne par écriture métier en base, enregistrée
+/// automatiquement par l'extension Prisma (cf. lib/audit). Conservé 10 ans,
+/// jamais modifié. Pas de clé étrangère vers User ni Asso : une ligne survit
+/// à tout ce qu'elle décrit, et ne stocke aucun nom.
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  actorId        String   @map("actor_id") @db.Uuid
+  actorIsAdmin   Boolean  @map("actor_is_admin")
+  /// Écriture déclenchée depuis l'espace Admin (/app/admin/...).
+  fromAdminSpace Boolean  @map("from_admin_space")
+  model          String
+  operation      String
+  /// Clé lisible, ex. "ExpenseReport.SUBMITTED" (cf. auditActionKey).
+  action         String
+  entityId       String?  @map("entity_id")
+  assoId         String?  @map("asso_id") @db.Uuid
+  /// Page depuis laquelle l'écriture a été déclenchée.
+  path           String?
+  /// Champs modifiés et quelques valeurs non sensibles (jamais d'IBAN).
+  details        Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([actorId, createdAt])
+  @@index([assoId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
+  @@map("audit_log")
 }
 
 model SubventionCampaign {
