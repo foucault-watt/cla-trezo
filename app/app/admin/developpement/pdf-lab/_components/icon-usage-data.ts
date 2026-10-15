@@ -822,6 +822,7 @@ export const iconUsages: IconUsage[] = [
     visibleText: "Paramètres PDF",
     ariaLabel: null,
     file: "app/app/admin/layout.tsx",
+    context: "nav admin, section Outils internes",
   },
   {
     icon: "Archive",

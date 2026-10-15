@@ -52,14 +52,14 @@ const navItems = [
     label: "Stockage",
     icon: <Archive size={18} />,
   },
+];
+
+const devNavItems = [
   {
     href: "/app/admin/parametres-pdf",
     label: "Paramètres PDF",
     icon: <FileCog size={18} />,
   },
-];
-
-const devNavItems = [
   {
     href: "/app/admin/types-de-depense",
     label: "Types de dépense",
