@@ -32,7 +32,7 @@ RUN npx prisma generate
 # Build Next.js (produit .next/standalone, cf. next.config.ts)
 RUN npm run build
 
-# ─── CLI Prisma seule, pour la route /api/internal/migrate-db ────────────────
+# ─── CLI Prisma seule, pour les migrations au démarrage ─────────────────────
 # La sortie standalone n'embarque que les paquets utiles à l'app : la CLI
 # Prisma (une centaine de paquets) est installée à part, à la version exacte
 # du package-lock. Les scripts d'installation téléchargent ici le moteur de
@@ -61,7 +61,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# CLI Prisma + schéma, migrations et config, lus par migrate-db
+# CLI Prisma + schéma, migrations et config, lus au démarrage et par la
+# route de secours /api/internal/migrate-db
 COPY --from=prisma-cli /app/prisma-cli ./prisma-cli
 COPY --from=builder /app/prisma ./prisma-cli/prisma
 COPY --from=builder /app/prisma.config.ts ./prisma-cli/prisma.config.ts
@@ -69,4 +70,8 @@ ENV PRISMA_CLI_DIR=/app/prisma-cli
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+# Applique les migrations en attente avant de lancer le serveur. Si l'une
+# échoue, le conteneur s'arrête sans démarrer : le healthcheck ne passe pas
+# et Coolify garde l'ancienne version en ligne. `exec` laisse node recevoir
+# directement les signaux d'arrêt.
+CMD ["sh", "-c", "cd \"$PRISMA_CLI_DIR\" && node node_modules/prisma/build/index.js migrate deploy && cd /app && exec node server.js"]

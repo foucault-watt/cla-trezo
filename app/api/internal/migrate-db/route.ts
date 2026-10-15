@@ -4,8 +4,9 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 // Route cachée pour lancer `prisma migrate deploy` depuis le conteneur de
-// prod, à appeler manuellement après un déploiement quand on n'a pas accès
-// à un shell sur le serveur. Protégée par MIGRATE_TOKEN (query param
+// prod. Le conteneur migre déjà tout seul à chaque démarrage (cf. CMD du
+// Dockerfile) : cette route ne sert plus qu'en secours, pour relancer une
+// migration à la main sans accès shell au serveur. Protégée par MIGRATE_TOKEN (query param
 // `token`) : si la variable n'est pas définie, la route répond 404 comme si
 // elle n'existait pas.
 export const runtime = "nodejs";
